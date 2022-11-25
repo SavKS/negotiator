@@ -9,7 +9,7 @@ use Savks\Negotiator\Support\DTO\{
     HasCasts
 };
 
-class Fields
+class Props
 {
     use HasCasts;
 
@@ -17,8 +17,10 @@ class Fields
     {
     }
 
-    public function when(bool $condition, Closure|AnyValue $concrete): AnyValue|MissingValue
+    public function when(bool|Closure $condition, Closure|AnyValue $concrete): AnyValue|MissingValue
     {
+        $condition = $condition instanceof Closure ? $condition($this->source) : $condition;
+
         if ($condition) {
             return $concrete instanceof AnyValue ? $concrete : $concrete($this);
         }

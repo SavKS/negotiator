@@ -30,12 +30,19 @@ class AnyObjectValue extends AnyValue
             return null;
         }
 
-        if (! \is_object($value)
-            || \array_is_list($value)
-        ) {
+        if (! \is_object($value) && ! \is_array($value)) {
             throw new UnexpectedFinalValue(
                 static::class,
                 ['object', 'array<string, mixed>'],
+                $value,
+                $this->accessor
+            );
+        }
+
+        if (\is_array($value) && \array_is_list($value)) {
+            throw new UnexpectedFinalValue(
+                static::class,
+                ['array<string, mixed>'],
                 $value,
                 $this->accessor
             );

@@ -3,11 +3,14 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
-use Savks\Negotiator\Support\DTO\ObjectValue\Fields;
 
 use Savks\Negotiator\Exceptions\{
     DTOException,
     UnexpectedFinalValue
+};
+use Savks\Negotiator\Support\DTO\ObjectValue\{
+    MissingValue,
+    Props
 };
 
 class ObjectValue extends AnyValue
@@ -39,7 +42,7 @@ class ObjectValue extends AnyValue
         }
 
         $mappedValue = ($this->callback)(
-            new Fields($value)
+            new Props($value)
         );
 
         if (! \is_array($mappedValue) || \array_is_list($mappedValue)) {
@@ -55,6 +58,10 @@ class ObjectValue extends AnyValue
 
         /** @var AnyValue|mixed $fieldValue */
         foreach ($mappedValue as $field => $fieldValue) {
+            if ($fieldValue instanceof MissingValue) {
+                continue;
+            }
+
             if (! $fieldValue instanceof AnyValue) {
                 throw new DTOException(
                     sprintf(

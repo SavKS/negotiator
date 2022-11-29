@@ -2,34 +2,39 @@
 
 namespace Savks\Negotiator\Support\DTO;
 
-use Savks\Negotiator\Exceptions\UnexpectedNull;
+use Closure;
+use Savks\Negotiator\Exceptions\DTOException;
 
-abstract class AnyValue
+class AnyValue extends Value
 {
-    public bool $nullable = false;
-
-    public function nullable(): static
-    {
-        $this->nullable = true;
-
-        return $this;
+    public function __construct(
+        protected readonly mixed $source,
+        protected readonly string|Closure|null $accessor = null,
+        protected readonly array|object|null $default = null
+    ) {
     }
 
-    abstract protected function finalize(): mixed;
-
-    public function compile(): mixed
+    protected function finalize(): object|array|null
     {
-        $value = $this->finalize();
+        if ($this->accessor === null) {
+            $value = $this->source;
+        } elseif (\is_string($this->accessor)) {
+            $value = \data_get($this->source, $this->accessor);
+        } else {
+            $value = ($this->accessor)($this->source);
+        }
 
-        if ($value === null && ! $this->nullable) {
-            throw new UnexpectedNull(
-                static::class,
-                \property_exists($this, 'accessor') ?
-                    $this->accessor :
-                    null
-            );
+        $value ??= $this->default;
+
+        if ($value === null) {
+            return null;
         }
 
         return $value;
+    }
+
+    public function nullable(): static
+    {
+        throw new DTOException('Any always allow nullable value');
     }
 }

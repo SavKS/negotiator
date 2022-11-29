@@ -5,8 +5,8 @@ namespace Savks\Negotiator\Support\DTO\ObjectValue;
 use Closure;
 
 use Savks\Negotiator\Support\DTO\{
-    AnyValue,
-    HasCasts
+    HasCasts,
+    Value
 };
 
 class Props
@@ -17,12 +17,12 @@ class Props
     {
     }
 
-    public function when(bool|Closure $condition, Closure|AnyValue $concrete): AnyValue|MissingValue
+    public function when(bool|Closure $condition, Closure|Value $concrete): Value|MissingValue
     {
         $condition = $condition instanceof Closure ? $condition($this->source) : $condition;
 
         if ($condition) {
-            return $concrete instanceof AnyValue ? $concrete : $concrete($this);
+            return $concrete instanceof Value ? $concrete : $concrete($this);
         }
 
         return new MissingValue();

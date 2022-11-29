@@ -13,10 +13,10 @@ use Savks\Negotiator\Support\DTO\ObjectValue\{
     Props
 };
 
-class ObjectValue extends AnyValue
+class ObjectValue extends Value
 {
     /**
-     * @var array<string, AnyValue>|null
+     * @var array<string, Value>|null
      */
     protected ?array $value;
 
@@ -48,7 +48,7 @@ class ObjectValue extends AnyValue
         if (! \is_array($mappedValue) || \array_is_list($mappedValue)) {
             throw new UnexpectedFinalValue(
                 static::class,
-                'array<string, ' . AnyValue::class . '>',
+                'array<string, ' . Value::class . '>',
                 $value,
                 $this->accessor
             );
@@ -56,18 +56,18 @@ class ObjectValue extends AnyValue
 
         $result = [];
 
-        /** @var AnyValue|mixed $fieldValue */
+        /** @var Value|mixed $fieldValue */
         foreach ($mappedValue as $field => $fieldValue) {
             if ($fieldValue instanceof MissingValue) {
                 continue;
             }
 
-            if (! $fieldValue instanceof AnyValue) {
+            if (! $fieldValue instanceof Value) {
                 throw new DTOException(
                     sprintf(
                         'Object field "%s" value must extends "%s", given "%s"',
                         $field,
-                        AnyValue::class,
+                        Value::class,
                         \gettype($fieldValue)
                     )
                 );

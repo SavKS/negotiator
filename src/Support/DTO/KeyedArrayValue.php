@@ -6,14 +6,15 @@ use Closure;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
 
 use Savks\Negotiator\Exceptions\{
-    DTOException,
-    UnexpectedFinalValue
+        DTOException,
+        UnexpectedFinalValue
 };
 
-class ArrayValue extends Value
+class KeyedArrayValue extends Value
 {
     public function __construct(
         protected readonly mixed $source,
+        protected readonly string|Closure $key,
         protected readonly string|Closure $iterator,
         protected readonly string|Closure|null $accessor = null
     ) {
@@ -53,9 +54,19 @@ class ArrayValue extends Value
                 throw new DTOException('List iterator must return value that extends "' . Value::class . '"');
             }
 
-            $result[] = $listItemValue->compile();
+            if (\is_string($this->key)) {
+                $keyValue = \data_get($item, $this->key);
+            } else {
+                $keyValue = ($this->key)($item);
+            }
+
+            if (! \is_string($keyValue)) {
+                throw new DTOException('Keyed list key must be string, given "' . \gettype($keyValue) . '"');
+            }
+
+            $result[$keyValue] = $listItemValue->compile();
         }
 
-        return $result;
+        return $result ?: null;
     }
 }

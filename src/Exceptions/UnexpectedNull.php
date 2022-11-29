@@ -3,12 +3,12 @@
 namespace Savks\Negotiator\Exceptions;
 
 use Closure;
-use Savks\Negotiator\Support\DTO\AnyValue;
+use Savks\Negotiator\Support\DTO\Value;
 
 class UnexpectedNull extends DTOException
 {
     /**
-     * @param class-string<AnyValue> $sourceFQN
+     * @param class-string<Value> $sourceFQN
      */
     public function __construct(string $sourceFQN, string|Closure $accessor)
     {

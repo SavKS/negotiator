@@ -5,7 +5,7 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use Savks\Negotiator\Support\Mapping\Mapper;
 
-class MapperValue extends AnyValue
+class MapperValue extends Value
 {
     public function __construct(
         protected readonly mixed $source,
@@ -32,6 +32,6 @@ class MapperValue extends AnyValue
 
         $mappedValue = $mapper->map();
 
-        return $mappedValue instanceof AnyValue ? $mappedValue->compile() : $mappedValue;
+        return $mappedValue instanceof Value ? $mappedValue->compile() : $mappedValue;
     }
 }

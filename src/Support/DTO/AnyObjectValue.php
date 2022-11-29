@@ -5,7 +5,7 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedFinalValue;
 
-class AnyObjectValue extends AnyValue
+class AnyObjectValue extends Value
 {
     public function __construct(
         protected readonly mixed $source,

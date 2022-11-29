@@ -4,12 +4,12 @@ namespace Savks\Negotiator\Exceptions;
 
 use Closure;
 use Illuminate\Support\Arr;
-use Savks\Negotiator\Support\DTO\AnyValue;
+use Savks\Negotiator\Support\DTO\Value;
 
 class UnexpectedValue extends DTOException
 {
     /**
-     * @param class-string<AnyValue> $sourceFQN
+     * @param class-string<Value> $sourceFQN
      */
     public function __construct(string $sourceFQN, string|array $types, mixed $value, string|Closure $accessor = null)
     {

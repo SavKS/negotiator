@@ -5,11 +5,11 @@ namespace Savks\Negotiator\Support\Mapping;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use JsonSerializable;
-use Savks\Negotiator\Support\DTO\AnyValue;
+use Savks\Negotiator\Support\DTO\Value;
 
 abstract class Mapper implements JsonSerializable, Responsable
 {
-    abstract public function map(): AnyValue|array|null;
+    abstract public function map(): Value|array|null;
 
     public static function defaultValues(): ?array
     {

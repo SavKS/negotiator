@@ -7,11 +7,11 @@ use DateTime;
 use Savks\Negotiator\Exceptions\UnexpectedFinalValue;
 
 use Carbon\{
-        Carbon,
-        CarbonInterface
+    Carbon,
+    CarbonInterface
 };
 
-class DateValue extends AnyValue
+class DateValue extends Value
 {
     public function __construct(
         protected readonly mixed $source,

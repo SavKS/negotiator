@@ -5,6 +5,8 @@ namespace Savks\Negotiator\Support\DTO;
 use Carbon\CarbonInterface;
 use Closure;
 use DateTime;
+use Savks\Negotiator\Support\DTO\ArrayValue\Item;
+use Savks\Negotiator\Support\DTO\UnionType\Variant;
 use Savks\Negotiator\Support\Mapping\Mapper;
 
 trait HasCasts
@@ -54,6 +56,9 @@ trait HasCasts
         return new AnyObjectValue($this->source, $accessor, $default);
     }
 
+    /**
+     * @param string|Closure(Item): Value $iterator
+     */
     public function array(string|Closure $iterator, string|Closure|null $accessor = null): ArrayValue
     {
         return new ArrayValue($this->source, $iterator, $accessor);
@@ -75,5 +80,10 @@ trait HasCasts
     public function mapper(Mapper|Closure $mapper, string|Closure|null $accessor = null): MapperValue
     {
         return new MapperValue($this->source, $mapper, $accessor);
+    }
+
+    public function union(string|Closure|null $accessor = null): UnionType
+    {
+        return new UnionType($this->source, $accessor);
     }
 }

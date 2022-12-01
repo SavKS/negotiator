@@ -2,6 +2,7 @@
 
 namespace Savks\Negotiator\Support\DTO;
 
+use ReflectionClass;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
 
 abstract class Value

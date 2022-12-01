@@ -3,14 +3,12 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
+use Savks\Negotiator\Support\DTO\ObjectValue\MissingValue;
+use Savks\Negotiator\Support\DTO\Utils\Factory;
 
 use Savks\Negotiator\Exceptions\{
     DTOException,
     UnexpectedFinalValue
-};
-use Savks\Negotiator\Support\DTO\ObjectValue\{
-    MissingValue,
-    Props
 };
 
 class ObjectValue extends Value
@@ -42,7 +40,7 @@ class ObjectValue extends Value
         }
 
         $mappedValue = ($this->callback)(
-            new Props($value)
+            new Factory($value)
         );
 
         if (! \is_array($mappedValue) || \array_is_list($mappedValue)) {

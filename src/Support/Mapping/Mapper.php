@@ -16,9 +16,14 @@ abstract class Mapper implements JsonSerializable, Responsable
         return null;
     }
 
-    public function jsonSerialize(): mixed
+    public function finalize(): mixed
     {
         return $this->map()->compile();
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->finalize();
     }
 
     public function toResponse($request): JsonResponse

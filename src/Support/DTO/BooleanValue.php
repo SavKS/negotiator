@@ -3,7 +3,7 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
-use Savks\Negotiator\Exceptions\UnexpectedFinalValue;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
 
 class BooleanValue extends Value
 {
@@ -31,12 +31,7 @@ class BooleanValue extends Value
         }
 
         if (! \is_bool($value)) {
-            throw new UnexpectedFinalValue(
-                static::class,
-                'boolean',
-                $value,
-                $this->accessor
-            );
+            throw new UnexpectedValue('boolean', $value);
         }
 
         return $value;

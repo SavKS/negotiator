@@ -23,12 +23,7 @@ abstract class Value
         $value = $this->finalize();
 
         if ($value === null && ! $this->nullable) {
-            throw new UnexpectedNull(
-                static::class,
-                \property_exists($this, 'accessor') ?
-                    $this->accessor :
-                    null
-            );
+            throw new UnexpectedNull('NOT NULL', $value);
         }
 
         return $value;

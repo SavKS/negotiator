@@ -8,7 +8,8 @@ use Savks\Negotiator\Support\DTO\Utils\Factory;
 
 use Savks\Negotiator\Exceptions\{
     DTOException,
-    UnexpectedFinalValue
+    UnexpectedNull,
+    UnexpectedValue
 };
 
 class ObjectValue extends Value
@@ -44,12 +45,7 @@ class ObjectValue extends Value
         );
 
         if (! \is_array($mappedValue) || \array_is_list($mappedValue)) {
-            throw new UnexpectedFinalValue(
-                static::class,
-                'array<string, ' . Value::class . '>',
-                $value,
-                $this->accessor
-            );
+            throw new UnexpectedValue('array<string, ' . Value::class . '>', $mappedValue);
         }
 
         $result = [];
@@ -61,17 +57,14 @@ class ObjectValue extends Value
             }
 
             if (! $fieldValue instanceof Value) {
-                throw new DTOException(
-                    sprintf(
-                        'Object field "%s" value must extends "%s", given "%s"',
-                        $field,
-                        Value::class,
-                        \gettype($fieldValue)
-                    )
-                );
+                throw new UnexpectedValue(Value::class, $fieldValue);
             }
 
-            $result[$field] = $fieldValue->compile();
+            try {
+                $result[$field] = $fieldValue->compile();
+            } catch (UnexpectedValue $e) {
+                throw UnexpectedValue::wrap($e, $field);
+            }
         }
 
         return $result;

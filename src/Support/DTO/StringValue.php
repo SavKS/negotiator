@@ -3,7 +3,6 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
-use Savks\Negotiator\Exceptions\UnexpectedFinalValue;
 
 class StringValue extends Value
 {
@@ -31,12 +30,7 @@ class StringValue extends Value
         }
 
         if (! \is_string($value)) {
-            throw new UnexpectedFinalValue(
-                static::class,
-                'string',
-                $value,
-                $this->accessor
-            );
+            throw new UnexpectedValue('string', $value);
         }
 
         return $value;

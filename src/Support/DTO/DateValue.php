@@ -4,11 +4,14 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 use DateTime;
-use Savks\Negotiator\Exceptions\UnexpectedFinalValue;
 
 use Carbon\{
-    Carbon,
-    CarbonInterface
+        Carbon,
+        CarbonInterface
+};
+use Savks\Negotiator\Exceptions\{
+        UnexpectedSourceValue,
+        UnexpectedValue
 };
 
 class DateValue extends Value
@@ -39,10 +42,10 @@ class DateValue extends Value
         } elseif ($value instanceof DateTime) {
             $carbon = new Carbon($value);
         } else {
-            throw new UnexpectedFinalValue(static::class, [
+            throw new UnexpectedValue([
                 CarbonInterface::class,
                 DateTime::class,
-            ], $value, $this->accessor);
+            ], $value);
         }
 
         if ($this->format) {

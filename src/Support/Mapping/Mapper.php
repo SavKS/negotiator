@@ -7,6 +7,11 @@ use Illuminate\Http\JsonResponse;
 use JsonSerializable;
 use Savks\Negotiator\Support\DTO\Value;
 
+use Savks\Negotiator\Exceptions\{
+    MappingFail,
+    UnexpectedValue
+};
+
 abstract class Mapper implements JsonSerializable, Responsable
 {
     abstract public function map(): Value|array|null;
@@ -18,7 +23,11 @@ abstract class Mapper implements JsonSerializable, Responsable
 
     public function finalize(): mixed
     {
-        return $this->map()->compile();
+        try {
+            return $this->map()->compile();
+        } catch (UnexpectedValue $e) {
+            throw new MappingFail($this, $e);
+        }
     }
 
     public function jsonSerialize(): mixed

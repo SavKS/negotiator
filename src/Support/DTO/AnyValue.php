@@ -7,10 +7,12 @@ use Savks\Negotiator\Exceptions\DTOException;
 
 class AnyValue extends Value
 {
+    public bool $nullable = true;
+
     public function __construct(
         protected readonly mixed $source,
         protected readonly string|Closure|null $accessor = null,
-        protected readonly array|object|null $default = null
+        protected readonly mixed $default = null
     ) {
     }
 

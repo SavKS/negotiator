@@ -3,7 +3,7 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
-use Savks\Negotiator\Exceptions\UnexpectedFinalValue;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
 
 class AnyObjectValue extends Value
 {
@@ -31,21 +31,11 @@ class AnyObjectValue extends Value
         }
 
         if (! \is_object($value) && ! \is_array($value)) {
-            throw new UnexpectedFinalValue(
-                static::class,
-                ['object', 'array<string, mixed>'],
-                $value,
-                $this->accessor
-            );
+            throw new UnexpectedValue(['object', 'array<string, mixed>'], $value);
         }
 
         if (\is_array($value) && \array_is_list($value)) {
-            throw new UnexpectedFinalValue(
-                static::class,
-                ['array<string, mixed>'],
-                $value,
-                $this->accessor
-            );
+            throw new UnexpectedValue(['array<string, mixed>'], $value);
         }
 
         return $value;

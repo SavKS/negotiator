@@ -2,7 +2,7 @@
 
 namespace Savks\Negotiator\Exceptions;
 
-class UnexpectedFinalValue extends UnexpectedValue
+class UnexpectedSourceValue extends UnexpectedValue
 {
     //
 }

@@ -4,7 +4,6 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 use Savks\Negotiator\Exceptions\DTOException;
-use Savks\Negotiator\Support\DTO\UnionType\Variant;
 use Savks\Negotiator\Support\DTO\Utils\Factory;
 
 class UnionType extends Value
@@ -15,7 +14,7 @@ class UnionType extends Value
      *     'callback': Closure(Factory): Value|null
      * }
      */
-    protected array $variants;
+    protected array $variants = [];
 
     public function __construct(
         protected readonly mixed $source,

@@ -3,7 +3,6 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
-use Savks\Negotiator\Exceptions\UnexpectedFinalValue;
 
 class NumberValue extends Value
 {
@@ -31,7 +30,7 @@ class NumberValue extends Value
         }
 
         if (! \is_numeric($value)) {
-            throw new UnexpectedFinalValue(static::class, 'int', $value, $this->accessor);
+            throw new UnexpectedValue('int', $value);
         }
 
         return $value;

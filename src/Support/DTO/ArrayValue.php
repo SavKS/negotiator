@@ -6,8 +6,8 @@ use Closure;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
 
 use Savks\Negotiator\Exceptions\{
-        DTOException,
-        UnexpectedFinalValue
+        UnexpectedSourceValue,
+        UnexpectedValue
 };
 
 class ArrayValue extends Value
@@ -34,32 +34,25 @@ class ArrayValue extends Value
         }
 
         if (! \is_iterable($value)) {
-            throw new UnexpectedFinalValue(
-                static::class,
-                'iterable',
-                $value,
-                $this->accessor
-            );
+            throw new UnexpectedValue('iterable', $value);
         }
 
         $result = [];
 
-        foreach ($value as $item) {
+        foreach ($value as $index => $item) {
             $listItemValue = ($this->iterator)(
                 new Item($item)
             );
 
             if (! $listItemValue instanceof Value) {
-                throw new DTOException(
-                    sprintf(
-                        'List iterator must return value that extends "%s", given "%s".',
-                        Value::class,
-                        \gettype($listItemValue)
-                    )
-                );
+                throw new UnexpectedValue(Value::class, $listItemValue, $index);
             }
 
-            $result[] = $listItemValue->compile();
+            try {
+                $result[] = $listItemValue->compile();
+            } catch (UnexpectedValue $e) {
+                throw UnexpectedValue::wrap($e, $index);
+            }
         }
 
         return $result;

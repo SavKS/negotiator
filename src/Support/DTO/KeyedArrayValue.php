@@ -51,7 +51,13 @@ class KeyedArrayValue extends Value
             );
 
             if (! $listItemValue instanceof Value) {
-                throw new DTOException('List iterator must return value that extends "' . Value::class . '"');
+                throw new DTOException(
+                    sprintf(
+                        'List iterator must return value that extends "%s", given "%s"',
+                        Value::class,
+                        \gettype($listItemValue)
+                    )
+                );
             }
 
             if (\is_string($this->key)) {

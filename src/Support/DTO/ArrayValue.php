@@ -6,8 +6,8 @@ use Closure;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
 
 use Savks\Negotiator\Exceptions\{
-    DTOException,
-    UnexpectedFinalValue
+        DTOException,
+        UnexpectedFinalValue
 };
 
 class ArrayValue extends Value
@@ -50,7 +50,13 @@ class ArrayValue extends Value
             );
 
             if (! $listItemValue instanceof Value) {
-                throw new DTOException('List iterator must return value that extends "' . Value::class . '"');
+                throw new DTOException(
+                    sprintf(
+                        'List iterator must return value that extends "%s", given "%s".',
+                        Value::class,
+                        \gettype($listItemValue)
+                    )
+                );
             }
 
             $result[] = $listItemValue->compile();

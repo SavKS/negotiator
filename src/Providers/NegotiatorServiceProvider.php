@@ -4,6 +4,7 @@ namespace Savks\Negotiator\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Savks\Negotiator\Commands\GenerateTypes;
+use Savks\Negotiator\TypeGeneration\MapperAliases;
 
 class NegotiatorServiceProvider extends ServiceProvider
 {
@@ -12,5 +13,7 @@ class NegotiatorServiceProvider extends ServiceProvider
         $this->commands([
             GenerateTypes::class,
         ]);
+
+        $this->app->singleton(MapperAliases::class);
     }
 }

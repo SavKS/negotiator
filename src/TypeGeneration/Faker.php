@@ -3,10 +3,14 @@
 namespace Savks\Negotiator\TypeGeneration;
 
 use ReflectionClass;
+use ReflectionIntersectionType;
 use ReflectionParameter;
 use RuntimeException;
-use Savks\Negotiator\Support\Mapping\Mapper;
 
+use Savks\Negotiator\Support\Mapping\{
+    Mapper,
+    WithCustomMock
+};
 use Savks\Negotiator\TypeGeneration\Mock\{
     EmptyIntEnum,
     EmptyStringEnum
@@ -16,6 +20,16 @@ class Faker
 {
     public function makeMapper(string $mapperFQN): Mapper
     {
+        $alias = \app(MapperAliases::class)->resolve($mapperFQN);
+
+        if ($alias) {
+            return new AliasMapper($alias);
+        }
+
+        if (\class_implements($mapperFQN)[WithCustomMock::class] ?? null) {
+            return $mapperFQN::mock();
+        }
+
         $mapperRef = new ReflectionClass($mapperFQN);
 
         $constructorRef = $mapperRef->getConstructor();
@@ -38,6 +52,10 @@ class Faker
 
         if ($type->allowsNull()) {
             return null;
+        }
+
+        if ($type instanceof ReflectionIntersectionType) {
+            throw new RuntimeException('Intersected types are not supported.');
         }
 
         switch ($type->getName()) {

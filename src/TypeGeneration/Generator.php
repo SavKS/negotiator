@@ -5,7 +5,9 @@ namespace Savks\Negotiator\TypeGeneration;
 use RuntimeException;
 
 use Savks\Negotiator\Support\Types\{
+    AliasType,
     AnyType,
+    ArrayType,
     BooleanType,
     ConstRecordType,
     NullType,
@@ -14,7 +16,8 @@ use Savks\Negotiator\Support\Types\{
     StringType,
     Type,
     Types,
-    UndefinedType};
+    UndefinedType
+};
 
 class Generator
 {
@@ -46,7 +49,9 @@ class Generator
             $type instanceof NumberType => 'number',
             $type instanceof NullType => 'null',
             $type instanceof UndefinedType => 'undefined',
-            $type instanceof RecordType => 'Record<string, '. $this->processType($type->valueType) .'>',
+            $type instanceof RecordType => 'Record<string, ' . $this->processType($type->valueType) . '>',
+            $type instanceof ArrayType => 'Array<' . $this->processType($type->types) . '>',
+            $type instanceof AliasType => $type->alias,
 
             default => throw new RuntimeException('Unprocessed type "' . $type::class . '"')
         };

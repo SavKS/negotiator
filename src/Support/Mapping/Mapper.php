@@ -12,6 +12,9 @@ use Savks\Negotiator\Exceptions\{
     UnexpectedValue
 };
 
+/**
+ * @method static customMock()
+ */
 abstract class Mapper implements JsonSerializable, Responsable
 {
     abstract public function map(): Value|array|null;

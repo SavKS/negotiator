@@ -10,6 +10,7 @@ use Savks\Negotiator\Exceptions\{
     UnexpectedValue
 };
 use Savks\Negotiator\Support\Types\{
+    ArrayType,
     Type,
     Types
 };
@@ -69,6 +70,8 @@ class ArrayValue extends Value
             new Item(null)
         );
 
-        return $value->compileTypes();
+        return new ArrayType(
+            $value->compileTypes()
+        );
     }
 }

@@ -3,8 +3,14 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
+use Illuminate\Support\Arr;
 use Savks\Negotiator\Exceptions\DTOException;
 use Savks\Negotiator\Support\DTO\Utils\Factory;
+
+use Savks\Negotiator\Support\Types\{
+    Type,
+    Types
+};
 
 class UnionType extends Value
 {
@@ -57,5 +63,23 @@ class UnionType extends Value
         }
 
         throw new DTOException('Unhandled union type variant');
+    }
+
+    protected function types(): Type|Types
+    {
+        $types = [];
+
+        foreach ($this->variants as $variant) {
+            /** @var Value $value */
+            $value = $variant['callback'](
+                new Factory(null)
+            );
+
+            $types[] = $value->compileTypes()->types;
+        }
+
+        $types = Arr::flatten($types);
+
+        return \count($types) > 1 ? new Types($types) : $types;
     }
 }

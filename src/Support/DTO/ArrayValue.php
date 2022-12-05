@@ -6,8 +6,12 @@ use Closure;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
 
 use Savks\Negotiator\Exceptions\{
-        UnexpectedSourceValue,
-        UnexpectedValue
+    UnexpectedSourceValue,
+    UnexpectedValue
+};
+use Savks\Negotiator\Support\Types\{
+    Type,
+    Types
 };
 
 class ArrayValue extends Value
@@ -56,5 +60,15 @@ class ArrayValue extends Value
         }
 
         return $result;
+    }
+
+    protected function types(): Type|Types
+    {
+        /** @var Value $value */
+        $value = ($this->iterator)(
+            new Item(null)
+        );
+
+        return $value->compileTypes();
     }
 }

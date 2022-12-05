@@ -3,11 +3,18 @@
 namespace Savks\Negotiator\Support\DTO\Utils;
 
 use Closure;
+use Illuminate\Support\Arr;
+use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\DTO\{
     ObjectValue\MissingValue,
     HasCasts,
     Value
+};
+use Savks\Negotiator\Support\Types\{
+    Type,
+    Types
 };
 
 class Factory
@@ -22,7 +29,24 @@ class Factory
         bool|Closure $condition,
         Closure|Value $concrete,
         Closure|Value|null $else = null
-    ): Value|MissingValue {
+    ): Value|MissingValue|Type|Types {
+        $typeGenerationContext = Context::tryUse(TypeGenerationContext::class);
+
+        if ($typeGenerationContext) {
+            $value = $concrete instanceof Closure ? $concrete($this) : $concrete;
+
+            if (! $else) {
+                return $value;
+            }
+
+            $elseValue = $else instanceof Closure ? $else($this) : $else;
+
+            return new Types([
+                ...Arr::wrap($value),
+                ...Arr::wrap($elseValue),
+            ]);
+        }
+
         $condition = $condition instanceof Closure ? $condition($this->source) : $condition;
 
         if ($condition) {

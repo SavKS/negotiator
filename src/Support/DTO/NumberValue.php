@@ -4,6 +4,11 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 
+use Savks\Negotiator\Support\Types\{
+    NumberType,
+    Type
+};
+
 class NumberValue extends Value
 {
     public function __construct(
@@ -34,5 +39,10 @@ class NumberValue extends Value
         }
 
         return $value;
+    }
+
+    protected function types(): NumberType
+    {
+        return new NumberType();
     }
 }

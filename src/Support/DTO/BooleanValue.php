@@ -5,6 +5,12 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 
+use Savks\Negotiator\Support\Types\{
+    BooleanType,
+    Type,
+    Types
+};
+
 class BooleanValue extends Value
 {
     public function __construct(
@@ -35,5 +41,10 @@ class BooleanValue extends Value
         }
 
         return $value;
+    }
+
+    protected function types(): BooleanType
+    {
+        return new BooleanType();
     }
 }

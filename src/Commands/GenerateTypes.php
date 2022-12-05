@@ -2,76 +2,61 @@
 
 namespace Savks\Negotiator\Commands;
 
-use ControlPackages\FileManager\Http\Mapping\FileMapper;
 use Illuminate\Console\Command;
-use ReflectionClass;
-use ReflectionParameter;
-use RuntimeException;
+use Savks\Negotiator\Contexts\TypeGenerationContext;
+
+use Savks\Negotiator\TypeGeneration\{
+    Faker,
+    Generator
+};
 
 class GenerateTypes extends Command
 {
-    protected $signature = 'negotiator:generate:types';
+    protected $signature = 'negotiator:generate:types {mapper} {dest} {typeName} {--append}}';
 
     public function handle()
     {
-        $mapper = $this->mockMapper(FileMapper::class);
+        return (new TypeGenerationContext())->wrap(function () {
+            $faker = new Faker();
 
-        $value = $mapper->map();
+            if (! \class_exists($this->argument('mapper'))) {
+                $this->components->error("Undefined class \"{$this->argument('mapper')}\"");
 
-        dd($value);
-    }
+                return self::FAILURE;
+            }
 
-    protected function mockMapper(string $mapperFQN)
-    {
-        $mapperRef = new ReflectionClass($mapperFQN);
-
-        $constructorRef = $mapperRef->getConstructor();
-
-        if (! $constructorRef) {
-            return new $mapperFQN();
-        }
-
-        return new $mapperFQN(
-            ...\array_map(
-                fn (ReflectionParameter $parameter) => $this->mockParameter($parameter),
-                $constructorRef->getParameters()
-            )
-        );
-    }
-
-    protected function mockParameter(ReflectionParameter $parameter): mixed
-    {
-        $type = $parameter->getType();
-
-        if ($type->allowsNull()) {
-            return null;
-        }
-
-        switch ($type->getName()) {
-            case 'int':
-                return 0;
-
-            case 'float':
-                return 0.0;
-
-            case 'string':
-                return '';
-
-            case 'bool':
-                return false;
-
-            case 'array':
-                return [];
-        }
-
-        if (\class_exists($type->getName())) {
-            $ref = new ReflectionClass(
-                $type->getName()
+            $mapper = $faker->makeMapper(
+                $this->argument('mapper')
             );
 
-            return $ref->newInstanceWithoutConstructor();
+            $value = $mapper->map();
+
+            $types = $value->compileTypes();
+
+            $content = (new Generator($types))->generate();
+
+            $this->write($content);
+
+            return self::SUCCESS;
+        });
+    }
+
+    protected function write(string $content): void
+    {
+        $dir = \dirname(
+            $this->argument('dest')
+        );
+
+        if (! \is_dir($dir)) {
+            \mkdir($dir, recursive: true);
         }
 
-        throw new RuntimeException("Invalid type \"{$type->getName()}\"");
+        \file_put_contents(
+            $this->argument('dest'),
+            "export type {$this->argument('typeName')} = {$content};",
+            $this->option('append') ? \FILE_APPEND : 0
+        );
+
+        $this->components->info("Types file saved to: {$this->argument('dest')}");
     }
 }

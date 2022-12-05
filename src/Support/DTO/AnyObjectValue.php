@@ -5,6 +5,12 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 
+use Savks\Negotiator\Support\Types\{
+    RecordType,
+    Type,
+    Types
+};
+
 class AnyObjectValue extends Value
 {
     public function __construct(
@@ -39,5 +45,10 @@ class AnyObjectValue extends Value
         }
 
         return $value;
+    }
+
+    protected function types(): Type|Types
+    {
+        return new RecordType();
     }
 }

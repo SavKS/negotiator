@@ -3,6 +3,7 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
+use Savks\Negotiator\Support\Types\StringType;
 
 class StringValue extends Value
 {
@@ -34,5 +35,10 @@ class StringValue extends Value
         }
 
         return $value;
+    }
+
+    protected function types(): StringType
+    {
+        return new StringType();
     }
 }

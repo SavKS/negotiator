@@ -3,13 +3,14 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\DTO\ObjectValue\MissingValue;
 use Savks\Negotiator\Support\DTO\Utils\Factory;
 
-use Savks\Negotiator\Exceptions\{
-    DTOException,
-    UnexpectedNull,
-    UnexpectedValue
+use Savks\Negotiator\Support\Types\{
+    ConstRecordType,
+    Type,
+    Types
 };
 
 class ObjectValue extends Value
@@ -65,6 +66,25 @@ class ObjectValue extends Value
             } catch (UnexpectedValue $e) {
                 throw UnexpectedValue::wrap($e, $field);
             }
+        }
+
+        return $result;
+    }
+
+    protected function types(): ConstRecordType
+    {
+        /** @var array<string, Value> $mappedValue */
+        $mappedValue = ($this->callback)(
+            new Factory(null)
+        );
+
+        $result = new ConstRecordType();
+
+        foreach ($mappedValue as $field => $value) {
+            $result->add(
+                $field,
+                $value->compileTypes()
+            );
         }
 
         return $result;

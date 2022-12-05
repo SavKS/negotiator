@@ -3,7 +3,15 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
+use ReflectionFunction;
 use Savks\Negotiator\Support\Mapping\Mapper;
+use Savks\Negotiator\TypeGeneration\Faker;
+
+use Savks\Negotiator\Support\Types\{
+    AnyType,
+    Type,
+    Types
+};
 
 class MapperValue extends Value
 {
@@ -33,5 +41,24 @@ class MapperValue extends Value
         $mappedValue = $mapper->map();
 
         return $mappedValue instanceof Value ? $mappedValue->compile() : $mappedValue;
+    }
+
+    protected function types(): Type|Types
+    {
+        if ($this->mapper instanceof Closure) {
+            $ref = new ReflectionFunction($this->mapper);
+
+            $mapperFQN = $ref->getReturnType()?->getName();
+
+            if (! \is_subclass_of($mapperFQN, Mapper::class)) {
+                return new AnyType();
+            }
+        } else {
+            $mapperFQN = $this->mapper::class;
+        }
+
+        $mapper = (new Faker())->makeMapper($mapperFQN);
+
+        return $mapper->map()->compileTypes();
     }
 }

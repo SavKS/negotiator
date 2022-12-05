@@ -4,14 +4,12 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 use DateTime;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
+use Savks\Negotiator\Support\Types\StringType;
 
 use Carbon\{
-        Carbon,
-        CarbonInterface
-};
-use Savks\Negotiator\Exceptions\{
-        UnexpectedSourceValue,
-        UnexpectedValue
+    Carbon,
+    CarbonInterface
 };
 
 class DateValue extends Value
@@ -55,5 +53,10 @@ class DateValue extends Value
         }
 
         return $carbon->format($format);
+    }
+
+    protected function types(): StringType
+    {
+        return new StringType();
     }
 }

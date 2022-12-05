@@ -11,6 +11,11 @@ use Savks\Negotiator\Exceptions\{
         UnexpectedSourceValue,
         UnexpectedValue
 };
+use Savks\Negotiator\Support\Types\{
+        RecordType,
+        Type,
+        Types
+};
 
 class KeyedArrayValue extends Value
 {
@@ -72,5 +77,17 @@ class KeyedArrayValue extends Value
         }
 
         return $result ?: null;
+    }
+
+    protected function types(): Type|Types
+    {
+        /** @var Value $listItem */
+        $listItem = ($this->iterator)(
+            new Item(null)
+        );
+
+        return new RecordType(
+            $listItem->compileTypes()
+        );
     }
 }

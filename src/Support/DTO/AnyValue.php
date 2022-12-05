@@ -4,6 +4,7 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 use Savks\Negotiator\Exceptions\DTOException;
+use Savks\Negotiator\Support\Types\AnyType;
 
 class AnyValue extends Value
 {
@@ -38,5 +39,10 @@ class AnyValue extends Value
     public function nullable(): static
     {
         throw new DTOException('Any always allow nullable value');
+    }
+
+    protected function types(): AnyType
+    {
+        return new AnyType();
     }
 }

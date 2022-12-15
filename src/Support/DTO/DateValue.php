@@ -14,11 +14,20 @@ use Carbon\{
 
 class DateValue extends Value
 {
+    protected bool $withoutTime = false;
+
     public function __construct(
         protected readonly mixed $source,
         protected readonly string|Closure|null $accessor = null,
         protected readonly string|Closure|null $format = null
     ) {
+    }
+
+    public function withoutTime(): static
+    {
+        $this->withoutTime = true;
+
+        return $this;
     }
 
     protected function finalize(): ?string
@@ -49,7 +58,7 @@ class DateValue extends Value
         if ($this->format) {
             $format = \is_string($this->format) ? $carbon->format($this->format) : ($this->format)($carbon);
         } else {
-            $format = 'Y-m-d H:i:s';
+            $format = $this->withoutTime ? 'Y-m-d' : 'Y-m-d H:i:s';
         }
 
         return $carbon->format($format);

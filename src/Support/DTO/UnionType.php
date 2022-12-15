@@ -62,7 +62,9 @@ class UnionType extends Value
             )->finalize();
         }
 
-        throw new DTOException('Unhandled union type variant');
+        $type = \is_object($value) ? $value::class : \gettype($value);
+
+        throw new DTOException("Unhandled union type variant for \"{$type}\"");
     }
 
     protected function types(): Type|Types
@@ -80,6 +82,6 @@ class UnionType extends Value
 
         $types = Arr::flatten($types);
 
-        return \count($types) > 1 ? new Types($types) : $types;
+        return \count($types) > 1 ? new Types($types) : \head($types);
     }
 }

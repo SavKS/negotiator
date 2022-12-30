@@ -16,7 +16,8 @@ use Savks\Negotiator\Support\Types\{
     StringType,
     Type,
     Types,
-    UndefinedType
+    UndefinedType,
+    VoidType
 };
 
 class Generator
@@ -48,6 +49,7 @@ class Generator
             $type instanceof StringType => 'string',
             $type instanceof NumberType => 'number',
             $type instanceof NullType => 'null',
+            $type instanceof VoidType => 'void',
             $type instanceof UndefinedType => 'undefined',
             $type instanceof RecordType => 'Record<string, ' . $this->processType($type->valueType) . '>',
             $type instanceof ArrayType => 'Array<' . $this->processType($type->types) . '>',

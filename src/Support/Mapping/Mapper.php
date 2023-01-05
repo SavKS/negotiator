@@ -19,11 +19,6 @@ abstract class Mapper implements JsonSerializable, Responsable
 {
     abstract public function map(): Value|array|null;
 
-    public static function defaultValues(): ?array
-    {
-        return null;
-    }
-
     public function finalize(): mixed
     {
         try {

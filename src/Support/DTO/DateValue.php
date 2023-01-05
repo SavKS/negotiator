@@ -12,7 +12,7 @@ use Carbon\{
     CarbonInterface
 };
 
-class DateValue extends Value
+class DateValue extends NullableValue
 {
     protected bool $withoutTime = false;
 

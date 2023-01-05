@@ -17,7 +17,7 @@ use Savks\Negotiator\Support\Types\{
         Types
 };
 
-class KeyedArrayValue extends Value
+class KeyedArrayValue extends NullableValue
 {
     public function __construct(
         protected readonly mixed $source,

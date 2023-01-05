@@ -15,9 +15,9 @@ trait HasCasts
         return new StringValue($this->source, $accessor, $default);
     }
 
-    public function constString(string|null $value): StringValue
+    public function constString(string $value, bool $asAnyString = false): ConstStringValue
     {
-        return new StringValue(null, fn () => $value);
+        return new ConstStringValue($value, $asAnyString);
     }
 
     public function boolean(string|Closure|null $accessor = null, string $default = null): BooleanValue
@@ -25,9 +25,9 @@ trait HasCasts
         return new BooleanValue($this->source, $accessor, $default);
     }
 
-    public function constBoolean(bool|null $value): BooleanValue
+    public function constBoolean(bool $value, bool $asAnyBool = false): ConstBooleanValue
     {
-        return new BooleanValue(null, fn () => $value);
+        return new ConstBooleanValue($value, $asAnyBool);
     }
 
     public function number(string|Closure|null $accessor = null, int|float|null $default = null): NumberValue
@@ -35,9 +35,9 @@ trait HasCasts
         return new NumberValue($this->source, $accessor, $default);
     }
 
-    public function constNumber(int|float|null $value): NumberValue
+    public function constNumber(int|float $value, bool $asAnyNumber = false): ConstNumberValue
     {
-        return new NumberValue(null, fn () => $value);
+        return new ConstNumberValue($value, $asAnyNumber);
     }
 
     public function date(string|Closure|null $accessor = null, string|Closure|null $format = null): DateValue
@@ -45,7 +45,7 @@ trait HasCasts
         return new DateValue($this->source, $accessor, $format);
     }
 
-    public function constDate(CarbonInterface|DateTime|null $value, string|Closure|null $format = null): DateValue
+    public function constDate(CarbonInterface|DateTime $value, string|Closure|null $format = null): DateValue
     {
         return new DateValue(null, fn () => $value, $format);
     }

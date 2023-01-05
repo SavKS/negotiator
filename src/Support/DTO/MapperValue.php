@@ -13,7 +13,7 @@ use Savks\Negotiator\Support\Types\{
     Types
 };
 
-class MapperValue extends Value
+class MapperValue extends NullableValue
 {
     public function __construct(
         protected readonly mixed $source,

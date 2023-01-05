@@ -3,19 +3,16 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
 
-use Savks\Negotiator\Exceptions\{
-    UnexpectedSourceValue,
-    UnexpectedValue
-};
 use Savks\Negotiator\Support\Types\{
     ArrayType,
     Type,
     Types
 };
 
-class ArrayValue extends Value
+class ArrayValue extends NullableValue
 {
     public function __construct(
         protected readonly mixed $source,

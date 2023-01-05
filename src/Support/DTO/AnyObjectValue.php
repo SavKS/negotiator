@@ -11,7 +11,7 @@ use Savks\Negotiator\Support\Types\{
     Types
 };
 
-class AnyObjectValue extends Value
+class AnyObjectValue extends NullableValue
 {
     public function __construct(
         protected readonly mixed $source,

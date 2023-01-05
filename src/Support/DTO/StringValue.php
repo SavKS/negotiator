@@ -6,7 +6,7 @@ use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Types\StringType;
 
-class StringValue extends Value
+class StringValue extends NullableValue
 {
     public function __construct(
         protected readonly mixed $source,

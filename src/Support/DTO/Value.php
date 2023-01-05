@@ -3,27 +3,15 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Illuminate\Support\Arr;
-use ReflectionClass;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
 
 use Savks\Negotiator\Support\Types\{
-    NullType,
     Type,
-    Types,
-    UndefinedType
+    Types
 };
 
 abstract class Value
 {
-    public bool $nullable = false;
-
-    public function nullable(): static
-    {
-        $this->nullable = true;
-
-        return $this;
-    }
-
     abstract protected function finalize(): mixed;
 
     abstract protected function types(): Type|Types;
@@ -32,7 +20,7 @@ abstract class Value
     {
         $value = $this->finalize();
 
-        if ($value === null && ! $this->nullable) {
+        if ($value === null) {
             throw new UnexpectedNull('NOT NULL', $value);
         }
 
@@ -41,19 +29,10 @@ abstract class Value
 
     public function compileTypes(): Types
     {
-        $types = $this->types();
-
-        if ($this->nullable) {
-            $types = [
-                ...Arr::wrap($types),
-
-                new NullType(),
-                new UndefinedType(),
-            ];
-        }
-
         return new Types(
-            Arr::wrap($types)
+            Arr::wrap(
+                $this->types()
+            )
         );
     }
 }

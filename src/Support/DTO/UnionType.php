@@ -12,13 +12,13 @@ use Savks\Negotiator\Support\Types\{
     Types
 };
 
-class UnionType extends Value
+class UnionType extends NullableValue
 {
     /**
-     * @var array{
+     * @var list<array{
      *     'condition': bool|Closure(mixed): bool,
      *     'callback': Closure(Factory): Value|null
-     * }
+     * }>
      */
     protected array $variants = [];
 

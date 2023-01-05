@@ -10,7 +10,7 @@ use Savks\Negotiator\Support\Types\{
     Type
 };
 
-class NumberValue extends Value
+class NumberValue extends NullableValue
 {
     public function __construct(
         protected readonly mixed $source,

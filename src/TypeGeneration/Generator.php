@@ -4,12 +4,14 @@ namespace Savks\Negotiator\TypeGeneration;
 
 use RuntimeException;
 
-use Savks\Negotiator\Support\Types\{
-    AliasType,
+use Savks\Negotiator\Support\Types\{AliasType,
     AnyType,
     ArrayType,
     BooleanType,
+    ConstBooleanType,
+    ConstNumberType,
     ConstRecordType,
+    ConstStringType,
     NullType,
     NumberType,
     RecordType,
@@ -46,8 +48,11 @@ class Generator
             $type instanceof ConstRecordType => $this->processConstRecord($type),
             $type instanceof AnyType => 'any',
             $type instanceof BooleanType => 'boolean',
+            $type instanceof ConstBooleanType => $type->value ? 'true' : 'false',
             $type instanceof StringType => 'string',
+            $type instanceof ConstStringType => "'{$type->value}'",
             $type instanceof NumberType => 'number',
+            $type instanceof ConstNumberType => $type->value,
             $type instanceof NullType => 'null',
             $type instanceof VoidType => 'void',
             $type instanceof UndefinedType => 'undefined',

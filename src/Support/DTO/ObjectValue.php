@@ -13,7 +13,7 @@ use Savks\Negotiator\Support\Types\{
     Types
 };
 
-class ObjectValue extends Value
+class ObjectValue extends NullableValue
 {
     /**
      * @var array<string, Value>|null

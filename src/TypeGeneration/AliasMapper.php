@@ -2,9 +2,13 @@
 
 namespace Savks\Negotiator\TypeGeneration;
 
-use Savks\Negotiator\Support\DTO\Value;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\Support\Types\AliasType;
+
+use Savks\Negotiator\Support\DTO\{
+            NullableValue,
+            Value
+};
 
 class AliasMapper extends Mapper
 {
@@ -14,7 +18,7 @@ class AliasMapper extends Mapper
 
     public function map(): Value|array|null
     {
-        return new class ($this->alias) extends Value {
+        return new class ($this->alias) extends NullableValue {
             public function __construct(public readonly string $alias)
             {
             }
@@ -28,7 +32,6 @@ class AliasMapper extends Mapper
             {
                 return new AliasType($this->alias);
             }
-
         };
     }
 }

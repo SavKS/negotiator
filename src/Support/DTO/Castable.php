@@ -5,11 +5,19 @@ namespace Savks\Negotiator\Support\DTO;
 use Carbon\CarbonInterface;
 use Closure;
 use DateTime;
+use Illuminate\Support\Traits\Macroable;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
+use Savks\Negotiator\Support\DTO\Utils\Spread;
 use Savks\Negotiator\Support\Mapping\Mapper;
 
-trait HasCasts
+abstract class Castable
 {
+    use Macroable;
+
+    public function __construct(protected readonly mixed $source)
+    {
+    }
+
     public function string(string|Closure|null $accessor = null, string $default = null): StringValue
     {
         return new StringValue($this->source, $accessor, $default);
@@ -89,5 +97,10 @@ trait HasCasts
     public function any(string|Closure|null $accessor = null, mixed $default = null): AnyValue
     {
         return new AnyValue($this->source, $accessor, $default);
+    }
+
+    public function spread(Closure $callback, string|Closure|null $accessor = null): Spread
+    {
+        return new Spread($this->source, $callback, $accessor);
     }
 }

@@ -2,13 +2,8 @@
 
 namespace Savks\Negotiator\Support\DTO\ArrayValue;
 
-use Savks\Negotiator\Support\DTO\HasCasts;
+use Savks\Negotiator\Support\DTO\Castable;
 
-class Item
+class Item extends Castable
 {
-    use HasCasts;
-
-    public function __construct(protected readonly mixed $source)
-    {
-    }
 }

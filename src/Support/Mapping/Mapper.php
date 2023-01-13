@@ -17,7 +17,7 @@ use Savks\Negotiator\Exceptions\{
  */
 abstract class Mapper implements JsonSerializable, Responsable
 {
-    abstract public function map(): Value|array|null;
+    abstract public function map(): Value|Mapper|array|null;
 
     public function finalize(): mixed
     {

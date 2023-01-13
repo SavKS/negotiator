@@ -9,7 +9,7 @@ use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\DTO\{
     ObjectValue\MissingValue,
-    HasCasts,
+    Castable,
     Value
 };
 use Savks\Negotiator\Support\Types\{
@@ -17,14 +17,8 @@ use Savks\Negotiator\Support\Types\{
     Types
 };
 
-class Factory
+class Factory extends Castable
 {
-    use HasCasts;
-
-    public function __construct(protected readonly mixed $source)
-    {
-    }
-
     public function when(
         bool|Closure $condition,
         Closure|Value $concrete,

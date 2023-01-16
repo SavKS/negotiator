@@ -46,7 +46,7 @@ class Faker
         );
     }
 
-    protected function mockParameter(ReflectionParameter $parameter): mixed
+    public function mockParameter(ReflectionParameter $parameter): mixed
     {
         $type = $parameter->getType();
 

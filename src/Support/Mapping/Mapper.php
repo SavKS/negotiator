@@ -5,11 +5,14 @@ namespace Savks\Negotiator\Support\Mapping;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use JsonSerializable;
-use Savks\Negotiator\Support\DTO\Value;
 
 use Savks\Negotiator\Exceptions\{
     MappingFail,
     UnexpectedValue
+};
+use Savks\Negotiator\Support\DTO\{
+    Utils\Intersection,
+    Value
 };
 
 /**
@@ -17,7 +20,7 @@ use Savks\Negotiator\Exceptions\{
  */
 abstract class Mapper implements JsonSerializable, Responsable
 {
-    abstract public function map(): Value|Mapper|array|null;
+    abstract public function map(): Value|Mapper|Intersection|array|null;
 
     public function finalize(): mixed
     {

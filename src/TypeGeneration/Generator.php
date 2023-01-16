@@ -4,7 +4,8 @@ namespace Savks\Negotiator\TypeGeneration;
 
 use RuntimeException;
 
-use Savks\Negotiator\Support\Types\{AliasType,
+use Savks\Negotiator\Support\Types\{
+    AliasType,
     AnyType,
     ArrayType,
     BooleanType,
@@ -38,7 +39,7 @@ class Generator
     {
         return match (true) {
             $type instanceof Types => \implode(
-                ' | ',
+                $type->asIntersection ? ' & ' : ' | ',
                 \array_map(
                     fn (Type|Types $type) => $this->processType($type),
                     $type->types

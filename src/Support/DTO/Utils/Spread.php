@@ -8,11 +8,14 @@ use Savks\Negotiator\Support\Types\ConstRecordType;
 
 use Savks\Negotiator\Support\DTO\{
     ObjectValue\MissingValue,
-    Value
+    Value,
+    WorkWithAccessor
 };
 
 class Spread
 {
+    use WorkWithAccessor;
+
     /**
      * @param Closure(Factory): array $callback
      */
@@ -25,13 +28,7 @@ class Spread
 
     public function applyTo(array &$data): void
     {
-        if ($this->accessor === null) {
-            $value = $this->source;
-        } elseif (\is_string($this->accessor)) {
-            $value = \data_get($this->source, $this->accessor);
-        } else {
-            $value = ($this->accessor)($this->source);
-        }
+        $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
 
         $factory = new Factory($value);
 

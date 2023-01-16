@@ -48,16 +48,6 @@ abstract class Castable
         return new ConstNumberValue($value, $asAnyNumber);
     }
 
-    public function date(string|Closure|null $accessor = null, string|Closure|null $format = null): DateValue
-    {
-        return new DateValue($this->source, $accessor, $format);
-    }
-
-    public function constDate(CarbonInterface|DateTime $value, string|Closure|null $format = null): DateValue
-    {
-        return new DateValue(null, fn () => $value, $format);
-    }
-
     public function anyObject(string|Closure|null $accessor = null, string $default = null): AnyObjectValue
     {
         return new AnyObjectValue($this->source, $accessor, $default);

@@ -23,13 +23,7 @@ class ArrayValue extends NullableValue
 
     protected function finalize(): mixed
     {
-        if ($this->accessor === null) {
-            $value = $this->source;
-        } elseif (\is_string($this->accessor)) {
-            $value = \data_get($this->source, $this->accessor);
-        } else {
-            $value = ($this->accessor)($this->source);
-        }
+        $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
 
         if ($value === null) {
             return null;

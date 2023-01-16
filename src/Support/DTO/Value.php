@@ -12,6 +12,8 @@ use Savks\Negotiator\Support\Types\{
 
 abstract class Value
 {
+    use WorkWithAccessor;
+
     abstract protected function finalize(): mixed;
 
     abstract protected function types(): Type|Types;

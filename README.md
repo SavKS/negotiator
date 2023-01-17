@@ -34,7 +34,7 @@ class UserMapper extends Mapper
         return new ObjectValue($this->user, fn (Factory $factory) => [
             'id' => $factory->string('id'),
             'firstName' => $factory->string('first_name'),
-            'lastName' => $factory->string('first_name')->nullable(),
+            'lastName' => $factory->string('last_name')->nullable(),
         ]);
     }
 }
@@ -191,6 +191,8 @@ new ObjectValue($this->source, fn (Factory $factory) => [
 
 ```php
 <?php
+
+use App\Models\User;
 
 use Savks\Negotiator\Support\DTO\{
     Utils\Factory,

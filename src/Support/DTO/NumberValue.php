@@ -4,11 +4,7 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
-
-use Savks\Negotiator\Support\Types\{
-    NumberType,
-    Type
-};
+use Savks\Negotiator\Support\Types\NumberType;
 
 class NumberValue extends NullableValue
 {

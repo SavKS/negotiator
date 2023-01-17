@@ -3,14 +3,9 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
 
-use Savks\Negotiator\Exceptions\{
-        DTOException,
-        UnexpectedNull,
-        UnexpectedSourceValue,
-        UnexpectedValue
-};
 use Savks\Negotiator\Support\Types\{
         RecordType,
         Type,

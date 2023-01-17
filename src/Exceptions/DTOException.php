@@ -6,5 +6,5 @@ use Exception;
 
 class DTOException extends Exception
 {
-    
+
 }

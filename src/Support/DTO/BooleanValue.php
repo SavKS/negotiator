@@ -4,12 +4,7 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
-
-use Savks\Negotiator\Support\Types\{
-    BooleanType,
-    Type,
-    Types
-};
+use Savks\Negotiator\Support\Types\BooleanType;
 
 class BooleanValue extends NullableValue
 {

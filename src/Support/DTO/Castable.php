@@ -2,13 +2,15 @@
 
 namespace Savks\Negotiator\Support\DTO;
 
-use Carbon\CarbonInterface;
 use Closure;
-use DateTime;
 use Illuminate\Support\Traits\Macroable;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
-use Savks\Negotiator\Support\DTO\Utils\Spread;
 use Savks\Negotiator\Support\Mapping\Mapper;
+
+use Savks\Negotiator\Support\DTO\Utils\{
+    Intersection,
+    Spread
+};
 
 abstract class Castable
 {
@@ -92,5 +94,10 @@ abstract class Castable
     public function spread(Closure $callback, string|Closure|null $accessor = null): Spread
     {
         return new Spread($this->source, $callback, $accessor);
+    }
+
+    public function intersection(ObjectValue|Mapper ...$objects): Intersection
+    {
+        return new Intersection(...$objects);
     }
 }

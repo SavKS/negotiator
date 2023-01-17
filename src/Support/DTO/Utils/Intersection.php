@@ -2,11 +2,10 @@
 
 namespace Savks\Negotiator\Support\DTO\Utils;
 
-use Closure;
-use ReflectionFunction;
 use Savks\Negotiator\Contexts\ObjectIgnoredKeysContext;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Mapper;
+use Savks\Negotiator\TypeGeneration\MapperAliases;
 use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\DTO\{
@@ -15,22 +14,13 @@ use Savks\Negotiator\Support\DTO\{
 };
 use Savks\Negotiator\Support\Types\{
     AliasType,
-    AnyType,
-    Type,
     Types
-};
-use Savks\Negotiator\TypeGeneration\{
-    Faker,
-    MapperAliases
 };
 
 class Intersection extends Value
 {
     public readonly array $objects;
 
-    /**
-     * @param list<ObjectValue|Mapper|mixed> $objects
-     */
     public function __construct(ObjectValue|Mapper ...$objects)
     {
         $this->objects = $objects;

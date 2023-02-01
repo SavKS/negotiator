@@ -2,6 +2,7 @@
 
 namespace Savks\Negotiator\Support\DTO;
 
+use BackedEnum;
 use Closure;
 use Illuminate\Support\Traits\Macroable;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
@@ -99,5 +100,13 @@ abstract class Castable
     public function intersection(ObjectValue|Mapper ...$objects): Intersection
     {
         return new Intersection(...$objects);
+    }
+
+    /**
+     * @param class-string<BackedEnum> $enum
+     */
+    public function enum(string $enum, string|Closure|null $accessor = null): EnumValue
+    {
+        return new EnumValue($this->source, $enum, $accessor);
     }
 }

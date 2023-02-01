@@ -2,8 +2,10 @@
 
 namespace Savks\Negotiator\Support\TypeGeneration;
 
+use Closure;
 use Illuminate\Support\Str;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\Negotiator\Support\Mapping\Mapper;
 
 use Savks\Negotiator\TypeGeneration\{
     Faker,
@@ -17,7 +19,10 @@ class Generator
      */
     protected array $targets = [];
 
-    public function __construct()
+    /**
+     * @param (Closure(class-string<Mapper>): string)|null $refsResolver
+     */
+    public function __construct(protected readonly ?Closure $refsResolver = null)
     {
     }
 
@@ -30,7 +35,7 @@ class Generator
 
     public function saveTo(string $destPath): bool
     {
-        $schema = (new TypeGenerationContext())->wrap(function () {
+        $schema = (new TypeGenerationContext($this->refsResolver))->wrap(function () {
             $result = [];
 
             $faker = new Faker();

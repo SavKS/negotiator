@@ -4,10 +4,13 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 use ReflectionFunction;
+use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\TypeGeneration\Faker;
+use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\Types\{
+    AliasType,
     AnyType,
     Type,
     Types
@@ -40,9 +43,15 @@ class MapperValue extends NullableValue
     protected function types(): Type|Types
     {
         if ($this->mapper instanceof Closure) {
-            $ref = new ReflectionFunction($this->mapper);
+            $reflection = new ReflectionFunction($this->mapper);
 
-            $mapperFQN = $ref->getReturnType()?->getName();
+            $mapperFQN = $reflection->getReturnType()?->getName();
+
+            if ($mapperFQN === 'static' || $mapperFQN === 'self') {
+                $mapperFQN = \get_class(
+                    $reflection->getClosureThis()
+                );
+            }
 
             if (! \is_subclass_of($mapperFQN, Mapper::class)) {
                 return new AnyType();
@@ -51,8 +60,12 @@ class MapperValue extends NullableValue
             $mapperFQN = $this->mapper::class;
         }
 
-        $mapper = (new Faker())->makeMapper($mapperFQN);
+        $mapperRef = Context::use(TypeGenerationContext::class)->resolveMapperRef($mapperFQN);
 
-        return $mapper->map()->compileTypes();
+        if (! $mapperRef) {
+            return new AnyType();
+        }
+
+        return new AliasType($mapperRef);
     }
 }

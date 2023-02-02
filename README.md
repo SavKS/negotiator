@@ -51,6 +51,7 @@ class UserMapper extends Mapper
 * `string`, `boolean`, `number` — примітиви.
 * `constString`, `constBoolean`, `constNumber` — статичні типи. Відрізняються тим, що значення встановлюється явно. Також, можуть виступати як літерали (статичних значень).
 * `anyObject` — дозволяє описати об'єкти опускаючи опис його полів (в TypeScript — це `Record<string, any>`).
+* `enum` — значення перерахування.
 * `any` — будь-яке значення (аналогічне такому в TypeScript).
 
 ### Комплексні типи
@@ -237,13 +238,27 @@ new Intersection(
 <?php
 
 use App\Http\Mapping\UserMapper;
+use Savks\Negotiator\Enums\RefTypes;
+use Illuminate\Support\Str;
 
 use Savks\Negotiator\Support\TypeGeneration\{
     Generator,
     Target
 };
 
-$generator = new Generator();
+$generator = new Generator(
+    /* Функція для визначення референсів.  */
+    fn (RefTypes $type, string $target) => match ($type) {
+        RefTypes::ENUM => sprintf(
+            'import(\'@enums\').%s',
+            class_basename($target::class)
+        ),
+        RefTypes::MAPPER => sprintf(
+            'import(\'@dto\').%s',
+            class_basename($target::class)
+        ),
+    }
+);
 
 $generator->addTarget(
     new Target(UserMapper::class, '@dto')

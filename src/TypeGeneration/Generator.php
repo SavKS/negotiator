@@ -38,11 +38,14 @@ class Generator
     protected function processType(Type|Types $type): string
     {
         return match (true) {
-            $type instanceof Types => \implode(
-                $type->asIntersection ? ' & ' : ' | ',
-                \array_map(
-                    fn (Type|Types $type) => $this->processType($type),
-                    $type->types
+            $type instanceof Types => \sprintf(
+                \count($type->types) > 1 ? '(%s)' : '%s',
+                \implode(
+                    $type->asIntersection ? ' & ' : ' | ',
+                    \array_map(
+                        fn (Type|Types $type) => $this->processType($type),
+                        $type->types
+                    )
                 )
             ),
 

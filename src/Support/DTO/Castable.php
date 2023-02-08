@@ -31,7 +31,7 @@ abstract class Castable
         return new ConstStringValue($value, $asAnyString);
     }
 
-    public function boolean(string|Closure|null $accessor = null, string $default = null): BooleanValue
+    public function boolean(string|Closure|null $accessor = null, bool $default = null): BooleanValue
     {
         return new BooleanValue($this->source, $accessor, $default);
     }

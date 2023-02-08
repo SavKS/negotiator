@@ -11,7 +11,7 @@ class BooleanValue extends NullableValue
     public function __construct(
         protected readonly mixed $source,
         protected readonly string|Closure|null $accessor = null,
-        protected readonly string|null $default = null
+        protected readonly bool|null $default = null
     ) {
     }
 

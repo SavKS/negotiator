@@ -2,12 +2,15 @@
 
 namespace Savks\Negotiator\Support\DTO\Utils;
 
-use Savks\Negotiator\Contexts\ObjectIgnoredKeysContext;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\TypeGeneration\MapperAliases;
 use Savks\PhpContexts\Context;
 
+use Savks\Negotiator\Contexts\{
+    ObjectIgnoredKeysContext,
+    TypeGenerationContext
+};
 use Savks\Negotiator\Support\DTO\{
     AnyObjectValue,
     KeyedArrayValue,
@@ -81,7 +84,8 @@ class Intersection extends Value
 
         foreach ($this->objects as $object) {
             if ($object instanceof Mapper) {
-                $alias = \app(MapperAliases::class)->resolve($object::class);
+                $alias = \app(MapperAliases::class)->resolve($object::class)
+                    ?? Context::use(TypeGenerationContext::class)->resolveMapperRef($object::class);
 
                 $types[] = $alias ?
                     [new AliasType($alias)] :

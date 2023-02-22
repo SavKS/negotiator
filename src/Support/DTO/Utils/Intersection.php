@@ -14,6 +14,7 @@ use Savks\Negotiator\Contexts\{
 use Savks\Negotiator\Support\DTO\{
     AnyObjectValue,
     KeyedArrayValue,
+    MapperValue,
     ObjectValue,
     Value
 };
@@ -42,7 +43,12 @@ class Intersection extends Value
             $index = 0;
 
             foreach (\array_reverse($this->objects) as $object) {
-                $normalizedObject = $object instanceof Mapper ? $object->map() : $object;
+                $normalizedObject = match (true) {
+                    $object instanceof Mapper => $object->map(),
+                    $object instanceof MapperValue => $object->resolveMapper()->map(),
+
+                    default => $object
+                };
 
                 if ($normalizedObject instanceof ObjectValue
                     || $normalizedObject instanceof AnyObjectValue

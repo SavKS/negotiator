@@ -6,7 +6,6 @@ use Closure;
 use ReflectionFunction;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Support\Mapping\Mapper;
-use Savks\Negotiator\TypeGeneration\Faker;
 use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\Types\{
@@ -25,7 +24,7 @@ class MapperValue extends NullableValue
     ) {
     }
 
-    protected function finalize(): mixed
+    public function resolveMapper(): ?Mapper
     {
         $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
 
@@ -33,7 +32,16 @@ class MapperValue extends NullableValue
             return null;
         }
 
-        $mapper = $this->mapper instanceof Closure ? ($this->mapper)($value) : $this->mapper;
+        return $this->mapper instanceof Closure ? ($this->mapper)($value) : $this->mapper;
+    }
+
+    protected function finalize(): mixed
+    {
+        $mapper = $this->resolveMapper();
+
+        if ($mapper === null) {
+            return null;
+        }
 
         $mappedValue = $mapper->map();
 

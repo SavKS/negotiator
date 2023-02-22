@@ -97,7 +97,7 @@ abstract class Castable
         return new Spread($this->source, $callback, $accessor);
     }
 
-    public function intersection(ObjectValue|Mapper ...$objects): Intersection
+    public function intersection(Value|Mapper ...$objects): Intersection
     {
         return new Intersection(...$objects);
     }

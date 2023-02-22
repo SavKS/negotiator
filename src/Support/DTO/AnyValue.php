@@ -5,7 +5,7 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use Savks\Negotiator\Support\Types\AnyType;
 
-class AnyValue extends Value
+class AnyValue extends NullableValue
 {
     public bool $nullable = true;
 

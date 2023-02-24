@@ -2,12 +2,13 @@
 
 namespace Savks\Negotiator\Support\TypeGeneration;
 
+use Closure;
 use Savks\Negotiator\Support\Mapping\Mapper;
 
 class Target
 {
     /**
-     * @param array<string, class-string<Mapper>> $mappersMap
+     * @param array<string, class-string<Mapper>|(Closure():class-string<Mapper>|Mapper)> $mappersMap
      */
     public function __construct(
         public readonly array $mappersMap,

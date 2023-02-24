@@ -4,8 +4,10 @@ namespace Savks\Negotiator\Support\TypeGeneration;
 
 use Closure;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Support\Mapping\Mapper;
+use Throwable;
 
 use Savks\Negotiator\TypeGeneration\{
     Faker,
@@ -35,14 +37,38 @@ class Generator
 
     public function saveTo(string $destPath): bool
     {
-        $schema = (new TypeGenerationContext($this->refsResolver))->wrap(function () {
+        $schema = (new TypeGenerationContext($this->refsResolver))->wrap(function () use ($destPath) {
             $result = [];
 
             $faker = new Faker();
 
             foreach ($this->targets as $target) {
-                foreach ($target->mappersMap as $name => $mapperFQN) {
-                    $types = $faker->makeMapper($mapperFQN)->map()->compileTypes();
+                foreach ($target->mappersMap as $name => $mapper) {
+                    try {
+                        if ($mapper instanceof Closure) {
+                            $mapper = $mapper();
+                        }
+
+                        if ($mapper instanceof Mapper) {
+                            $types = $mapper->map()->compileTypes();
+                        } else {
+                            $types = $faker->makeMapper($mapper)->map()->compileTypes();
+                        }
+                    } catch (Throwable $e) {
+                        $safeDestPath = \ltrim(
+                            \str_replace(
+                                \base_path(),
+                                '',
+                                $destPath
+                            ),
+                            '/'
+                        );
+
+                        throw new RuntimeException(
+                            "Can't generate types file \"{$safeDestPath}\" for mapper \"{$name}\".",
+                            previous: $e
+                        );
+                    }
 
                     $content = (new TypeGenerator($types))->generate();
 

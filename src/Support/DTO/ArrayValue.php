@@ -14,6 +14,11 @@ use Savks\Negotiator\Support\Types\{
 
 class ArrayValue extends NullableValue
 {
+    /**
+     * @var (Closure(mixed): bool)|null
+     */
+    protected ?Closure $filter = null;
+
     public function __construct(
         protected readonly mixed $source,
         protected readonly string|Closure $iterator,
@@ -21,9 +26,23 @@ class ArrayValue extends NullableValue
     ) {
     }
 
+    /**
+     * @param Closure(mixed): bool $closure
+     */
+    public function filter(Closure $closure): static
+    {
+        $this->filter = $closure;
+
+        return $this;
+    }
+
     protected function finalize(): mixed
     {
         $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
+
+        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
+            $this->sourcesTrace[] = $this->source;
+        }
 
         if ($value === null) {
             return null;
@@ -37,7 +56,7 @@ class ArrayValue extends NullableValue
 
         foreach ($value as $index => $item) {
             $listItemValue = ($this->iterator)(
-                new Item($item)
+                new Item($item, $this->sourcesTrace)
             );
 
             if (! $listItemValue instanceof Value) {
@@ -45,7 +64,13 @@ class ArrayValue extends NullableValue
             }
 
             try {
-                $result[] = $listItemValue->compile();
+                $data = $listItemValue->compile();
+
+                if ($this->filter && ! ($this->filter)($data)) {
+                    continue;
+                }
+
+                $result[] = $data;
             } catch (UnexpectedValue $e) {
                 throw UnexpectedValue::wrap($e, $index);
             }

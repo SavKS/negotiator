@@ -17,13 +17,17 @@ abstract class Castable
 {
     use Macroable;
 
-    public function __construct(protected readonly mixed $source)
-    {
+    public function __construct(
+        protected readonly mixed $source,
+        protected readonly array $sourcesTrace = [],
+    ) {
     }
 
     public function string(string|Closure|null $accessor = null, string $default = null): StringValue
     {
-        return new StringValue($this->source, $accessor, $default);
+        return (new StringValue($this->source, $accessor, $default))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function constString(string $value, bool $asAnyString = false): ConstStringValue
@@ -61,7 +65,9 @@ abstract class Castable
      */
     public function array(string|Closure $iterator, string|Closure|null $accessor = null): ArrayValue
     {
-        return new ArrayValue($this->source, $iterator, $accessor);
+        return (new ArrayValue($this->source, $iterator, $accessor))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function keyedArray(
@@ -74,7 +80,9 @@ abstract class Castable
 
     public function object(Closure $callback, string|Closure|null $accessor = null): ObjectValue
     {
-        return new ObjectValue($this->source, $callback, $accessor);
+        return (new ObjectValue($this->source, $callback, $accessor))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function mapper(Mapper|Closure $mapper, string|Closure|null $accessor = null): MapperValue

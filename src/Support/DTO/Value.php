@@ -14,6 +14,8 @@ abstract class Value
 {
     use WorkWithAccessor;
 
+    protected array $sourcesTrace = [];
+
     abstract protected function finalize(): mixed;
 
     abstract protected function types(): Type|Types;
@@ -36,5 +38,12 @@ abstract class Value
                 $this->types()
             )
         );
+    }
+
+    public function setSourcesTrace(mixed $trace): static
+    {
+        $this->sourcesTrace = [...$this->sourcesTrace, ...$trace];
+
+        return $this;
     }
 }

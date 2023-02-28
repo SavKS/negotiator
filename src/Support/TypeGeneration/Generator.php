@@ -65,7 +65,7 @@ class Generator
                         );
 
                         throw new RuntimeException(
-                            "Can't generate types file \"{$safeDestPath}\" for mapper \"{$name}\".",
+                            "Can't generate types file \"{$safeDestPath}\" for mapper \"{$name}\". Message: {$e->getMessage()}.",
                             previous: $e
                         );
                     }

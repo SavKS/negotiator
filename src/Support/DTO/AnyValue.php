@@ -20,6 +20,10 @@ class AnyValue extends NullableValue
     {
         $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
 
+        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
+            $this->sourcesTrace[] = $this->source;
+        }
+
         $value ??= $this->default;
 
         if ($value === null) {

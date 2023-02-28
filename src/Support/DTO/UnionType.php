@@ -42,6 +42,10 @@ class UnionType extends NullableValue
     {
         $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
 
+        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
+            $this->sourcesTrace[] = $this->source;
+        }
+
         if ($value === null) {
             return null;
         }
@@ -52,7 +56,7 @@ class UnionType extends NullableValue
             }
 
             return $variant['callback'](
-                new Factory($value)
+                new Factory($value, $this->sourcesTrace)
             )->finalize();
         }
 

@@ -30,14 +30,22 @@ class ObjectValue extends NullableValue
 
     protected function finalize(): ?array
     {
-        $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
+        $value = $this->resolveValueFromAccessor(
+            $this->accessor,
+            $this->source,
+            $this->sourcesTrace
+        );
+
+        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
+            $this->sourcesTrace[] = $this->source;
+        }
 
         if ($value === null) {
             return null;
         }
 
         $mappedValue = ($this->callback)(
-            new Factory($value)
+            new Factory($value, $this->sourcesTrace)
         );
 
         if (! \is_array($mappedValue) || \array_is_list($mappedValue)) {

@@ -7,9 +7,9 @@ use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
 
 use Savks\Negotiator\Support\Types\{
-        RecordType,
-        Type,
-        Types
+    RecordType,
+    Type,
+    Types
 };
 
 class KeyedArrayValue extends NullableValue
@@ -26,6 +26,10 @@ class KeyedArrayValue extends NullableValue
     {
         $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
 
+        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
+            $this->sourcesTrace[] = $this->source;
+        }
+
         if ($value === null) {
             return null;
         }
@@ -38,7 +42,7 @@ class KeyedArrayValue extends NullableValue
 
         foreach ($value as $index => $item) {
             $listItemValue = ($this->iterator)(
-                new Item($item)
+                new Item($item, $this->sourcesTrace)
             );
 
             if (! $listItemValue instanceof Value) {
@@ -51,7 +55,7 @@ class KeyedArrayValue extends NullableValue
             if (\is_string($this->key)) {
                 $keyValue = \data_get($item, $this->key);
             } else {
-                $keyValue = ($this->key)($item);
+                $keyValue = ($this->key)($item, $index, ...$this->sourcesTrace);
             }
 
             if (! \is_string($keyValue)) {

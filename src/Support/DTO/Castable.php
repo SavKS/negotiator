@@ -37,7 +37,9 @@ abstract class Castable
 
     public function boolean(string|Closure|null $accessor = null, bool $default = null): BooleanValue
     {
-        return new BooleanValue($this->source, $accessor, $default);
+        return (new BooleanValue($this->source, $accessor, $default))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function constBoolean(bool $value, bool $asAnyBool = false): ConstBooleanValue
@@ -47,7 +49,9 @@ abstract class Castable
 
     public function number(string|Closure|null $accessor = null, int|float|null $default = null): NumberValue
     {
-        return new NumberValue($this->source, $accessor, $default);
+        return (new NumberValue($this->source, $accessor, $default))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function constNumber(int|float $value, bool $asAnyNumber = false): ConstNumberValue
@@ -57,7 +61,9 @@ abstract class Castable
 
     public function anyObject(string|Closure|null $accessor = null, string $default = null): AnyObjectValue
     {
-        return new AnyObjectValue($this->source, $accessor, $default);
+        return (new AnyObjectValue($this->source, $accessor, $default))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     /**
@@ -75,7 +81,9 @@ abstract class Castable
         string|Closure $iterator,
         string|Closure|null $accessor = null
     ): KeyedArrayValue {
-        return new KeyedArrayValue($this->source, $key, $iterator, $accessor);
+        return (new KeyedArrayValue($this->source, $key, $iterator, $accessor))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function object(Closure $callback, string|Closure|null $accessor = null): ObjectValue
@@ -87,22 +95,30 @@ abstract class Castable
 
     public function mapper(Mapper|Closure $mapper, string|Closure|null $accessor = null): MapperValue
     {
-        return new MapperValue($this->source, $mapper, $accessor);
+        return (new MapperValue($this->source, $mapper, $accessor))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function union(string|Closure|null $accessor = null): UnionType
     {
-        return new UnionType($this->source, $accessor);
+        return (new UnionType($this->source, $accessor))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function any(string|Closure|null $accessor = null, mixed $default = null): AnyValue
     {
-        return new AnyValue($this->source, $accessor, $default);
+        return (new AnyValue($this->source, $accessor, $default))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function spread(Closure $callback, string|Closure|null $accessor = null): Spread
     {
-        return new Spread($this->source, $callback, $accessor);
+        return (new Spread($this->source, $callback, $accessor))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     public function intersection(Value|Mapper ...$objects): Intersection
@@ -115,6 +131,8 @@ abstract class Castable
      */
     public function enum(string $enum, string|Closure|null $accessor = null): EnumValue
     {
-        return new EnumValue($this->source, $enum, $accessor);
+        return (new EnumValue($this->source, $enum, $accessor))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 }

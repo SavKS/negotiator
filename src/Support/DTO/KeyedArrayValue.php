@@ -24,7 +24,11 @@ class KeyedArrayValue extends NullableValue
 
     protected function finalize(): mixed
     {
-        $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
+        $value = $this->resolveValueFromAccessor(
+            $this->accessor,
+            $this->source,
+            $this->sourcesTrace
+        );
 
         if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
             $this->sourcesTrace[] = $this->source;

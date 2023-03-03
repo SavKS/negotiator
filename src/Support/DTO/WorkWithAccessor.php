@@ -9,7 +9,7 @@ trait WorkWithAccessor
     protected function resolveValueFromAccessor(
         string|Closure|null $accessor,
         mixed $source,
-        array $sourcesTrace = []
+        array $sourcesTrace
     ): mixed {
         return match (true) {
             $accessor === null => $source,

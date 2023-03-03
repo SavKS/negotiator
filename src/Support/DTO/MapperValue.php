@@ -26,7 +26,11 @@ class MapperValue extends NullableValue
 
     public function resolveMapper(): ?Mapper
     {
-        $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
+        $value = $this->resolveValueFromAccessor(
+            $this->accessor,
+            $this->source,
+            $this->sourcesTrace
+        );
 
         if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
             $this->sourcesTrace[] = $this->source;
@@ -36,7 +40,7 @@ class MapperValue extends NullableValue
             return null;
         }
 
-        return $this->mapper instanceof Closure ? ($this->mapper)($value) : $this->mapper;
+        return $this->mapper instanceof Closure ? ($this->mapper)($value, ...$this->sourcesTrace) : $this->mapper;
     }
 
     protected function finalize(): mixed

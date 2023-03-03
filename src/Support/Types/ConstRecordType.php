@@ -2,12 +2,10 @@
 
 namespace Savks\Negotiator\Support\Types;
 
-use Savks\Negotiator\Support\DTO\Value;
-
 class ConstRecordType extends Type
 {
     /**
-     * @var array<string, Value>
+     * @var array<string, Type|Types>
      */
     public array $props = [];
 

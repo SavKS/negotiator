@@ -16,6 +16,8 @@ class Spread
 {
     use WorkWithAccessor;
 
+    protected array $sourcesTrace = [];
+
     /**
      * @param Closure(Factory): array $callback
      */
@@ -26,11 +28,26 @@ class Spread
     ) {
     }
 
+    public function setSourcesTrace(mixed $trace): static
+    {
+        $this->sourcesTrace = [...$this->sourcesTrace, ...$trace];
+
+        return $this;
+    }
+
     public function applyTo(array &$data): void
     {
-        $value = $this->resolveValueFromAccessor($this->accessor, $this->source);
+        $value = $this->resolveValueFromAccessor(
+            $this->accessor,
+            $this->source,
+            $this->sourcesTrace
+        );
 
-        $factory = new Factory($value);
+        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
+            $this->sourcesTrace[] = $this->source;
+        }
+
+        $factory = new Factory($value, $this->sourcesTrace);
 
         $mappedValue = ($this->callback)($factory);
 

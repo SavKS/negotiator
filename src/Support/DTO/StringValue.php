@@ -11,7 +11,7 @@ class StringValue extends NullableValue
     public function __construct(
         protected readonly mixed $source,
         protected readonly string|Closure|null $accessor = null,
-        protected readonly string|null $default = null
+        protected readonly string|Closure|null $default = null
     ) {
     }
 
@@ -27,7 +27,9 @@ class StringValue extends NullableValue
             $this->sourcesTrace[] = $this->source;
         }
 
-        $value ??= $this->default;
+        $value ??= $this->default instanceof Closure ?
+            ($this->default)($this->source, ...$this->sourcesTrace) :
+            $this->default;
 
         if ($value === null) {
             return null;

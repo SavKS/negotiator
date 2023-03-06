@@ -3,7 +3,6 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
-use Savks\Negotiator\Contexts\ObjectIgnoredKeysContext;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\DTO\ObjectValue\MissingValue;
 use Savks\Negotiator\Support\Types\ConstRecordType;
@@ -52,9 +51,6 @@ class ObjectValue extends NullableValue
             throw new UnexpectedValue('array<string, ' . Value::class . '>', $mappedValue);
         }
 
-        /** @var ObjectIgnoredKeysContext|null $intersectContext */
-        $intersectContext = Context::tryUse(ObjectIgnoredKeysContext::class);
-
         $result = [];
 
         /** @var Value|Merge|mixed $fieldValue */
@@ -62,10 +58,6 @@ class ObjectValue extends NullableValue
             if ($fieldValue instanceof Spread) {
                 $fieldValue->applyTo($result);
             } else {
-                if ($intersectContext?->includes($field)) {
-                    continue;
-                }
-
                 if ($fieldValue instanceof MissingValue) {
                     continue;
                 }

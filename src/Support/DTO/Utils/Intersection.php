@@ -2,20 +2,13 @@
 
 namespace Savks\Negotiator\Support\DTO\Utils;
 
-use Savks\Negotiator\Exceptions\UnexpectedValue;
+use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\TypeGeneration\MapperAliases;
 use Savks\PhpContexts\Context;
 
-use Savks\Negotiator\Contexts\{
-    ObjectIgnoredKeysContext,
-    TypeGenerationContext
-};
 use Savks\Negotiator\Support\DTO\{
-    AnyObjectValue,
-    KeyedArrayValue,
     MapperValue,
-    ObjectValue,
     Value
 };
 use Savks\Negotiator\Support\Types\{
@@ -34,54 +27,30 @@ class Intersection extends Value
 
     protected function finalize(): array
     {
-        return (new ObjectIgnoredKeysContext())->wrap(function () {
-            /** @var ObjectIgnoredKeysContext $context */
-            $context = Context::use(ObjectIgnoredKeysContext::class);
+        $result = [];
 
-            $result = [];
+        $index = 0;
 
-            $index = 0;
+        foreach ($this->objects as $object) {
+            $normalizedObject = match (true) {
+                $object instanceof Mapper => $object->map(),
+                $object instanceof MapperValue => $object->resolveMapper()->map(),
 
-            foreach (\array_reverse($this->objects) as $object) {
-                $normalizedObject = match (true) {
-                    $object instanceof Mapper => $object->map(),
-                    $object instanceof MapperValue => $object->resolveMapper()->map(),
+                default => $object
+            };
 
-                    default => $object
-                };
+            $objectResult = $normalizedObject->compile();
 
-                if ($normalizedObject instanceof ObjectValue
-                    || $normalizedObject instanceof AnyObjectValue
-                    || $normalizedObject instanceof KeyedArrayValue
-                ) {
-                    $objectResult = $normalizedObject->compile();
-
-                    if ($objectResult !== null) {
-                        $context->push(
-                            \array_keys($objectResult)
-                        );
-
-                        $result[] = $objectResult;
-                    }
-                } else {
-                    throw new UnexpectedValue(
-                        [ObjectValue::class, AnyObjectValue::class, KeyedArrayValue::class],
-                        $object,
-                        \sprintf(
-                            'Intersection position %s',
-                            $index,
-                            $object instanceof Mapper ? ' - Mapper<' . $object::class . '>' : ''
-                        )
-                    );
-                }
-
-                $index++;
+            if ($objectResult !== null) {
+                $result[] = $objectResult;
             }
 
-            return \array_merge(
-                ...\array_reverse($result)
-            );
-        });
+            $index++;
+        }
+
+        return \array_merge(
+            ...$result
+        );
     }
 
     protected function types(): Types

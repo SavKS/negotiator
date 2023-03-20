@@ -163,6 +163,11 @@ new ObjectValue($this->source, fn (Factory $factory) => [
             fn (Factory $factory) => $factory->object(fn (Factory $factory) => [
                 'field' => $factory->string('field'),
             ])
+        )
+        ->default(
+            fn (Factory $factory) => $factory->object(fn (Factory $factory) => [
+                'field' => $factory->string('field'),
+            ])
         ),
 ]);
 ```

@@ -17,10 +17,15 @@ class UnionType extends NullableValue
     /**
      * @var list<array{
      *     'condition': bool|Closure(mixed): bool,
-     *     'callback': Closure(Factory): Value|null
+     *     'callback': Closure(Factory): Value
      * }>
      */
     protected array $variants = [];
+
+    /**
+     * @var Closure(Factory): Value
+     */
+    protected Closure|null $defaultVariant = null;
 
     public function __construct(
         protected readonly mixed $source,
@@ -28,12 +33,25 @@ class UnionType extends NullableValue
     ) {
     }
 
+    /**
+     * @param Closure(Factory): Value $callback
+     */
     public function variant(bool|Closure $condition, Closure $callback): static
     {
         $this->variants[] = [
             'condition' => $condition,
             'callback' => $callback,
         ];
+
+        return $this;
+    }
+
+    /**
+     * @param Closure(Factory): Value $callback
+     */
+    public function default(Closure $callback): static
+    {
+        $this->defaultVariant = $callback;
 
         return $this;
     }
@@ -55,11 +73,17 @@ class UnionType extends NullableValue
         }
 
         foreach ($this->variants as $variant) {
-            if (! $variant['condition']($value)) {
+            if (! $variant['condition']($value, ...$this->sourcesTrace)) {
                 continue;
             }
 
             return $variant['callback'](
+                new Factory($value, $this->sourcesTrace)
+            )->finalize();
+        }
+
+        if ($this->defaultVariant) {
+            return ($this->defaultVariant)(
                 new Factory($value, $this->sourcesTrace)
             )->finalize();
         }
@@ -80,6 +104,10 @@ class UnionType extends NullableValue
             );
 
             $types[] = $value->compileTypes()->types;
+        }
+
+        if ($this->defaultVariant) {
+            $types[] = ($this->defaultVariant)(new Factory(null))->compileTypes()->types;
         }
 
         $types = Arr::flatten($types);

@@ -5,6 +5,7 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use ReflectionFunction;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\PhpContexts\Context;
 
@@ -17,9 +18,12 @@ use Savks\Negotiator\Support\Types\{
 
 class MapperValue extends NullableValue
 {
+    /**
+     * @param class-string<Mapper>|Mapper|Closure $mapper
+     */
     public function __construct(
         protected readonly mixed $source,
-        protected readonly Mapper|Closure $mapper,
+        protected readonly string|Mapper|Closure $mapper,
         protected readonly string|Closure|null $accessor = null
     ) {
     }
@@ -40,7 +44,15 @@ class MapperValue extends NullableValue
             return null;
         }
 
-        return $this->mapper instanceof Closure ? ($this->mapper)($value, ...$this->sourcesTrace) : $this->mapper;
+        if (\is_string($this->mapper)) {
+            $mapper = new ($this->mapper)($value, ...$this->sourcesTrace);
+        } else {
+            $mapper = $this->mapper instanceof Closure ?
+                ($this->mapper)($value, ...$this->sourcesTrace) :
+                $this->mapper;
+        }
+
+        return $mapper;
     }
 
     protected function finalize(): mixed
@@ -68,6 +80,12 @@ class MapperValue extends NullableValue
                     $reflection->getClosureThis()
                 );
             }
+
+            if (! \is_subclass_of($mapperFQN, Mapper::class)) {
+                return new AnyType();
+            }
+        } elseif (\is_string($this->mapper)) {
+            $mapperFQN = $this->mapper;
 
             if (! \is_subclass_of($mapperFQN, Mapper::class)) {
                 return new AnyType();

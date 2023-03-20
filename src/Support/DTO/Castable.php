@@ -93,7 +93,10 @@ abstract class Castable
         );
     }
 
-    public function mapper(Mapper|Closure $mapper, string|Closure|null $accessor = null): MapperValue
+    /**
+     * @param class-string<Mapper>|Mapper|Closure $mapper
+     */
+    public function mapper(string|Mapper|Closure $mapper, string|Closure|null $accessor = null): MapperValue
     {
         return (new MapperValue($this->source, $mapper, $accessor))->setSourcesTrace(
             $this->sourcesTrace
@@ -134,5 +137,10 @@ abstract class Castable
         return (new EnumValue($this->source, $enum, $accessor))->setSourcesTrace(
             $this->sourcesTrace
         );
+    }
+
+    public function null(): NullValue
+    {
+        return new NullValue();
     }
 }

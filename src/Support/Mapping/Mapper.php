@@ -20,7 +20,7 @@ use Savks\Negotiator\Support\DTO\{
  */
 abstract class Mapper implements JsonSerializable, Responsable
 {
-    abstract public function map(): Value|Mapper|Intersection|array|null;
+    abstract public function map(): Value|Mapper|Intersection;
 
     public function finalize(): mixed
     {

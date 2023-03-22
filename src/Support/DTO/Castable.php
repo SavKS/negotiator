@@ -139,6 +139,11 @@ abstract class Castable
         );
     }
 
+    public function constEnum(BackedEnum $case): ConstEnumValue
+    {
+        return new ConstEnumValue($case);
+    }
+
     public function null(): NullValue
     {
         return new NullValue();

@@ -6,4 +6,11 @@ use Savks\Negotiator\Support\DTO\Castable;
 
 class Item extends Castable
 {
+    public function __construct(
+        public readonly int $index,
+        mixed $source,
+        array $sourcesTrace = [],
+    ) {
+        parent::__construct($source, $sourcesTrace);
+    }
 }

@@ -5,6 +5,7 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
+use Shelter\Utils\Support\Counters\Counters;
 
 use Savks\Negotiator\Support\Types\{
     ArrayType,
@@ -58,9 +59,11 @@ class ArrayValue extends NullableValue
 
         $result = [];
 
-        foreach ($value as $index => $item) {
+        $value = \is_array($value) ? $value : \iterator_to_array($value);
+
+        foreach (\array_values($value) as $index => $item) {
             $listItemValue = ($this->iterator)(
-                new Item($item, $this->sourcesTrace)
+                new Item($index, $item, $this->sourcesTrace)
             );
 
             if (! $listItemValue instanceof Value) {
@@ -87,7 +90,7 @@ class ArrayValue extends NullableValue
     {
         /** @var Value $value */
         $value = ($this->iterator)(
-            new Item(null)
+            new Item(0, null)
         );
 
         return new ArrayType(

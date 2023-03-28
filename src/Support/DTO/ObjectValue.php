@@ -2,15 +2,25 @@
 
 namespace Savks\Negotiator\Support\DTO;
 
+use BackedEnum;
 use Closure;
+use Illuminate\Support\Stringable;
+use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\DTO\ObjectValue\MissingValue;
-use Savks\Negotiator\Support\Types\ConstRecordType;
 use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\DTO\Utils\{
     Factory,
+    Record,
     Spread
+};
+use Savks\Negotiator\Support\Types\{
+    AliasType,
+    AnyType,
+    ConstRecordType,
+    RecordType,
+    Types
 };
 
 class ObjectValue extends NullableValue
@@ -20,6 +30,9 @@ class ObjectValue extends NullableValue
      */
     protected ?array $value;
 
+    /**
+     * @param Closure(Factory): (array|Record) $callback
+     */
     public function __construct(
         protected readonly mixed $source,
         protected readonly Closure $callback,
@@ -43,33 +56,60 @@ class ObjectValue extends NullableValue
             return null;
         }
 
+        /** @var array|Record|mixed $mappedValue */
         $mappedValue = ($this->callback)(
             new Factory($value, $this->sourcesTrace)
         );
 
-        if (! \is_array($mappedValue) || \array_is_list($mappedValue)) {
-            throw new UnexpectedValue('array<string, ' . Value::class . '>', $mappedValue);
+        if (! \is_array($mappedValue)
+            && (! $mappedValue instanceof Record)
+        ) {
+            throw new UnexpectedValue([
+                'array<string, ' . Value::class . '>',
+                Record::class,
+            ], $mappedValue);
         }
 
         $result = [];
 
-        /** @var Value|Merge|mixed $fieldValue */
-        foreach ($mappedValue as $field => $fieldValue) {
-            if ($fieldValue instanceof Spread) {
-                $fieldValue->applyTo($result);
-            } else {
+        if ($mappedValue instanceof Record) {
+            foreach ($mappedValue->entries() as [$field, $fieldValue]) {
                 if ($fieldValue instanceof MissingValue) {
                     continue;
                 }
 
-                if (! $fieldValue instanceof Value) {
-                    throw new UnexpectedValue(Value::class, $fieldValue);
-                }
-
                 try {
-                    $result[$field] = $fieldValue->compile();
+                    $fieldAsString = match (true) {
+                        $field instanceof BackedEnum => $field->value,
+                        $field instanceof Stringable => (string)$field,
+
+                        default => $field
+                    };
+
+                    $result[$fieldAsString] = $fieldValue->compile();
                 } catch (UnexpectedValue $e) {
-                    throw UnexpectedValue::wrap($e, $field);
+                    throw UnexpectedValue::wrap($e, $fieldAsString);
+                }
+            }
+        } else {
+            /** @var Value|Merge|mixed $fieldValue */
+            foreach ($mappedValue as $field => $fieldValue) {
+                if ($fieldValue instanceof Spread) {
+                    $fieldValue->applyTo($result);
+                } else {
+                    if ($fieldValue instanceof MissingValue) {
+                        continue;
+                    }
+
+                    if (! $fieldValue instanceof Value) {
+                        throw new UnexpectedValue(Value::class, $fieldValue);
+                    }
+
+                    try {
+                        $result[$field] = $fieldValue->compile();
+                    } catch (UnexpectedValue $e) {
+                        throw UnexpectedValue::wrap($e, $field);
+                    }
                 }
             }
         }
@@ -77,26 +117,76 @@ class ObjectValue extends NullableValue
         return $result;
     }
 
-    protected function types(): ConstRecordType
+    protected function types(): ConstRecordType|Types
     {
-        /** @var array<string, Value|Spread> $mappedValue */
+        /** @var array<string, Value|Spread>|Record|mixed $mappedValue */
         $mappedValue = ($this->callback)(
             new Factory(null)
         );
 
+        if (! \is_array($mappedValue)
+            && (! $mappedValue instanceof Record)
+        ) {
+            throw new UnexpectedValue([
+                'array<string, ' . Value::class . '>',
+                Record::class,
+            ], $mappedValue);
+        }
+
+        /** @var TypeGenerationContext $typeGenerationContext */
+        $typeGenerationContext = Context::use(TypeGenerationContext::class);
+
         $result = new ConstRecordType();
 
-        foreach ($mappedValue as $field => $value) {
-            if ($value instanceof Spread) {
-                $value->applyTypesTo($result);
-            } else {
+        $additionalRecords = [];
+
+        if ($mappedValue instanceof Record) {
+            foreach ($mappedValue->entries() as [$field, $value]) {
+                if ($field instanceof Stringable) {
+                    $fieldAsString = (string)$field;
+                } elseif ($field instanceof BackedEnum) {
+                    $mapperRef = $typeGenerationContext->resolveEnumRef($field::class);
+
+                    if ($mapperRef) {
+                        $additionalRecords[] = new RecordType(
+                            new AliasType("{$mapperRef}.{$field->name}"),
+                            $value->compileTypes()
+                        );
+
+                        continue;
+                    } else {
+                        $fieldAsString = $field->value;
+                    }
+                } else {
+                    $fieldAsString = $field;
+                }
+
                 $result->add(
-                    $field,
+                    $fieldAsString,
                     $value->compileTypes()
                 );
             }
+        } else {
+            foreach ($mappedValue as $field => $value) {
+                if ($value instanceof Spread) {
+                    $value->applyTypesTo($result);
+                } else {
+                    $result->add(
+                        $field,
+                        $value->compileTypes()
+                    );
+                }
+            }
         }
 
-        return $result;
+        if (! $additionalRecords) {
+            return $result;
+        }
+
+        if ($result->props) {
+            return new Types([$result, ...$additionalRecords], true);
+        }
+
+        return new Types($additionalRecords, true);
     }
 }

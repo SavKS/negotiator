@@ -90,6 +90,12 @@ class UnionType extends NullableValue
 
         $type = \is_object($value) ? $value::class : \gettype($value);
 
+        if ($type === 'array') {
+            $type = 'array<' . \json_encode($value, \JSON_UNESCAPED_UNICODE) . '>';
+        } elseif ($type === 'object') {
+            $type = 'object<' . $value::class . '>';
+        }
+
         throw new DTOException("Unhandled union type variant for \"{$type}\"");
     }
 

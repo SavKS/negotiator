@@ -60,7 +60,11 @@ class Generator
             $type instanceof NullType => 'null',
             $type instanceof VoidType => 'void',
             $type instanceof UndefinedType => 'undefined',
-            $type instanceof RecordType => 'Record<string, ' . $this->processType($type->valueType) . '>',
+            $type instanceof RecordType => sprintf(
+                'Record<%s, %s>',
+                $this->processType($type->keyType),
+                $this->processType($type->valueType)
+            ),
             $type instanceof ArrayType => 'Array<' . $this->processType($type->types) . '>',
             $type instanceof AliasType => $type->alias,
 

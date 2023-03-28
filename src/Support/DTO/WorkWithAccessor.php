@@ -16,7 +16,10 @@ trait WorkWithAccessor
 
             \is_string($accessor) => \data_get($source, $accessor),
 
-            default => $accessor($source, ...$sourcesTrace)
+            default => $accessor(
+                $source,
+                ...\array_reverse($sourcesTrace)
+            )
         };
     }
 }

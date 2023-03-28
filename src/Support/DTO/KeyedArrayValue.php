@@ -44,9 +44,11 @@ class KeyedArrayValue extends NullableValue
 
         $result = [];
 
-        foreach ($value as $index => $item) {
+        $index = 0;
+
+        foreach ($value as $key => $item) {
             $listItemValue = ($this->iterator)(
-                new Item($item, $this->sourcesTrace)
+                new Item($index++, $item, $this->sourcesTrace)
             );
 
             if (! $listItemValue instanceof Value) {
@@ -59,7 +61,7 @@ class KeyedArrayValue extends NullableValue
             if (\is_string($this->key)) {
                 $keyValue = \data_get($item, $this->key);
             } else {
-                $keyValue = ($this->key)($item, $index, ...$this->sourcesTrace);
+                $keyValue = ($this->key)($item, $key, ...$this->sourcesTrace);
             }
 
             if (! \is_string($keyValue)) {
@@ -69,7 +71,7 @@ class KeyedArrayValue extends NullableValue
             try {
                 $result[$keyValue] = $listItemValue->compile();
             } catch (UnexpectedValue $e) {
-                throw UnexpectedValue::wrap($e, "{$index}({$keyValue})");
+                throw UnexpectedValue::wrap($e, "{$key}({$keyValue})");
             }
         }
 
@@ -80,11 +82,11 @@ class KeyedArrayValue extends NullableValue
     {
         /** @var Value $listItem */
         $listItem = ($this->iterator)(
-            new Item(null)
+            new Item(0, null)
         );
 
         return new RecordType(
-            $listItem->compileTypes()
+            valueType: $listItem->compileTypes()
         );
     }
 }

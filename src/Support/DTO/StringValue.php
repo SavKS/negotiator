@@ -5,14 +5,24 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Types\StringType;
+use Stringable;
 
 class StringValue extends NullableValue
 {
+    protected bool $isStringableAllowed = false;
+
     public function __construct(
         protected readonly mixed $source,
         protected readonly string|Closure|null $accessor = null,
         protected readonly string|Closure|null $default = null
     ) {
+    }
+
+    public function allowStringable(): static
+    {
+        $this->isStringableAllowed = true;
+
+        return $this;
     }
 
     protected function finalize(): ?string
@@ -33,6 +43,10 @@ class StringValue extends NullableValue
 
         if ($value === null) {
             return null;
+        }
+
+        if (! \is_string($value) && $value instanceof Stringable) {
+            $value = $value->__toString();
         }
 
         if (! \is_string($value)) {

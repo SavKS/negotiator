@@ -29,8 +29,6 @@ class Intersection extends Value
     {
         $result = [];
 
-        $index = 0;
-
         foreach ($this->objects as $object) {
             $normalizedObject = match (true) {
                 $object instanceof Mapper => $object->map(),
@@ -44,13 +42,9 @@ class Intersection extends Value
             if ($objectResult !== null) {
                 $result[] = $objectResult;
             }
-
-            $index++;
         }
 
-        return \array_merge(
-            ...$result
-        );
+        return \array_merge(...$result);
     }
 
     protected function types(): Types

@@ -9,7 +9,9 @@ use Savks\Negotiator\Support\DTO\ArrayValue\Item;
 use Savks\Negotiator\Support\Mapping\Mapper;
 
 use Savks\Negotiator\Support\DTO\Utils\{
+    Factory,
     Intersection,
+    Record,
     Spread
 };
 
@@ -47,7 +49,7 @@ abstract class Castable
         return new ConstBooleanValue($value, $asAnyBool);
     }
 
-    public function number(string|Closure|null $accessor = null, int|float|null $default = null): NumberValue
+    public function number(string|Closure|null $accessor = null, int|float|Closure|null $default = null): NumberValue
     {
         return (new NumberValue($this->source, $accessor, $default))->setSourcesTrace(
             $this->sourcesTrace
@@ -59,7 +61,7 @@ abstract class Castable
         return new ConstNumberValue($value, $asAnyNumber);
     }
 
-    public function anyObject(string|Closure|null $accessor = null, string $default = null): AnyObjectValue
+    public function anyObject(string|Closure|null $accessor = null, array|object|null $default = null): AnyObjectValue
     {
         return (new AnyObjectValue($this->source, $accessor, $default))->setSourcesTrace(
             $this->sourcesTrace
@@ -86,6 +88,9 @@ abstract class Castable
         );
     }
 
+    /**
+     * @param Closure(Factory): (array|Record) $callback
+     */
     public function object(Closure $callback, string|Closure|null $accessor = null): ObjectValue
     {
         return (new ObjectValue($this->source, $callback, $accessor))->setSourcesTrace(
@@ -137,6 +142,11 @@ abstract class Castable
         return (new EnumValue($this->source, $enum, $accessor))->setSourcesTrace(
             $this->sourcesTrace
         );
+    }
+
+    public function constEnum(BackedEnum $case): ConstEnumValue
+    {
+        return new ConstEnumValue($case);
     }
 
     public function null(): NullValue

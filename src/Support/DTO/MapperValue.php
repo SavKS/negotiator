@@ -5,7 +5,6 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use ReflectionFunction;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\PhpContexts\Context;
 
@@ -94,7 +93,10 @@ class MapperValue extends NullableValue
             $mapperFQN = $this->mapper::class;
         }
 
-        $mapperRef = Context::use(TypeGenerationContext::class)->resolveMapperRef($mapperFQN);
+        /** @var TypeGenerationContext $typeGenerationContext */
+        $typeGenerationContext = Context::use(TypeGenerationContext::class);
+
+        $mapperRef = $typeGenerationContext->resolveMapperRef($mapperFQN);
 
         if (! $mapperRef) {
             return new AnyType();

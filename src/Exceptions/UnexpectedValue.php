@@ -11,6 +11,8 @@ class UnexpectedValue extends DTOException
         public readonly mixed $value,
         public readonly string|array|null $path = null
     ) {
+        $valueType = \gettype($value);
+
         parent::__construct(
             sprintf(
                 'Invalid value expect "%s" in "%s", given "%s".',
@@ -22,7 +24,7 @@ class UnexpectedValue extends DTOException
                     '.',
                     Arr::wrap($path ?? 'ROOT')
                 ),
-                \gettype($value)
+                $valueType === 'object' ? 'object<' . $this->value::class . '>' : $valueType
             )
         );
     }

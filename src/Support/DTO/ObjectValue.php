@@ -17,7 +17,6 @@ use Savks\Negotiator\Support\DTO\Utils\{
 };
 use Savks\Negotiator\Support\Types\{
     AliasType,
-    AnyType,
     ConstRecordType,
     RecordType,
     Types

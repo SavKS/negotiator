@@ -5,7 +5,6 @@ namespace Savks\Negotiator\Support\DTO;
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\DTO\ArrayValue\Item;
-use Shelter\Utils\Support\Counters\Counters;
 
 use Savks\Negotiator\Support\Types\{
     ArrayType,

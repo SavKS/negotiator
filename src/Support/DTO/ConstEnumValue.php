@@ -3,9 +3,7 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use BackedEnum;
-use Closure;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\PhpContexts\Context;
 use StringBackedEnum;
 

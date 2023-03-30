@@ -2,10 +2,12 @@
 
 namespace Savks\Negotiator\Support\TypeGeneration;
 
+use BackedEnum;
 use Closure;
 use Illuminate\Support\Str;
 use RuntimeException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\Negotiator\Enums\RefTypes;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Throwable;
 
@@ -22,7 +24,7 @@ class Generator
     protected array $targets = [];
 
     /**
-     * @param (Closure(class-string<Mapper>): string)|null $refsResolver
+     * @param (Closure(RefTypes, class-string<Mapper|BackedEnum>): string)|null $refsResolver
      */
     public function __construct(protected readonly ?Closure $refsResolver = null)
     {

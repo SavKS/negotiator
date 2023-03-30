@@ -19,14 +19,6 @@ class RefsResolver
      *     pattern: string,
      *     resolver: Closure(array, class-string<BackedEnum>): (array|null),
      * }> $enumVariants
-     * @param array{
-     *     mappers?: array{
-     *         basePathSegments: string[],
-     *     },
-     *     enums?: array{
-     *         basePathSegments: string[],
-     *     },
-     * }|null $config
      */
     public function __construct(
         protected readonly array $mapperVariants,
@@ -78,13 +70,13 @@ class RefsResolver
         }
 
         return [
-            \implode('/', [
-                ...($this->config['enums']['basePathSegments'] ?? ['enums']),
-                ...\array_map(
+            \implode(
+                '/',
+                \array_map(
                     Str::kebab(...),
                     $namespaceSegments
-                ),
-            ]),
+                )
+            ),
             $enumName,
         ];
     }
@@ -112,15 +104,10 @@ class RefsResolver
 
         $namespace = \implode(
             '/',
-            $namespaceSegments ?
-                [
-                    ...($this->config['mappers']['basePathSegments'] ?? ['@dto']),
-                    ...\array_map(
-                        Str::kebab(...),
-                        $namespaceSegments
-                    ),
-                ] :
-                $this->config['mappers']['basePathSegments'] ?? ['@dto']
+            \array_map(
+                Str::kebab(...),
+                $namespaceSegments
+            )
         );
 
         return [$namespace, $mapperName];

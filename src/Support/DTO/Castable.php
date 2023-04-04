@@ -153,4 +153,12 @@ abstract class Castable
     {
         return new NullValue();
     }
+
+    /**
+     * @param list<ConstBooleanValue|ConstEnumValue|ConstNumberValue|ConstStringValue> $values
+     */
+    public function oneOfConst(array $values, string|Closure|null $accessor = null): OneOfConstValue
+    {
+        return new OneOfConstValue($this->source, $values, $accessor);
+    }
 }

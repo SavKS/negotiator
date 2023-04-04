@@ -7,12 +7,20 @@ use Savks\Negotiator\Support\Types\{
     ConstBooleanType
 };
 
-class ConstBooleanValue extends Value
+/**
+ * @extends ConstValue<bool>
+ */
+class ConstBooleanValue extends ConstValue
 {
     public function __construct(
         protected readonly bool $value,
         protected readonly bool $asAnyBool
     ) {
+    }
+
+    public function originalValue(): bool
+    {
+        return $this->value;
     }
 
     protected function finalize(): bool

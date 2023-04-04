@@ -7,12 +7,17 @@ use Savks\Negotiator\Support\Types\{
     NumberType
 };
 
-class ConstNumberValue extends Value
+class ConstNumberValue extends ConstValue
 {
     public function __construct(
         protected readonly int|float $value,
         protected readonly bool $asAnyNumber
     ) {
+    }
+
+    public function originalValue(): int|float
+    {
+        return $this->value;
     }
 
     protected function finalize(): int|float

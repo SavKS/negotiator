@@ -3,9 +3,10 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use BackedEnum;
+use ReflectionEnum;
+use ReflectionNamedType;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\PhpContexts\Context;
-use StringBackedEnum;
 
 use Savks\Negotiator\Support\Types\{
     AliasType,
@@ -13,10 +14,15 @@ use Savks\Negotiator\Support\Types\{
     StringType
 };
 
-class ConstEnumValue extends NullableValue
+class ConstEnumValue extends ConstValue
 {
-    public function __construct(protected BackedEnum $case)
+    public function __construct(protected readonly BackedEnum $case)
     {
+    }
+
+    public function originalValue(): BackedEnum
+    {
+        return $this->case;
     }
 
     protected function finalize(): string|int|null
@@ -26,14 +32,18 @@ class ConstEnumValue extends NullableValue
 
     protected function types(): AliasType|StringType|NumberType
     {
-        $enumRef = Context::use(TypeGenerationContext::class)->resolveEnumRef(
-            $this->case::class
-        );
+        /** @var TypeGenerationContext $typeGenerationContext */
+        $typeGenerationContext = Context::use(TypeGenerationContext::class);
+
+        $enumRef = $typeGenerationContext->resolveEnumRef($this->case::class);
 
         if ($enumRef) {
             return new AliasType("{$enumRef}.{$this->case->name}");
         }
 
-        return $this->case instanceof StringBackedEnum ? new StringType() : new NumberType();
+        /** @var ReflectionNamedType $type */
+        $type = (new ReflectionEnum($this->case))->getBackingType();
+
+        return $type->getName() === 'string' ? new StringType() : new NumberType();
     }
 }

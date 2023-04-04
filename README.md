@@ -230,10 +230,31 @@ use Savks\Negotiator\Support\DTO\{
 
 new Intersection(
     new UserMapper($this->user),
-    new ObjectValue( $this->user, fn (Factory $factory) => [
+    new ObjectValue($this->user, fn (Factory $factory) => [
         'otherField' => $factory->string('other_field')
     ]),
 );
+```
+
+* `oneOfConst` — дозволяє вказати, що значення може набувати одного з типів-констант. Приклад:
+
+```php
+<?php
+
+use App\Models\User;
+
+use Savks\Negotiator\Support\DTO\{
+    Utils\Factory,
+    ObjectValue
+};
+
+new ObjectValue($this->source, fn (Factory $factory) => [
+    'field' => $factory->oneOfConst([
+        $factory->constNumber(1),
+        $factory->constNumber(2),
+        $factory->constNumber(3),
+    ]),
+]);
 ```
 
 ## Генерація типів

@@ -7,12 +7,17 @@ use Savks\Negotiator\Support\Types\{
     StringType
 };
 
-class ConstStringValue extends Value
+class ConstStringValue extends ConstValue
 {
     public function __construct(
         protected readonly string $value,
         protected readonly bool $asAnyString
     ) {
+    }
+
+    public function originalValue(): string
+    {
+        return $this->value;
     }
 
     protected function finalize(): string

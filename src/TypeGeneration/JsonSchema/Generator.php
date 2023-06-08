@@ -35,13 +35,13 @@ class Generator
         return $this->processType($this->type);
     }
 
-    protected function processType(Type|Types $type): array|stdClass|null
+    protected function processType(Type|Types $type): ?array
     {
         return match (true) {
             $type instanceof Types => $this->processTypes($type),
 
             $type instanceof ConstRecordType => $this->processConstRecord($type),
-            $type instanceof AnyType => new stdClass,
+            $type instanceof AnyType => [ 'type' => 'any' ],
             $type instanceof BooleanType => [ 'type' => 'boolean' ],
             $type instanceof ConstBooleanType => [ 'type' => 'boolean', 'enum' => [ $type->value ] ],
             $type instanceof StringType => [ 'type' => 'string' ],
@@ -80,7 +80,7 @@ class Generator
                 $this->processType(...),
                 $type->types
             ),
-            fn (array|stdClass|null $schema) => $schema !== null
+            fn (?array $schema) => $schema !== null
         );
 
         if (

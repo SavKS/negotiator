@@ -6,7 +6,6 @@ use BackedEnum;
 use Closure;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
-use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\Types\{
     AliasType,
@@ -41,7 +40,7 @@ class EnumValue extends NullableValue
             return null;
         }
 
-        if (! is_object($value) && \get_class($value) !== $this->enum) {
+        if (! is_object($value) && get_class($value) !== $this->enum) {
             throw new UnexpectedValue("BackedEnum<{$this->enum}>", $value);
         }
 
@@ -50,9 +49,7 @@ class EnumValue extends NullableValue
 
     protected function types(): StringType|AliasType
     {
-        $enumRef = Context::use(TypeGenerationContext::class)->resolveEnumRef(
-            $this->enum
-        );
+        $enumRef = TypeGenerationContext::useSelf()->resolveEnumRef($this->enum);
 
         if ($enumRef) {
             return new AliasType($enumRef);

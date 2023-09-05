@@ -9,7 +9,7 @@ class MappingFail extends DTOException
     public function __construct(Mapper $mapper, UnexpectedValue $e = null)
     {
         parent::__construct(
-            \sprintf(
+            sprintf(
                 '[%s]%s',
                 $mapper::class,
                 $e ? " {$e->getMessage()}" : ''

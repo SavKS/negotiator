@@ -5,7 +5,6 @@ namespace Savks\Negotiator\Support\DTO\Utils;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\TypeGeneration\MapperAliases;
-use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\DTO\{
     MapperValue,
@@ -44,7 +43,7 @@ class Intersection extends Value
             }
         }
 
-        return \array_merge(...$result);
+        return array_merge(...$result);
     }
 
     protected function types(): Types
@@ -53,8 +52,11 @@ class Intersection extends Value
 
         foreach ($this->objects as $object) {
             if ($object instanceof Mapper) {
-                $alias = \app(MapperAliases::class)->resolve($object::class)
-                    ?? Context::use(TypeGenerationContext::class)->resolveMapperRef($object::class);
+                $alias = app(MapperAliases::class)->resolve($object::class);
+
+                if (! $alias) {
+                    $alias = TypeGenerationContext::useSelf()->resolveMapperRef($object::class);
+                }
 
                 $types[] = $alias ?
                     [new AliasType($alias)] :
@@ -65,7 +67,7 @@ class Intersection extends Value
         }
 
         return new Types(
-            \array_merge(...$types),
+            array_merge(...$types),
             true
         );
     }

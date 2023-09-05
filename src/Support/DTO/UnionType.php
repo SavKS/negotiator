@@ -23,7 +23,7 @@ class UnionType extends NullableValue
     protected array $variants = [];
 
     /**
-     * @var Closure(Factory): Value
+     * @var Closure(Factory):Value|null
      */
     protected Closure|null $defaultVariant = null;
 
@@ -88,10 +88,10 @@ class UnionType extends NullableValue
             )->finalize();
         }
 
-        $type = \is_object($value) ? $value::class : \gettype($value);
+        $type = is_object($value) ? $value::class : gettype($value);
 
         if ($type === 'array') {
-            $type = 'array<' . \json_encode($value, \JSON_UNESCAPED_UNICODE) . '>';
+            $type = 'array<' . json_encode($value, JSON_UNESCAPED_UNICODE) . '>';
         } elseif ($type === 'object') {
             $type = 'object<' . $value::class . '>';
         }
@@ -118,6 +118,6 @@ class UnionType extends NullableValue
 
         $types = Arr::flatten($types);
 
-        return \count($types) > 1 ? new Types($types) : \head($types);
+        return count($types) > 1 ? new Types($types) : head($types);
     }
 }

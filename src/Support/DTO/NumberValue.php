@@ -35,7 +35,7 @@ class NumberValue extends NullableValue
             return null;
         }
 
-        if (! \is_numeric($value)) {
+        if (! is_numeric($value)) {
             throw new UnexpectedValue('int', $value);
         }
 

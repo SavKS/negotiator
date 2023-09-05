@@ -12,7 +12,7 @@ class TypeGenerationContext extends Context
     /**
      * @param (Closure(RefTypes, class-string<Mapper>): ?string)|null $refsResolver
      */
-    public function __construct(protected readonly ?Closure $refsResolver = null)
+    public function __construct(public readonly ?Closure $refsResolver = null)
     {
     }
 

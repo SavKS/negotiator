@@ -60,7 +60,7 @@ class ObjectValue extends NullableValue
             new Factory($value, $this->sourcesTrace)
         );
 
-        if (! \is_array($mappedValue)
+        if (! is_array($mappedValue)
             && (! $mappedValue instanceof Record)
         ) {
             throw new UnexpectedValue([
@@ -91,7 +91,7 @@ class ObjectValue extends NullableValue
                 }
             }
         } else {
-            /** @var Value|Merge|mixed $fieldValue */
+            /** @var Value|mixed $fieldValue */
             foreach ($mappedValue as $field => $fieldValue) {
                 if ($fieldValue instanceof Spread) {
                     $fieldValue->applyTo($result);
@@ -123,7 +123,7 @@ class ObjectValue extends NullableValue
             new Factory(null)
         );
 
-        if (! \is_array($mappedValue)
+        if (! is_array($mappedValue)
             && (! $mappedValue instanceof Record)
         ) {
             throw new UnexpectedValue([

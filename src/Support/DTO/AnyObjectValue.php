@@ -6,6 +6,7 @@ use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 
 use Savks\Negotiator\Support\Types\{
+    AliasType,
     RecordType,
     Type,
     Types
@@ -13,6 +14,8 @@ use Savks\Negotiator\Support\Types\{
 
 class AnyObjectValue extends NullableValue
 {
+    use CanBeGeneric;
+
     public function __construct(
         protected readonly mixed $source,
         protected readonly string|Closure|null $accessor = null,
@@ -38,11 +41,11 @@ class AnyObjectValue extends NullableValue
             return null;
         }
 
-        if (! \is_object($value) && ! \is_array($value)) {
+        if (! is_object($value) && ! is_array($value)) {
             throw new UnexpectedValue(['object', 'array<string, mixed>'], $value);
         }
 
-        if (\is_array($value) && \array_is_list($value)) {
+        if (is_array($value) && array_is_list($value)) {
             throw new UnexpectedValue(['array<string, mixed>'], $value);
         }
 
@@ -51,6 +54,10 @@ class AnyObjectValue extends NullableValue
 
     protected function types(): Type|Types
     {
+        if ($this->assignedToGeneric) {
+            return new AliasType($this->assignedToGeneric);
+        }
+
         return new RecordType();
     }
 }

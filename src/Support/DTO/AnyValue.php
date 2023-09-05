@@ -3,10 +3,16 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
-use Savks\Negotiator\Support\Types\AnyType;
+
+use Savks\Negotiator\Support\Types\{
+    AliasType,
+    AnyType
+};
 
 class AnyValue extends NullableValue
 {
+    use CanBeGeneric;
+
     public bool $nullable = true;
 
     public function __construct(
@@ -37,8 +43,12 @@ class AnyValue extends NullableValue
         return $value;
     }
 
-    protected function types(): AnyType
+    protected function types(): AnyType|AliasType
     {
+        if ($this->assignedToGeneric) {
+            return new AliasType($this->assignedToGeneric);
+        }
+
         return new AnyType();
     }
 }

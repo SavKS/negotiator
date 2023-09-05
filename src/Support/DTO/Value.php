@@ -3,7 +3,9 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Illuminate\Support\Arr;
+use Savks\Negotiator\Enums\PerformanceTrackers;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
+use Savks\Negotiator\Performance\Performance;
 
 use Savks\Negotiator\Support\Types\{
     Type,

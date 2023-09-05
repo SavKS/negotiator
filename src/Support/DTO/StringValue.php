@@ -12,7 +12,7 @@ class StringValue extends NullableValue
     protected bool $isStringableAllowed = false;
 
     public function __construct(
-        protected readonly mixed $source,
+        protected mixed $source,
         protected readonly string|Closure|null $accessor = null,
         protected readonly string|Closure|null $default = null
     ) {
@@ -45,11 +45,11 @@ class StringValue extends NullableValue
             return null;
         }
 
-        if (! \is_string($value) && $value instanceof Stringable) {
+        if (! is_string($value) && $value instanceof Stringable) {
             $value = $value->__toString();
         }
 
-        if (! \is_string($value)) {
+        if (! is_string($value)) {
             throw new UnexpectedValue('string', $value);
         }
 

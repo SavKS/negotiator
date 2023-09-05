@@ -73,7 +73,7 @@ class OneOfConstValue extends NullableValue
                             $type instanceof StringType => 'string',
 
                             default => throw new RuntimeException(
-                                \sprintf('Unprocessed type "%s".', $type::class)
+                                sprintf('Unprocessed type "%s".', $type::class)
                             )
                         };
                     }
@@ -95,7 +95,7 @@ class OneOfConstValue extends NullableValue
         }
 
         return new Types(
-            \array_merge(...$types)
+            array_merge(...$types)
         );
     }
 }

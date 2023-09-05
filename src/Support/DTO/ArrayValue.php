@@ -52,15 +52,15 @@ class ArrayValue extends NullableValue
             return null;
         }
 
-        if (! \is_iterable($value)) {
+        if (! is_iterable($value)) {
             throw new UnexpectedValue('iterable', $value);
         }
 
         $result = [];
 
-        $value = \is_array($value) ? $value : \iterator_to_array($value);
+        $value = is_array($value) ? $value : iterator_to_array($value);
 
-        foreach (\array_values($value) as $index => $item) {
+        foreach (array_values($value) as $index => $item) {
             $listItemValue = ($this->iterator)(
                 new Item($index, $item, $this->sourcesTrace)
             );

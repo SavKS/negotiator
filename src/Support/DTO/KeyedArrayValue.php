@@ -38,7 +38,7 @@ class KeyedArrayValue extends NullableValue
             return null;
         }
 
-        if (! \is_iterable($value)) {
+        if (! is_iterable($value)) {
             throw new UnexpectedValue('iterable', $value);
         }
 
@@ -58,13 +58,13 @@ class KeyedArrayValue extends NullableValue
                 );
             }
 
-            if (\is_string($this->key)) {
-                $keyValue = \data_get($item, $this->key);
+            if (is_string($this->key)) {
+                $keyValue = data_get($item, $this->key);
             } else {
                 $keyValue = ($this->key)($item, $key, ...$this->sourcesTrace);
             }
 
-            if (! \is_string($keyValue)) {
+            if (! is_string($keyValue)) {
                 throw new UnexpectedValue('string', $keyValue);
             }
 

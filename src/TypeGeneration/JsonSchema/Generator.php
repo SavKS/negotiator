@@ -3,7 +3,6 @@
 namespace Savks\Negotiator\TypeGeneration\JsonSchema;
 
 use RuntimeException;
-use stdClass;
 
 use Savks\Negotiator\Support\Types\{
     AliasType,
@@ -41,14 +40,14 @@ class Generator
             $type instanceof Types => $this->processTypes($type),
 
             $type instanceof ConstRecordType => $this->processConstRecord($type),
-            $type instanceof AnyType => [ 'type' => 'any' ],
-            $type instanceof BooleanType => [ 'type' => 'boolean' ],
-            $type instanceof ConstBooleanType => [ 'type' => 'boolean', 'enum' => [ $type->value ] ],
-            $type instanceof StringType => [ 'type' => 'string' ],
-            $type instanceof ConstStringType => [ 'type' => 'string', 'enum' => [ $type->value ] ],
-            $type instanceof NumberType => [ 'type' => 'number' ],
-            $type instanceof ConstNumberType => [ 'type' => 'number', 'enum' => [ $type->value ] ],
-            $type instanceof NullType => [ 'type' => 'null' ],
+            $type instanceof AnyType => ['type' => 'any'],
+            $type instanceof BooleanType => ['type' => 'boolean'],
+            $type instanceof ConstBooleanType => ['type' => 'boolean', 'enum' => [$type->value]],
+            $type instanceof StringType => ['type' => 'string'],
+            $type instanceof ConstStringType => ['type' => 'string', 'enum' => [$type->value]],
+            $type instanceof NumberType => ['type' => 'number'],
+            $type instanceof ConstNumberType => ['type' => 'number', 'enum' => [$type->value]],
+            $type instanceof NullType => ['type' => 'null'],
             $type instanceof VoidType => null,
             $type instanceof UndefinedType => null,
             $type instanceof RecordType => [
@@ -71,12 +70,12 @@ class Generator
 
     protected function processTypes(Types $type): array
     {
-        if (\count($type->types) === 1) {
+        if (count($type->types) === 1) {
             return $this->processType($type->types[0]);
         }
 
-        $parts = \array_filter(
-            \array_map(
+        $parts = array_filter(
+            array_map(
                 $this->processType(...),
                 $type->types
             ),
@@ -84,7 +83,7 @@ class Generator
         );
 
         if (
-            \count($parts) === 2 && (
+            count($parts) === 2 && (
                 ($parts[0]['type'] ?? null) === 'null' ||
                 ($parts[1]['type'] ?? null) === 'null'
             )
@@ -96,7 +95,7 @@ class Generator
             return [
                 ...$part,
                 'type' => [
-                    ...(array) $part['type'],
+                    ...(array)$part['type'],
                     'null',
                 ],
             ];

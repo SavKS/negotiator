@@ -4,19 +4,26 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 use ReflectionFunction;
+use ReflectionNamedType;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
-use Savks\Negotiator\Support\Mapping\Mapper;
+use Savks\Negotiator\Exceptions\TypeGenerateException;
+use Savks\Negotiator\Support\Types\AliasType;
 use Savks\PhpContexts\Context;
 
-use Savks\Negotiator\Support\Types\{
-    AliasType,
-    AnyType,
-    Type,
-    Types
+use Savks\Negotiator\Support\Mapping\{
+    Generic,
+    Mapper
 };
 
 class MapperValue extends NullableValue
 {
+    use CanBeGeneric;
+
+    /**
+     * @var Generic[]|null
+     */
+    protected ?array $generics = null;
+
     /**
      * @param class-string<Mapper>|Mapper|Closure $mapper
      */
@@ -25,6 +32,13 @@ class MapperValue extends NullableValue
         protected readonly string|Mapper|Closure $mapper,
         protected readonly string|Closure|null $accessor = null
     ) {
+    }
+
+    public function withGenerics(Generic ...$generic): static
+    {
+        $this->generics = $generic;
+
+        return $this;
     }
 
     public function resolveMapper(): ?Mapper
@@ -43,7 +57,7 @@ class MapperValue extends NullableValue
             return null;
         }
 
-        if (\is_string($this->mapper)) {
+        if (is_string($this->mapper)) {
             $mapper = new ($this->mapper)($value, ...$this->sourcesTrace);
         } else {
             $mapper = $this->mapper instanceof Closure ?
@@ -67,27 +81,42 @@ class MapperValue extends NullableValue
         return $mappedValue instanceof Value ? $mappedValue->compile() : $mappedValue;
     }
 
-    protected function types(): Type|Types
+    protected function types(): AliasType
     {
+        if ($this->assignedToGeneric) {
+            return new AliasType($this->assignedToGeneric);
+        }
+
         if ($this->mapper instanceof Closure) {
             $reflection = new ReflectionFunction($this->mapper);
 
-            $mapperFQN = $reflection->getReturnType()?->getName();
+            $refReturnType = $reflection->getReturnType();
+
+            if (! ($refReturnType instanceof ReflectionNamedType)
+                || (
+                    ! is_subclass_of($refReturnType->getName(), Mapper::class)
+                    && in_array($refReturnType->getName(), ['static', 'self'], true)
+                )
+            ) {
+                throw new TypeGenerateException('The return type in the mapper function must be an mapper.');
+            }
+
+            $mapperFQN = $refReturnType->getName();
 
             if ($mapperFQN === 'static' || $mapperFQN === 'self') {
-                $mapperFQN = \get_class(
+                $mapperFQN = get_class(
                     $reflection->getClosureThis()
                 );
             }
 
-            if (! \is_subclass_of($mapperFQN, Mapper::class)) {
-                return new AnyType();
+            if (! is_subclass_of($mapperFQN, Mapper::class)) {
+                throw new TypeGenerateException('The return type in the mapper function must be an mapper.');
             }
-        } elseif (\is_string($this->mapper)) {
+        } elseif (is_string($this->mapper)) {
             $mapperFQN = $this->mapper;
 
-            if (! \is_subclass_of($mapperFQN, Mapper::class)) {
-                return new AnyType();
+            if (! is_subclass_of($mapperFQN, Mapper::class)) {
+                throw new TypeGenerateException('The return type in the mapper function must be an mapper.');
             }
         } else {
             $mapperFQN = $this->mapper::class;
@@ -99,9 +128,11 @@ class MapperValue extends NullableValue
         $mapperRef = $typeGenerationContext->resolveMapperRef($mapperFQN);
 
         if (! $mapperRef) {
-            return new AnyType();
+            throw new TypeGenerateException("Unknown mapper — \"{$mapperFQN}\".");
         }
 
-        return new AliasType($mapperRef);
+        return $this->generics ?
+            new AliasType($mapperRef, $this->generics) :
+            new AliasType($mapperRef);
     }
 }

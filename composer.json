@@ -9,7 +9,10 @@
     "autoload": {
         "psr-4": {
             "Savks\\Negotiator\\": "src/"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "extra": {
         "laravel": {

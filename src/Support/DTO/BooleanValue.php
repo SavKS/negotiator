@@ -33,7 +33,7 @@ class BooleanValue extends NullableValue
             return null;
         }
 
-        if (! \is_bool($value)) {
+        if (! is_bool($value)) {
             throw new UnexpectedValue('boolean', $value);
         }
 

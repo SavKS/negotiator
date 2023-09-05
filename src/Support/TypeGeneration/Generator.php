@@ -8,9 +8,12 @@ use Illuminate\Support\Str;
 use RuntimeException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
-use Savks\Negotiator\Support\Mapping\Mapper;
 use Throwable;
 
+use Savks\Negotiator\Support\Mapping\{
+    GenericDeclaration,
+    Mapper
+};
 use Savks\Negotiator\TypeGeneration\{
     Faker,
     Generator as TypeGenerator
@@ -51,15 +54,16 @@ class Generator
                             $mapper = $mapper();
                         }
 
-                        if ($mapper instanceof Mapper) {
-                            $types = $mapper->map()->compileTypes();
-                        } else {
-                            $types = $faker->makeMapper($mapper)->map()->compileTypes();
+                        if (! $mapper instanceof Mapper) {
+                            $mapper = $faker->makeMapper($mapper);
                         }
+
+                        $generics = $mapper->declareGenerics();
+                        $types = $mapper->map()->compileTypes();
                     } catch (Throwable $e) {
-                        $safeDestPath = \ltrim(
-                            \str_replace(
-                                \base_path(),
+                        $safeDestPath = ltrim(
+                            str_replace(
+                                base_path(),
                                 '',
                                 $destPath
                             ),
@@ -74,7 +78,11 @@ class Generator
 
                     $content = (new TypeGenerator($types))->generate();
 
-                    $result[$target->namespace][] = "export type {$name} = {$content};";
+                    if ($generics) {
+                        $result[$target->namespace][] = "export type {$name}<{$this->stringifyGenerics($generics)}> = {$content};";
+                    } else {
+                        $result[$target->namespace][] = "export type {$name} = {$content};";
+                    }
                 }
             }
 
@@ -101,10 +109,10 @@ class Generator
                 $lines[] = "declare module '{$namespace}' {";
             }
 
-            $lines[] = \implode(
+            $lines[] = implode(
                 "\n\n",
                 $namespace ?
-                    \array_map(
+                    array_map(
                         fn (string $value) => Str::padLeft($value, 4),
                         $types
                     ) :
@@ -115,22 +123,36 @@ class Generator
                 $lines[] = "}\n";
             }
 
-            $blocks[] = \implode("\n", $lines);
+            $blocks[] = implode("\n", $lines);
         }
 
-        return \implode("\n\n", $blocks);
+        return implode("\n\n", $blocks);
     }
 
     protected function write(string $content, string $destPath): bool
     {
-        $destDir = \dirname($destPath);
+        $destDir = dirname($destPath);
 
-        if (! \is_dir($destDir)) {
-            \mkdir($destDir, recursive: true);
+        if (! is_dir($destDir)) {
+            mkdir($destDir, recursive: true);
         }
 
-        $status = \file_put_contents($destPath, $content);
+        $status = file_put_contents($destPath, $content);
 
         return $status !== false;
+    }
+
+    /**
+     * @param GenericDeclaration[] $generics
+     */
+    protected function stringifyGenerics(array $generics): string
+    {
+        $parts = [];
+
+        foreach ($generics as $generic) {
+            $parts[] = $generic->stringify($this->refsResolver);
+        }
+
+        return implode(', ', $parts);
     }
 }

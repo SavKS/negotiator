@@ -55,19 +55,19 @@ class RefsResolver
         $enumName = null;
 
         foreach ($this->enumVariants as $variant) {
-            if (\is_callable($variant)) {
+            if (is_callable($variant)) {
                 $resolvedValue = $variant($enumFQN);
 
                 if ($resolvedValue) {
                     [$namespaceSegments, $enumName] = $resolvedValue;
                 }
             } else {
-                if (\is_callable($variant['rule'])) {
+                if (is_callable($variant['rule'])) {
                     $isMatch = $variant['rule']($enumFQN);
 
                     $matches = null;
                 } else {
-                    $isMatch = \preg_match($variant['rule'], $enumFQN, $matches) > 0;
+                    $isMatch = preg_match($variant['rule'], $enumFQN, $matches) > 0;
                 }
 
                 if ($isMatch) {
@@ -87,9 +87,9 @@ class RefsResolver
         }
 
         return [
-            \implode(
+            implode(
                 '/',
-                \array_map(
+                array_map(
                     Str::kebab(...),
                     $namespaceSegments
                 )
@@ -104,19 +104,19 @@ class RefsResolver
         $mapperName = null;
 
         foreach ($this->mapperVariants as $variant) {
-            if (\is_callable($variant)) {
+            if (is_callable($variant)) {
                 $resolvedValue = $variant($mapperFQN);
 
                 if ($resolvedValue) {
                     [$namespaceSegments, $mapperName] = $resolvedValue;
                 }
             } else {
-                if (\is_callable($variant['rule'])) {
+                if (is_callable($variant['rule'])) {
                     $isMatch = $variant['rule']($mapperFQN);
 
                     $matches = null;
                 } else {
-                    $isMatch = \preg_match($variant['rule'], $mapperFQN, $matches) > 0;
+                    $isMatch = preg_match($variant['rule'], $mapperFQN, $matches) > 0;
                 }
 
                 if ($isMatch) {
@@ -135,9 +135,9 @@ class RefsResolver
             throw new LogicException("Can't resolve \"{$mapperFQN}\" mapper.");
         }
 
-        $namespace = \implode(
+        $namespace = implode(
             '/',
-            \array_map(
+            array_map(
                 Str::kebab(...),
                 $namespaceSegments
             )

@@ -14,11 +14,11 @@ trait WorkWithAccessor
         return match (true) {
             $accessor === null => $source,
 
-            \is_string($accessor) => \data_get($source, $accessor),
+            is_string($accessor) => data_get($source, $accessor),
 
             default => $accessor(
                 $source,
-                ...\array_reverse($sourcesTrace)
+                ...array_reverse($sourcesTrace)
             )
         };
     }

@@ -3,6 +3,8 @@
 namespace Savks\Negotiator\TypeGeneration;
 
 use RuntimeException;
+use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\Negotiator\Support\Mapping\Generic;
 
 use Savks\Negotiator\Support\Types\{
     AliasType,
@@ -37,12 +39,31 @@ class Generator
 
     protected function processType(Type|Types $type): string
     {
+        if ($type instanceof AliasType) {
+            if (! $type->generics) {
+                return $type->alias;
+            }
+
+            $typeGenerationContext = TypeGenerationContext::useSelf();
+
+            $generics = array_map(
+                fn (Generic $generic) => $generic->stringify($typeGenerationContext->refsResolver),
+                $type->generics
+            );
+
+            return sprintf(
+                '%s<%s>',
+                $type->alias,
+                implode(', ', $generics)
+            );
+        }
+
         return match (true) {
-            $type instanceof Types => \sprintf(
-                \count($type->types) > 1 ? '(%s)' : '%s',
-                \implode(
+            $type instanceof Types => sprintf(
+                count($type->types) > 1 ? '(%s)' : '%s',
+                implode(
                     $type->asIntersection ? ' & ' : ' | ',
-                    \array_map(
+                    array_map(
                         fn (Type|Types $type) => $this->processType($type),
                         $type->types
                     )
@@ -60,13 +81,14 @@ class Generator
             $type instanceof NullType => 'null',
             $type instanceof VoidType => 'void',
             $type instanceof UndefinedType => 'undefined',
+
             $type instanceof RecordType => sprintf(
                 'Record<%s, %s>',
                 $this->processType($type->keyType),
                 $this->processType($type->valueType)
             ),
-            $type instanceof ArrayType => 'Array<' . $this->processType($type->types) . '>',
-            $type instanceof AliasType => $type->alias,
+
+            $type instanceof ArrayType => "Array<{$this->processType($type->types)}>",
 
             default => throw new RuntimeException('Unprocessed type "' . $type::class . '"')
         };
@@ -80,6 +102,6 @@ class Generator
             $lines[] = "'{$key}': {$this->processType($type)}";
         }
 
-        return '{' . \implode(',', $lines) . '}';
+        return '{' . implode(',', $lines) . '}';
     }
 }

@@ -89,7 +89,7 @@ abstract class Castable
     }
 
     /**
-     * @param Closure(Factory): (array|Record) $callback
+     * @param Closure(Factory):(array|Record) $callback
      */
     public function object(Closure $callback, string|Closure|null $accessor = null): ObjectValue
     {

@@ -17,7 +17,7 @@ final class Record
 
     public function set(string|int|Stringable|BackedEnum $key, Value $value): self
     {
-        $index = \array_search($key, $this->keys, true);
+        $index = array_search($key, $this->keys, true);
 
         if ($index === false) {
             $this->entries[] = [$key, $value];

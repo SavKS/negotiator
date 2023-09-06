@@ -98,4 +98,73 @@ class OneOfConstValue extends NullableValue
             array_merge(...$types)
         );
     }
+
+    protected function schema(): array
+    {
+        $result = [
+            '$$type' => static::class,
+            'accessor' => $this->accessor,
+            'values' => [],
+        ];
+
+        foreach ($this->values as $constValue) {
+            $result['values'][] = [
+                'schema' => $constValue->compileSchema(),
+                'originalValue' => $constValue->originalValue(),
+            ];
+        }
+
+        return $result;
+    }
+
+    protected static function finalizeUsingSchema(array $schema, mixed $source, array $sourcesTrace = []): mixed
+    {
+        $value = static::resolveValueFromAccessor(
+            $schema['accessor'],
+            $source,
+            $sourcesTrace
+        );
+
+        if ($value === null) {
+            return null;
+        }
+
+        $isMatched = null;
+
+        foreach ($schema['values'] as $constValue) {
+            $isMatched = $constValue['originalValue'] === $value;
+
+            if ($isMatched) {
+                break;
+            }
+        }
+
+        if (! $isMatched) {
+            $types = [];
+
+            foreach ($schema['values'] as $constValue) {
+                if ($constValue['$$type'] === ConstEnumValue::class) {
+                    $types[] = 'BackedEnum<' . $constValue->originalValue()::class . '>';
+                } else {
+                    $types[] = match ($constValue['$$type']) {
+                        ConstBooleanType::class => $constValue['originalValue'] ? 'true' : 'false',
+
+                        ConstNumberType::class, ConstStringType::class => $constValue['originalValue'],
+
+                        BooleanType::class => 'bool',
+                        NumberType::class => 'numeric',
+                        StringType::class => 'string',
+
+                        default => throw new RuntimeException(
+                            "Unprocessed type \"{$constValue['$$type']}\"."
+                        )
+                    };
+                }
+            }
+
+            throw new UnexpectedValue($types, $value);
+        }
+
+        return $value instanceof BackedEnum ? $value->value : $value;
+    }
 }

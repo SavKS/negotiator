@@ -6,7 +6,7 @@ use Closure;
 
 trait WorkWithAccessor
 {
-    protected function resolveValueFromAccessor(
+    protected static function resolveValueFromAccessor(
         string|Closure|null $accessor,
         mixed $source,
         array $sourcesTrace

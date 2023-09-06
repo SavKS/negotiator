@@ -2,41 +2,42 @@
 
 namespace Savks\Negotiator\Support\DTO\Utils;
 
-use Savks\Negotiator\Contexts\TypeGenerationContext;
-use Savks\Negotiator\Support\Mapping\Mapper;
-use Savks\Negotiator\TypeGeneration\MapperAliases;
-
-use Savks\Negotiator\Support\DTO\{
-    MapperValue,
-    Value
-};
-use Savks\Negotiator\Support\Types\{
-    AliasType,
-    Types
-};
+use Closure;
+use Savks\Negotiator\Support\DTO\Value;
+use Savks\Negotiator\Support\Types\Types;
 
 class Intersection extends Value
 {
-    public readonly array $objects;
-
-    public function __construct(Value|Mapper ...$objects)
-    {
-        $this->objects = $objects;
+    /**
+     * @param Closure(Factory):list<Value> $callback
+     */
+    public function __construct(
+        protected readonly mixed $source,
+        protected readonly Closure $callback,
+        protected readonly string|Closure|null $accessor = null
+    ) {
     }
 
     protected function finalize(): array
     {
+        $value = static::resolveValueFromAccessor(
+            $this->accessor,
+            $this->source,
+            $this->sourcesTrace
+        );
+
+        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
+            $this->sourcesTrace[] = $this->source;
+        }
+
         $result = [];
 
-        foreach ($this->objects as $object) {
-            $normalizedObject = match (true) {
-                $object instanceof Mapper => $object->map(),
-                $object instanceof MapperValue => $object->resolveMapper()->map(),
+        $mappedObjects = ($this->callback)(
+            new Factory($value, $this->sourcesTrace)
+        );
 
-                default => $object
-            };
-
-            $objectResult = $normalizedObject->compile();
+        foreach ($mappedObjects as $mappedObject) {
+            $objectResult = $mappedObject->compile();
 
             if ($objectResult !== null) {
                 $result[] = $objectResult;
@@ -50,25 +51,72 @@ class Intersection extends Value
     {
         $types = [];
 
-        foreach ($this->objects as $object) {
-            if ($object instanceof Mapper) {
-                $alias = app(MapperAliases::class)->resolve($object::class);
+        $objects = ($this->callback)(
+            new Factory(null)
+        );
 
-                if (! $alias) {
-                    $alias = TypeGenerationContext::useSelf()->resolveMapperRef($object::class);
-                }
-
-                $types[] = $alias ?
-                    [new AliasType($alias)] :
-                    $object->map()->compileTypes()->types;
-            } else {
-                $types[] = $object->compileTypes()->types;
-            }
+        foreach ($objects as $object) {
+            $types[] = $object->compileTypes()->types;
         }
 
         return new Types(
             array_merge(...$types),
             true
         );
+    }
+
+    protected function schema(): array
+    {
+        $result = [
+            '$$type' => static::class,
+            'accessor' => $this->accessor,
+            'schemas' => [],
+        ];
+
+        $objects = ($this->callback)(
+            new Factory(null)
+        );
+
+        foreach ($objects as $object) {
+            $objectSchema = $object->compileSchema();
+
+            if ($objectSchema !== null) {
+                $result['schemas'][] = $objectSchema;
+            }
+        }
+
+        return $result;
+    }
+
+    protected static function finalizeUsingSchema(array $schema, mixed $source, array $sourcesTrace = []): mixed
+    {
+        $value = static::resolveValueFromAccessor(
+            $schema['accessor'],
+            $source,
+            $sourcesTrace
+        );
+
+        if ($schema['accessor'] && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
+        }
+
+        $result = [];
+
+        foreach ($schema['schemas'] as $objectSchema) {
+            /** @var class-string<Value> $objectSchemaType */
+            $objectSchemaType = $objectSchema['$$type'];
+
+            $objectResult = $objectSchemaType::compileUsingSchema(
+                $objectSchema,
+                $value,
+                $sourcesTrace
+            );
+
+            if ($objectResult !== null) {
+                $result[] = $objectResult;
+            }
+        }
+
+        return array_merge(...$result);
     }
 }

@@ -129,9 +129,11 @@ abstract class Castable
         );
     }
 
-    public function intersection(Value|Mapper ...$objects): Intersection
+    public function intersection(Closure $callback, string|Closure|null $accessor = null): Intersection
     {
-        return new Intersection(...$objects);
+        return (new Intersection($this->source, $callback, $accessor))->setSourcesTrace(
+            $this->sourcesTrace
+        );
     }
 
     /**

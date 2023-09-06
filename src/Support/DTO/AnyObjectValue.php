@@ -3,8 +3,11 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 
+use Savks\Negotiator\Exceptions\{
+    JitCompile,
+    UnexpectedValue
+};
 use Savks\Negotiator\Support\Types\{
     AliasType,
     RecordType,
@@ -59,5 +62,41 @@ class AnyObjectValue extends NullableValue
         }
 
         return new RecordType();
+    }
+
+    protected function schema(): array
+    {
+        return [
+            '$$type' => static::class,
+            'accessor' => $this->accessor,
+            'default' => $this->default,
+        ];
+    }
+
+    protected static function finalizeUsingSchema(array $schema, mixed $source, array $sourcesTrace = []): mixed
+    {
+        JitCompile::assertInvalidSchemaType($schema, static::class);
+
+        $value = static::resolveValueFromAccessor(
+            $schema['accessor'],
+            $source,
+            $sourcesTrace
+        );
+
+        $value ??= $schema['default'];
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (! is_object($value) && ! is_array($value)) {
+            throw new UnexpectedValue(['object', 'array<string, mixed>'], $value);
+        }
+
+        if (is_array($value) && array_is_list($value)) {
+            throw new UnexpectedValue(['array<string, mixed>'], $value);
+        }
+
+        return $value;
     }
 }

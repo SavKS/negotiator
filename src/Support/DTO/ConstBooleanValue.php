@@ -2,6 +2,8 @@
 
 namespace Savks\Negotiator\Support\DTO;
 
+use Savks\Negotiator\Exceptions\JitCompile;
+
 use Savks\Negotiator\Support\Types\{
     BooleanType,
     ConstBooleanType
@@ -31,5 +33,20 @@ class ConstBooleanValue extends ConstValue
     protected function types(): BooleanType|ConstBooleanType
     {
         return $this->asAnyBool ? new BooleanType() : new ConstBooleanType($this->value);
+    }
+
+    protected function schema(): array
+    {
+        return [
+            '$$type' => static::class,
+            'value' => $this->value,
+        ];
+    }
+
+    protected static function finalizeUsingSchema(array $schema, mixed $source, array $sourcesTrace = []): bool
+    {
+        JitCompile::assertInvalidSchemaType($schema, static::class);
+
+        return $schema['value'];
     }
 }

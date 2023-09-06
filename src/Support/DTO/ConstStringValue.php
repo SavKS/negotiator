@@ -2,6 +2,8 @@
 
 namespace Savks\Negotiator\Support\DTO;
 
+use Savks\Negotiator\Exceptions\JitCompile;
+
 use Savks\Negotiator\Support\Types\{
     ConstStringType,
     StringType
@@ -28,5 +30,20 @@ class ConstStringValue extends ConstValue
     protected function types(): StringType|ConstStringType
     {
         return $this->asAnyString ? new StringType() : new ConstStringType($this->value);
+    }
+
+    protected function schema(): array
+    {
+        return [
+            '$$type' => static::class,
+            'value' => $this->value,
+        ];
+    }
+
+    protected static function finalizeUsingSchema(array $schema, mixed $source, array $sourcesTrace = []): mixed
+    {
+        JitCompile::assertInvalidSchemaType($schema, static::class);
+
+        return $schema['value'];
     }
 }

@@ -50,4 +50,31 @@ abstract class NullableValue extends Value
             Arr::wrap($types)
         );
     }
+
+    public function compileSchema(): array
+    {
+        $result = $this->schema();
+
+        $result['$$nullable'] = $this->nullable;
+
+        return $result;
+    }
+
+    public static function compileUsingSchema(
+        array $schema,
+        mixed $source,
+        array $sourcesTrace = []
+    ): mixed {
+        $value = static::finalizeUsingSchema(
+            $schema,
+            $source,
+            $sourcesTrace
+        );
+
+        if ($value === null && ! $schema['$$nullable']) {
+            throw new UnexpectedNull('NOT NULL', $value);
+        }
+
+        return $value;
+    }
 }

@@ -6,10 +6,13 @@ use BackedEnum;
 use Closure;
 use Illuminate\Support\Stringable;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\DTO\ObjectValue\MissingValue;
 use Savks\PhpContexts\Context;
 
+use Savks\Negotiator\Exceptions\{
+    JitCompile,
+    UnexpectedValue
+};
 use Savks\Negotiator\Support\DTO\Utils\{
     Factory,
     Record,
@@ -116,6 +119,73 @@ class ObjectValue extends NullableValue
         return $result;
     }
 
+    protected function schema(): array
+    {
+        /** @var array|Record|mixed $mappedValue */
+        $mappedValue = ($this->callback)(
+            new Factory(null)
+        );
+
+        if (! is_array($mappedValue)
+            && (! $mappedValue instanceof Record)
+        ) {
+            throw new UnexpectedValue([
+                'array<string, ' . Value::class . '>',
+                Record::class,
+            ], $mappedValue);
+        }
+
+        $result = [
+            '$$type' => static::class,
+            'properties' => [],
+            'accessor' => $this->accessor,
+        ];
+
+        if ($mappedValue instanceof Record) {
+            foreach ($mappedValue->entries() as [$field, $fieldValue]) {
+                if ($fieldValue instanceof MissingValue) {
+                    continue;
+                }
+
+                try {
+                    $fieldAsString = match (true) {
+                        $field instanceof BackedEnum => $field->value,
+                        $field instanceof Stringable => (string)$field,
+
+                        default => $field
+                    };
+
+                    $result[$fieldAsString] = $fieldValue->compile();
+                } catch (UnexpectedValue $e) {
+                    throw UnexpectedValue::wrap($e, $fieldAsString);
+                }
+            }
+        } else {
+            /** @var Value|mixed $fieldValue */
+            foreach ($mappedValue as $field => $fieldValue) {
+                if ($fieldValue instanceof Spread) {
+                    $fieldValue->applyTo($result);
+                } else {
+                    if ($fieldValue instanceof MissingValue) {
+                        continue;
+                    }
+
+                    if (! $fieldValue instanceof Value) {
+                        throw new UnexpectedValue(Value::class, $fieldValue);
+                    }
+
+                    try {
+                        $result['properties'][$field] = $fieldValue->compileSchema();
+                    } catch (UnexpectedValue $e) {
+                        throw UnexpectedValue::wrap($e, $field);
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
     protected function types(): ConstRecordType|Types
     {
         /** @var array<string, Value|Spread>|Record|mixed $mappedValue */
@@ -187,5 +257,75 @@ class ObjectValue extends NullableValue
         }
 
         return new Types($additionalRecords, true);
+    }
+
+    protected static function finalizeUsingSchema(
+        array $schema,
+        mixed $source,
+        array $sourcesTrace = []
+    ): ?array {
+        JitCompile::assertInvalidSchemaType($schema, static::class);
+
+        $value = static::resolveValueFromAccessor(
+            $schema['accessor'],
+            $source,
+            $sourcesTrace
+        );
+
+        if ($schema['accessor'] && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        $result = [];
+
+        if (($schema['properties']['$$type'] ?? null) === Record::class) {
+            foreach ($mappedValue->entries() as [$field, $fieldValue]) {
+                if ($fieldValue instanceof MissingValue) {
+                    continue;
+                }
+
+                try {
+                    $fieldAsString = match (true) {
+                        $field instanceof BackedEnum => $field->value,
+                        $field instanceof Stringable => (string)$field,
+
+                        default => $field
+                    };
+
+                    $result[$fieldAsString] = $fieldValue->compile();
+                } catch (UnexpectedValue $e) {
+                    throw UnexpectedValue::wrap($e, $fieldAsString);
+                }
+            }
+        } else {
+            foreach ($schema['properties'] as $field => $fieldSchema) {
+                if ($fieldSchema['$$type'] === Spread::class) {
+                    $fieldSchema->applyTo($result);
+                } else {
+                    if ($fieldSchema['$$type'] === MissingValue::class) {
+                        continue;
+                    }
+
+                    try {
+                        /** @var class-string<Value> $type */
+                        $type = $fieldSchema['$$type'];
+
+                        $result[$field] = $type::compileUsingSchema(
+                            $fieldSchema,
+                            $value,
+                            $sourcesTrace
+                        );
+                    } catch (UnexpectedValue $e) {
+                        throw UnexpectedValue::wrap($e, $field);
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 }

@@ -60,4 +60,47 @@ class StringValue extends NullableValue
     {
         return new StringType();
     }
+
+    protected function schema(): array
+    {
+        return [
+            '$$type' => static::class,
+            'accessor' => $this->accessor,
+            'default' => $this->default,
+        ];
+    }
+
+    protected static function finalizeUsingSchema(
+        array $schema,
+        mixed $source,
+        array $sourcesTrace = []
+    ): ?string {
+        $value = static::resolveValueFromAccessor(
+            $schema['accessor'],
+            $source,
+            $sourcesTrace
+        );
+
+        if ($schema['accessor'] && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
+        }
+
+        $value ??= $schema['default'] instanceof Closure ?
+            ($schema['default'])($source, ...$sourcesTrace) :
+            $schema['default'];
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (! is_string($value) && $value instanceof Stringable) {
+            $value = $value->__toString();
+        }
+
+        if (! is_string($value)) {
+            throw new UnexpectedValue('string', $value);
+        }
+
+        return $value;
+    }
 }

@@ -4,9 +4,12 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
 use Illuminate\Support\Arr;
-use Savks\Negotiator\Exceptions\DTOException;
 use Savks\Negotiator\Support\DTO\Utils\Factory;
 
+use Savks\Negotiator\Exceptions\{
+    DTOException,
+    JitCompile
+};
 use Savks\Negotiator\Support\Types\{
     Type,
     Types
@@ -119,5 +122,86 @@ class UnionType extends NullableValue
         $types = Arr::flatten($types);
 
         return count($types) > 1 ? new Types($types) : head($types);
+    }
+
+    protected function schema(): array
+    {
+        $result = [
+            '$$type' => static::class,
+            'accessor' => $this->accessor,
+            'variants' => [],
+            'defaultVariantSchema' => null,
+        ];
+
+        foreach ($this->variants as $variant) {
+            $result['variants'][] = [
+                'condition' => $variant['condition'],
+                'schema' => $variant['callback'](
+                    new Factory(null)
+                )->compileSchema(),
+            ];
+        }
+
+        if ($this->defaultVariant) {
+            $result['defaultVariantSchema'] = ($this->defaultVariant)(
+                new Factory(null)
+            )->compileSchema();
+        }
+
+        return $result;
+    }
+
+    protected static function finalizeUsingSchema(array $schema, mixed $source, array $sourcesTrace = []): mixed
+    {
+        JitCompile::assertInvalidSchemaType($schema, static::class);
+
+        $value = static::resolveValueFromAccessor(
+            $schema['accessor'],
+            $source,
+            $sourcesTrace
+        );
+
+        if ($schema['accessor'] && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        foreach ($schema['variants'] as $variant) {
+            if (! $variant['condition']($value, ...$sourcesTrace)) {
+                continue;
+            }
+
+            /** @var class-string<Value> $variantSchemaType */
+            $variantSchemaType = $variant['schema']['$$type'];
+
+            return $variantSchemaType::compileUsingSchema(
+                $variant['schema'],
+                $value,
+                $sourcesTrace
+            );
+        }
+
+        if ($schema['defaultVariant']) {
+            /** @var class-string<Value> $defaultVariantSchemaType */
+            $defaultVariantSchemaType = $schema['defaultVariant']['$$type'];
+
+            return $defaultVariantSchemaType::compileUsingSchema(
+                $value,
+                $sourcesTrace
+            );
+        }
+
+        $type = is_object($value) ? $value::class : gettype($value);
+
+        if ($type === 'array') {
+            $type = 'array<' . json_encode($value, JSON_UNESCAPED_UNICODE) . '>';
+        } elseif ($type === 'object') {
+            $type = 'object<' . $value::class . '>';
+        }
+
+        throw new DTOException("Unhandled union type variant for \"{$type}\"");
     }
 }

@@ -7,6 +7,7 @@ use ReflectionFunction;
 use ReflectionNamedType;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Exceptions\TypeGenerateException;
+use Savks\Negotiator\Jit\Jit;
 use Savks\Negotiator\Support\Types\AliasType;
 use Savks\PhpContexts\Context;
 
@@ -41,28 +42,42 @@ class MapperValue extends NullableValue
         return $this;
     }
 
-    public function resolveMapper(): ?Mapper
+    public function resolveCurrentMapper(): ?Mapper
     {
-        $value = $this->resolveValueFromAccessor(
-            $this->accessor,
+        return static::resolveMapper(
             $this->source,
+            $this->mapper,
+            $this->accessor,
             $this->sourcesTrace
         );
+    }
 
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
+    protected static function resolveMapper(
+        mixed $source,
+        string|Mapper|Closure $mapper,
+        string|Closure|null $accessor,
+        array $sourcesTrace
+    ): ?Mapper {
+        $value = static::resolveValueFromAccessor(
+            $accessor,
+            $source,
+            $sourcesTrace
+        );
+
+        if ($accessor && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
         }
 
         if ($value === null) {
             return null;
         }
 
-        if (is_string($this->mapper)) {
-            $mapper = new ($this->mapper)($value, ...$this->sourcesTrace);
+        if (is_string($mapper)) {
+            $mapper = new ($mapper)($value, ...$sourcesTrace);
         } else {
-            $mapper = $this->mapper instanceof Closure ?
-                ($this->mapper)($value, ...$this->sourcesTrace) :
-                $this->mapper;
+            $mapper = $mapper instanceof Closure ?
+                $mapper($value, ...$sourcesTrace) :
+                $mapper;
         }
 
         return $mapper;
@@ -70,7 +85,7 @@ class MapperValue extends NullableValue
 
     protected function finalize(): mixed
     {
-        $mapper = $this->resolveMapper();
+        $mapper = $this->resolveCurrentMapper();
 
         if ($mapper === null) {
             return null;
@@ -78,7 +93,11 @@ class MapperValue extends NullableValue
 
         $mappedValue = $mapper->map();
 
-        return $mappedValue instanceof Value ? $mappedValue->compile() : $mappedValue;
+        if ($mappedValue instanceof Jit || $mappedValue instanceof Value) {
+            return $mappedValue->compile();
+        }
+
+        return $mappedValue;
     }
 
     protected function types(): AliasType
@@ -134,5 +153,30 @@ class MapperValue extends NullableValue
         return $this->generics ?
             new AliasType($mapperRef, $this->generics) :
             new AliasType($mapperRef);
+    }
+
+    protected function schema(): array
+    {
+        return [
+            '$$type' => static::class,
+            'accessor' => $this->accessor,
+            'mapper' => $this->mapper,
+        ];
+    }
+
+    protected static function finalizeUsingSchema(
+        array $schema,
+        mixed $source,
+        array $sourcesTrace = []
+    ): mixed {
+        $mapper = static::resolveMapper(
+            $source,
+            $schema['mapper'],
+            $schema['accessor'],
+            $sourcesTrace
+        );
+
+        return $mapper?->map()->compile();
+
     }
 }

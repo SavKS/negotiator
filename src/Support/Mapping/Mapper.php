@@ -2,10 +2,12 @@
 
 namespace Savks\Negotiator\Support\Mapping;
 
+use Closure;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use JsonSerializable;
 use Savks\Negotiator\Enums\PerformanceTrackers;
+use Savks\Negotiator\Jit\Jit;
 use Savks\Negotiator\Performance\Performance;
 
 use Savks\Negotiator\Exceptions\{
@@ -13,6 +15,7 @@ use Savks\Negotiator\Exceptions\{
     UnexpectedValue
 };
 use Savks\Negotiator\Support\DTO\{
+    Utils\Factory,
     Utils\Intersection,
     Value
 };
@@ -22,12 +25,14 @@ use Savks\Negotiator\Support\DTO\{
  */
 abstract class Mapper implements JsonSerializable, Responsable
 {
+    protected bool $enableJit = false;
+
     /**
      * @var Generic[]|null
      */
     protected ?array $generics = null;
 
-    abstract public function map(): Value|Mapper|Intersection;
+    abstract public function map(): Value|Mapper|Intersection|Jit;
 
     /**
      * @return GenericDeclaration[]
@@ -35,6 +40,16 @@ abstract class Mapper implements JsonSerializable, Responsable
     public function declareGenerics(): array
     {
         return [];
+    }
+
+    /**
+     * @param Closure(Factory):Value $callback
+     */
+    public function factory(Closure $callback): Value
+    {
+        return $this->enableJit ?
+            new Jit($this, $callback) :
+            $callback(new Factory($this));
     }
 
     public function finalize(): mixed

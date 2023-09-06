@@ -22,7 +22,7 @@ class KeyedArrayValue extends NullableValue
     ) {
     }
 
-    protected function finalize(): mixed
+    protected function finalize(): ?array
     {
         $value = $this->resolveValueFromAccessor(
             $this->accessor,
@@ -88,5 +88,77 @@ class KeyedArrayValue extends NullableValue
         return new RecordType(
             valueType: $listItem->compileTypes()
         );
+    }
+
+    protected function schema(): array
+    {
+        $itemMappedValue = ($this->iterator)(
+            new Item(0, null)
+        );
+
+        if (! $itemMappedValue instanceof Value) {
+            throw new UnexpectedValue(
+                Value::class,
+                $itemMappedValue
+            );
+        }
+
+        return [
+            '$$type' => static::class,
+            'key' => $this->key,
+            'iterator' => $this->iterator,
+            'accessor' => $this->accessor,
+            'itemSchema' => $itemMappedValue->compileSchema(),
+        ];
+    }
+
+    protected static function finalizeUsingSchema(array $schema, mixed $source, array $sourcesTrace = []): mixed
+    {
+        $value = static::resolveValueFromAccessor(
+            $schema['accessor'],
+            $source,
+            $sourcesTrace
+        );
+
+        if ($schema['accessor'] && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (! is_iterable($value)) {
+            throw new UnexpectedValue('iterable', $value);
+        }
+
+        /** @var class-string<Value> $itemSchemaType */
+        $itemSchemaType = $schema['itemSchema']['$$type'];
+
+        $result = [];
+
+        foreach ($value as $key => $item) {
+            if (is_string($schema['itemSchema']['key'])) {
+                $keyValue = data_get($item, $schema['itemSchema']['key']);
+            } else {
+                $keyValue = ($schema['itemSchema']['key'])($item, $key, ...$sourcesTrace);
+            }
+
+            if (! is_string($keyValue)) {
+                throw new UnexpectedValue('string', $keyValue);
+            }
+
+            try {
+                $result[$keyValue] = $itemSchemaType::compileUsingSchema(
+                    $schema['itemSchema'],
+                    $item,
+                    $sourcesTrace
+                );
+            } catch (UnexpectedValue $e) {
+                throw UnexpectedValue::wrap($e, "{$key}({$keyValue})");
+            }
+        }
+
+        return $result ?: null;
     }
 }

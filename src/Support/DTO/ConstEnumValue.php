@@ -6,6 +6,7 @@ use BackedEnum;
 use ReflectionEnum;
 use ReflectionNamedType;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\Negotiator\Exceptions\JitCompile;
 use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\Types\{
@@ -45,5 +46,20 @@ class ConstEnumValue extends ConstValue
         $type = (new ReflectionEnum($this->case))->getBackingType();
 
         return $type->getName() === 'string' ? new StringType() : new NumberType();
+    }
+
+    protected function schema(): array
+    {
+        return [
+            '$$type' => static::class,
+            'case' => $this->case,
+        ];
+    }
+
+    protected static function finalizeUsingSchema(array $schema, mixed $source, array $sourcesTrace = []): mixed
+    {
+        JitCompile::assertInvalidSchemaType($schema, static::class);
+
+        return $schema['case']->value;
     }
 }

@@ -57,4 +57,32 @@ class EnumValue extends NullableValue
 
         return new StringType();
     }
+
+    protected function schema(): array
+    {
+        return [
+            '$$type' => static::class,
+            'enum' => $this->enum,
+            'accessor' => $this->accessor,
+        ];
+    }
+
+    protected static function finalizeUsingSchema(array $schema, mixed $source, array $sourcesTrace = []): mixed
+    {
+        $value = static::resolveValueFromAccessor(
+            $schema['accessor'],
+            $source,
+            $sourcesTrace
+        );
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (! is_object($value) && get_class($value) !== $schema['enum']) {
+            throw new UnexpectedValue("BackedEnum<{$schema['enum']}>", $value);
+        }
+
+        return $value->value;
+    }
 }

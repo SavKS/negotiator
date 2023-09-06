@@ -3,8 +3,12 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Types\BooleanType;
+
+use Savks\Negotiator\Exceptions\{
+    JitCompile,
+    UnexpectedValue
+};
 
 class BooleanValue extends NullableValue
 {
@@ -43,5 +47,40 @@ class BooleanValue extends NullableValue
     protected function types(): BooleanType
     {
         return new BooleanType();
+    }
+
+    protected function schema(): array
+    {
+        return [
+            '$$type' => static::class,
+            'accessor' => $this->accessor,
+            'default' => $this->default,
+        ];
+    }
+
+    protected static function finalizeUsingSchema(
+        array $schema,
+        mixed $source,
+        array $sourcesTrace = []
+    ): ?bool {
+        JitCompile::assertInvalidSchemaType($schema, static::class);
+
+        $value = static::resolveValueFromAccessor(
+            $schema['accessor'],
+            $source,
+            $sourcesTrace
+        );
+
+        $value ??= $schema['default'];
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (! is_bool($value)) {
+            throw new UnexpectedValue('boolean', $value);
+        }
+
+        return $value;
     }
 }

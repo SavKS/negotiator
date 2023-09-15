@@ -5,7 +5,7 @@ namespace Savks\Negotiator\Support\DTO;
 /**
  * @template TOriginalValueType
  */
-abstract class ConstValue extends Value
+abstract class ConstCast extends Cast
 {
     /**
      * @return TOriginalValueType

@@ -8,14 +8,13 @@ use ReflectionNamedType;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Exceptions\TypeGenerateException;
 use Savks\Negotiator\Support\Types\AliasType;
-use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\Mapping\{
     Generic,
     Mapper
 };
 
-class MapperValue extends NullableValue
+class MapperCast extends NullableCast
 {
     use CanBeGeneric;
 
@@ -28,7 +27,6 @@ class MapperValue extends NullableValue
      * @param class-string<Mapper>|Mapper|Closure $mapper
      */
     public function __construct(
-        protected readonly mixed $source,
         protected readonly string|Mapper|Closure $mapper,
         protected readonly string|Closure|null $accessor = null
     ) {
@@ -41,16 +39,21 @@ class MapperValue extends NullableValue
         return $this;
     }
 
-    public function resolveMapper(): ?Mapper
+    protected function finalize(mixed $source, array $sourcesTrace): mixed
     {
-        $value = $this->resolveValueFromAccessor(
+        return $this->resolveMapper($source, $sourcesTrace)?->resolve();
+    }
+
+    public function resolveMapper(mixed $source, array $sourcesTrace): ?Mapper
+    {
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
 
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
+        if ($this->accessor && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
         }
 
         if ($value === null) {
@@ -58,27 +61,20 @@ class MapperValue extends NullableValue
         }
 
         if (is_string($this->mapper)) {
-            $mapper = new ($this->mapper)($value, ...$this->sourcesTrace);
+            $mapper = new ($this->mapper)(
+                $value,
+                ...array_reverse($sourcesTrace)
+            );
         } else {
             $mapper = $this->mapper instanceof Closure ?
-                ($this->mapper)($value, ...$this->sourcesTrace) :
+                ($this->mapper)(
+                    $value,
+                    ...array_reverse($sourcesTrace)
+                ) :
                 $this->mapper;
         }
 
         return $mapper;
-    }
-
-    protected function finalize(): mixed
-    {
-        $mapper = $this->resolveMapper();
-
-        if ($mapper === null) {
-            return null;
-        }
-
-        $mappedValue = $mapper->map();
-
-        return $mappedValue instanceof Value ? $mappedValue->compile() : $mappedValue;
     }
 
     protected function types(): AliasType
@@ -122,10 +118,7 @@ class MapperValue extends NullableValue
             $mapperFQN = $this->mapper::class;
         }
 
-        /** @var TypeGenerationContext $typeGenerationContext */
-        $typeGenerationContext = Context::use(TypeGenerationContext::class);
-
-        $mapperRef = $typeGenerationContext->resolveMapperRef($mapperFQN);
+        $mapperRef = TypeGenerationContext::useSelf()->resolveMapperRef($mapperFQN);
 
         if (! $mapperRef) {
             throw new TypeGenerateException("Unknown mapper — \"{$mapperFQN}\".");

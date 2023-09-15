@@ -7,7 +7,7 @@ use Savks\Negotiator\Support\Types\{
     StringType
 };
 
-class ConstStringValue extends ConstValue
+class ConstStringCast extends ConstCast
 {
     public function __construct(
         protected readonly string $value,
@@ -20,7 +20,7 @@ class ConstStringValue extends ConstValue
         return $this->value;
     }
 
-    protected function finalize(): string
+    protected function finalize(mixed $source, array $sourcesTrace): string
     {
         return $this->value;
     }

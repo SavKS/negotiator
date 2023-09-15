@@ -7,33 +7,26 @@ use Savks\Negotiator\Exceptions\UnexpectedValue;
 
 use Savks\Negotiator\Support\Types\{
     AliasType,
-    RecordType,
-    Type,
-    Types
+    RecordType
 };
 
-class AnyObjectValue extends NullableValue
+class AnyObjectCast extends NullableCast
 {
     use CanBeGeneric;
 
     public function __construct(
-        protected readonly mixed $source,
         protected readonly string|Closure|null $accessor = null,
         protected readonly array|object|null $default = null
     ) {
     }
 
-    protected function finalize(): object|array|null
+    protected function finalize(mixed $source, array $sourcesTrace): object|array|null
     {
-        $value = $this->resolveValueFromAccessor(
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
-
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
-        }
 
         $value ??= $this->default;
 
@@ -52,7 +45,7 @@ class AnyObjectValue extends NullableValue
         return $value;
     }
 
-    protected function types(): Type|Types
+    protected function types(): AliasType|RecordType
     {
         if ($this->assignedToGeneric) {
             return new AliasType($this->assignedToGeneric);

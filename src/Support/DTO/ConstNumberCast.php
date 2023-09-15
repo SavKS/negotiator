@@ -7,7 +7,7 @@ use Savks\Negotiator\Support\Types\{
     NumberType
 };
 
-class ConstNumberValue extends ConstValue
+class ConstNumberCast extends ConstCast
 {
     public function __construct(
         protected readonly int|float $value,
@@ -20,7 +20,7 @@ class ConstNumberValue extends ConstValue
         return $this->value;
     }
 
-    protected function finalize(): int|float
+    protected function finalize(mixed $source, array $sourcesTrace): int|float
     {
         return $this->value;
     }

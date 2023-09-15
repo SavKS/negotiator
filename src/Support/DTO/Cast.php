@@ -3,28 +3,26 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Illuminate\Support\Arr;
-use Savks\Negotiator\Enums\PerformanceTrackers;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
-use Savks\Negotiator\Performance\Performance;
 
 use Savks\Negotiator\Support\Types\{
     Type,
     Types
 };
 
-abstract class Value
+abstract class Cast
 {
     use WorkWithAccessor;
 
     protected array $sourcesTrace = [];
 
-    abstract protected function finalize(): mixed;
+    abstract protected function finalize(mixed $source, array $sourcesTrace): mixed;
 
     abstract protected function types(): Type|Types;
 
-    public function compile(): mixed
+    public function resolve(mixed $source, array $sourcesTrace): mixed
     {
-        $value = $this->finalize();
+        $value = $this->finalize($source, $sourcesTrace);
 
         if ($value === null) {
             throw new UnexpectedNull('NOT NULL', $value);

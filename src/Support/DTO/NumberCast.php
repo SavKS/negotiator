@@ -6,29 +6,31 @@ use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Types\NumberType;
 
-class NumberValue extends NullableValue
+class NumberCast extends NullableCast
 {
     public function __construct(
-        protected readonly mixed $source,
         protected readonly string|Closure|null $accessor = null,
         protected readonly int|float|Closure|null $default = null
     ) {
     }
 
-    protected function finalize(): int|float|null
+    protected function finalize(mixed $source, array $sourcesTrace): int|float|null
     {
-        $value = $this->resolveValueFromAccessor(
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
 
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
+        if ($this->accessor && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
         }
 
         $value ??= $this->default instanceof Closure ?
-            ($this->default)($this->source, ...$this->sourcesTrace) :
+            ($this->default)(
+                $source,
+                ...array_reverse($sourcesTrace)
+            ) :
             $this->default;
 
         if ($value === null) {

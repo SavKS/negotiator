@@ -3,25 +3,19 @@
 namespace Savks\Negotiator\Support\DTO;
 
 use Closure;
+use Savks\Negotiator\Contexts\IterationContext;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
-use Savks\Negotiator\Support\DTO\ArrayValue\Item;
+use Savks\Negotiator\Support\Types\ArrayType;
 
-use Savks\Negotiator\Support\Types\{
-    ArrayType,
-    Type,
-    Types
-};
-
-class ArrayValue extends NullableValue
+class ArrayCast extends NullableCast
 {
     /**
-     * @var (Closure(mixed): bool)|null
+     * @var Closure(mixed): bool|null
      */
     protected ?Closure $filter = null;
 
     public function __construct(
-        protected readonly mixed $source,
-        protected readonly string|Closure $iterator,
+        protected readonly Cast $cast,
         protected readonly string|Closure|null $accessor = null
     ) {
     }
@@ -36,16 +30,16 @@ class ArrayValue extends NullableValue
         return $this;
     }
 
-    protected function finalize(): mixed
+    protected function finalize(mixed $source, array $sourcesTrace): ?array
     {
-        $value = $this->resolveValueFromAccessor(
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
 
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
+        if ($this->accessor && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
         }
 
         if ($value === null) {
@@ -61,16 +55,10 @@ class ArrayValue extends NullableValue
         $value = is_array($value) ? $value : iterator_to_array($value);
 
         foreach (array_values($value) as $index => $item) {
-            $listItemValue = ($this->iterator)(
-                new Item($index, $item, $this->sourcesTrace)
-            );
-
-            if (! $listItemValue instanceof Value) {
-                throw new UnexpectedValue(Value::class, $listItemValue, $index);
-            }
-
             try {
-                $data = $listItemValue->compile();
+                $data = (new IterationContext($index))->wrap(
+                    fn () => $this->cast->resolve($item, $sourcesTrace)
+                );
 
                 if ($this->filter && ! ($this->filter)($data)) {
                     continue;
@@ -85,15 +73,10 @@ class ArrayValue extends NullableValue
         return $result;
     }
 
-    protected function types(): Type|Types
+    protected function types(): ArrayType
     {
-        /** @var Value $value */
-        $value = ($this->iterator)(
-            new Item(0, null)
-        );
-
         return new ArrayType(
-            $value->compileTypes()
+            $this->cast->compileTypes()
         );
     }
 }

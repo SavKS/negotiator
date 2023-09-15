@@ -6,8 +6,8 @@ use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\Support\Types\AliasType;
 
 use Savks\Negotiator\Support\DTO\{
-    NullableValue,
-    Value
+    Cast,
+    NullableCast
 };
 
 class AliasMapper extends Mapper
@@ -16,9 +16,9 @@ class AliasMapper extends Mapper
     {
     }
 
-    public function map(): Value
+    public function schema(): Cast
     {
-        return new class ($this->alias) extends NullableValue {
+        return new class ($this->alias) extends NullableCast {
             public function __construct(public readonly string $alias)
             {
             }

@@ -6,26 +6,21 @@ use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Types\BooleanType;
 
-class BooleanValue extends NullableValue
+class BooleanCast extends NullableCast
 {
     public function __construct(
-        protected readonly mixed $source,
         protected readonly string|Closure|null $accessor = null,
         protected readonly bool|null $default = null
     ) {
     }
 
-    protected function finalize(): ?bool
+    protected function finalize(mixed $source, array $sourcesTrace): ?bool
     {
-        $value = $this->resolveValueFromAccessor(
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
-
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
-        }
 
         $value ??= $this->default;
 

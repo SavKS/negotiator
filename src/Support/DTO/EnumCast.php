@@ -12,29 +12,24 @@ use Savks\Negotiator\Support\Types\{
     StringType
 };
 
-class EnumValue extends NullableValue
+class EnumCast extends NullableCast
 {
     /**
      * @param class-string<BackedEnum> $enum
      */
     public function __construct(
-        protected readonly mixed $source,
         protected readonly string $enum,
         protected readonly string|Closure|null $accessor = null,
     ) {
     }
 
-    protected function finalize(): string|int|null
+    protected function finalize(mixed $source, array $sourcesTrace): string|int|null
     {
-        $value = $this->resolveValueFromAccessor(
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
-
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
-        }
 
         if ($value === null) {
             return null;

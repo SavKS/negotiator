@@ -7,11 +7,9 @@ use Closure;
 use Illuminate\Support\Stringable;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
-use Savks\Negotiator\Support\DTO\ObjectValue\MissingValue;
 use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\DTO\Utils\{
-    Factory,
     Record,
     Spread
 };
@@ -22,61 +20,42 @@ use Savks\Negotiator\Support\Types\{
     Types
 };
 
-class ObjectValue extends NullableValue
+class ObjectCast extends NullableCast
 {
     /**
-     * @var array<string, Value>|null
+     * @var array<string, Cast>|null
      */
     protected ?array $value;
 
     /**
-     * @param Closure(Factory): (array|Record) $callback
+     * @param array<string, Cast>|Record $schema
      */
     public function __construct(
-        protected readonly mixed $source,
-        protected readonly Closure $callback,
+        protected readonly array $schema,
         protected readonly string|Closure|null $accessor = null
     ) {
     }
 
-    protected function finalize(): ?array
+    protected function finalize(mixed $source, array $sourcesTrace): ?array
     {
-        $value = $this->resolveValueFromAccessor(
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
 
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
+        if ($this->accessor && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
         }
 
         if ($value === null) {
             return null;
         }
 
-        /** @var array|Record|mixed $mappedValue */
-        $mappedValue = ($this->callback)(
-            new Factory($value, $this->sourcesTrace)
-        );
-
-        if (! is_array($mappedValue)
-            && (! $mappedValue instanceof Record)
-        ) {
-            throw new UnexpectedValue([
-                'array<string, ' . Value::class . '>',
-                Record::class,
-            ], $mappedValue);
-        }
-
         $result = [];
 
-        if ($mappedValue instanceof Record) {
-            foreach ($mappedValue->entries() as [$field, $fieldValue]) {
-                if ($fieldValue instanceof MissingValue) {
-                    continue;
-                }
-
+        if ($this->schema instanceof Record) {
+            foreach ($this->schema->entries() as [$field, $fieldValue]) {
                 try {
                     $fieldAsString = match (true) {
                         $field instanceof BackedEnum => $field->value,
@@ -91,21 +70,16 @@ class ObjectValue extends NullableValue
                 }
             }
         } else {
-            /** @var Value|mixed $fieldValue */
-            foreach ($mappedValue as $field => $fieldValue) {
+            foreach ($this->schema as $field => $fieldValue) {
                 if ($fieldValue instanceof Spread) {
-                    $fieldValue->applyTo($result);
+                    $fieldValue->applyTo($value, $sourcesTrace, $result);
                 } else {
-                    if ($fieldValue instanceof MissingValue) {
-                        continue;
-                    }
-
-                    if (! $fieldValue instanceof Value) {
-                        throw new UnexpectedValue(Value::class, $fieldValue);
+                    if (! $fieldValue instanceof Cast) {
+                        throw new UnexpectedValue(Cast::class, $fieldValue);
                     }
 
                     try {
-                        $result[$field] = $fieldValue->compile();
+                        $result[$field] = $fieldValue->resolve($value, $sourcesTrace);
                     } catch (UnexpectedValue $e) {
                         throw UnexpectedValue::wrap($e, $field);
                     }
@@ -118,29 +92,14 @@ class ObjectValue extends NullableValue
 
     protected function types(): ConstRecordType|Types
     {
-        /** @var array<string, Value|Spread>|Record|mixed $mappedValue */
-        $mappedValue = ($this->callback)(
-            new Factory(null)
-        );
-
-        if (! is_array($mappedValue)
-            && (! $mappedValue instanceof Record)
-        ) {
-            throw new UnexpectedValue([
-                'array<string, ' . Value::class . '>',
-                Record::class,
-            ], $mappedValue);
-        }
-
-        /** @var TypeGenerationContext $typeGenerationContext */
         $typeGenerationContext = Context::use(TypeGenerationContext::class);
 
         $result = new ConstRecordType();
 
         $additionalRecords = [];
 
-        if ($mappedValue instanceof Record) {
-            foreach ($mappedValue->entries() as [$field, $value]) {
+        if ($this->schema instanceof Record) {
+            foreach ($this->schema->entries() as [$field, $value]) {
                 if ($field instanceof Stringable) {
                     $fieldAsString = (string)$field;
                 } elseif ($field instanceof BackedEnum) {
@@ -166,7 +125,7 @@ class ObjectValue extends NullableValue
                 );
             }
         } else {
-            foreach ($mappedValue as $field => $value) {
+            foreach ($this->schema as $field => $value) {
                 if ($value instanceof Spread) {
                     $value->applyTypesTo($result);
                 } else {

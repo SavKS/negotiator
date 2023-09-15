@@ -7,8 +7,7 @@ use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Types\ConstRecordType;
 
 use Savks\Negotiator\Support\DTO\{
-    ObjectValue\MissingValue,
-    Value,
+    Cast,
     WorkWithAccessor
 };
 
@@ -19,53 +18,34 @@ class Spread
     protected array $sourcesTrace = [];
 
     /**
-     * @param Closure(Factory): array $callback
+     * @param array<string, Cast> $schema
      */
     public function __construct(
-        protected readonly mixed $source,
-        protected readonly Closure $callback,
+        protected readonly array $schema,
         protected readonly string|Closure|null $accessor = null
     ) {
     }
 
-    public function setSourcesTrace(mixed $trace): static
+    public function applyTo(array &$data, mixed $source, array $sourcesTrace): void
     {
-        $this->sourcesTrace = [...$this->sourcesTrace, ...$trace];
-
-        return $this;
-    }
-
-    public function applyTo(array &$data): void
-    {
-        $value = $this->resolveValueFromAccessor(
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
 
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
-        }
+        $sourcesTrace[] = $source;
 
-        $factory = new Factory($value, $this->sourcesTrace);
-
-        $mappedValue = ($this->callback)($factory);
-
-        /** @var Value|Spread|mixed $fieldValue */
-        foreach ($mappedValue as $field => $fieldValue) {
+        foreach ($this->schema as $field => $fieldValue) {
             if ($fieldValue instanceof Spread) {
-                $fieldValue->applyTo($data);
+                $fieldValue->applyTo($value, $sourcesTrace, $data);
             } else {
-                if ($fieldValue instanceof MissingValue) {
-                    continue;
-                }
-
-                if (! $fieldValue instanceof Value) {
-                    throw new UnexpectedValue(Value::class, $fieldValue);
+                if (! $fieldValue instanceof Cast) {
+                    throw new UnexpectedValue(Cast::class, $fieldValue);
                 }
 
                 try {
-                    $data[$field] = $fieldValue->compile();
+                    $data[$field] = $fieldValue->resolve($value, $sourcesTrace);
                 } catch (UnexpectedValue $e) {
                     throw UnexpectedValue::wrap($e, $field);
                 }
@@ -75,12 +55,7 @@ class Spread
 
     public function applyTypesTo(ConstRecordType $resultType): void
     {
-        /** @var array<string, Value|Spread> $mappedValue */
-        $mappedValue = ($this->callback)(
-            new Factory(null)
-        );
-
-        foreach ($mappedValue as $field => $value) {
+        foreach ($this->schema as $field => $value) {
             if ($value instanceof Spread) {
                 $value->applyTypesTo($resultType);
             } else {

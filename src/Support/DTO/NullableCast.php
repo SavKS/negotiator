@@ -11,7 +11,7 @@ use Savks\Negotiator\Support\Types\{
     UndefinedType
 };
 
-abstract class NullableValue extends Value
+abstract class NullableCast extends Cast
 {
     public bool $nullable = false;
 
@@ -22,9 +22,9 @@ abstract class NullableValue extends Value
         return $this;
     }
 
-    public function compile(): mixed
+    public function resolve(mixed $source, array $sourcesTrace): mixed
     {
-        $value = $this->finalize();
+        $value = $this->finalize($source, $sourcesTrace);
 
         if ($value === null && ! $this->nullable) {
             throw new UnexpectedNull('NOT NULL', $value);

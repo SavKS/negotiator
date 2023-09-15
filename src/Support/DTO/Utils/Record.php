@@ -3,7 +3,7 @@
 namespace Savks\Negotiator\Support\DTO\Utils;
 
 use BackedEnum;
-use Savks\Negotiator\Support\DTO\Value;
+use Savks\Negotiator\Support\DTO\Cast;
 use Stringable;
 
 final class Record
@@ -11,11 +11,11 @@ final class Record
     protected array $keys = [];
 
     /**
-     * @var list<array{string|int|Stringable|BackedEnum, Value}>
+     * @var list<array{string|int|Stringable|BackedEnum, Cast}>
      */
     protected array $entries = [];
 
-    public function set(string|int|Stringable|BackedEnum $key, Value $value): self
+    public function set(string|int|Stringable|BackedEnum $key, Cast $value): self
     {
         $index = array_search($key, $this->keys, true);
 
@@ -36,7 +36,7 @@ final class Record
     }
 
     /**
-     * @param list<array{string|int|Stringable|BackedEnum, Value}> $entries
+     * @param list<array{string|int|Stringable|BackedEnum, Cast}> $entries
      */
     public static function fromEntries(array $entries): self
     {

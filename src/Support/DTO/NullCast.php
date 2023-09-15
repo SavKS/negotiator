@@ -4,15 +4,11 @@ namespace Savks\Negotiator\Support\DTO;
 
 use Savks\Negotiator\Support\Types\NullType;
 
-class NullValue extends NullableValue
+class NullCast extends NullableCast
 {
     public bool $nullable = true;
 
-    public function __construct()
-    {
-    }
-
-    protected function finalize(): mixed
+    protected function finalize(mixed $source, array $sourcesTrace): mixed
     {
         return null;
     }

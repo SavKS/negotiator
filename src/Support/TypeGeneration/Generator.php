@@ -59,7 +59,7 @@ class Generator
                         }
 
                         $generics = $mapper->declareGenerics();
-                        $types = $mapper->map()->compileTypes();
+                        $types = $mapper->schema()->compileTypes();
                     } catch (Throwable $e) {
                         $safeDestPath = ltrim(
                             str_replace(
@@ -96,6 +96,33 @@ class Generator
     }
 
     /**
+     * @param GenericDeclaration[] $generics
+     */
+    protected function stringifyGenerics(array $generics): string
+    {
+        $parts = [];
+
+        foreach ($generics as $generic) {
+            $parts[] = $generic->stringify($this->refsResolver);
+        }
+
+        return implode(', ', $parts);
+    }
+
+    protected function write(string $content, string $destPath): bool
+    {
+        $destDir = dirname($destPath);
+
+        if (! is_dir($destDir)) {
+            mkdir($destDir, recursive: true);
+        }
+
+        $status = file_put_contents($destPath, $content);
+
+        return $status !== false;
+    }
+
+    /**
      * @param array<string, string[]> $schema
      */
     protected function generateCode(array $schema): string
@@ -127,32 +154,5 @@ class Generator
         }
 
         return implode("\n\n", $blocks);
-    }
-
-    protected function write(string $content, string $destPath): bool
-    {
-        $destDir = dirname($destPath);
-
-        if (! is_dir($destDir)) {
-            mkdir($destDir, recursive: true);
-        }
-
-        $status = file_put_contents($destPath, $content);
-
-        return $status !== false;
-    }
-
-    /**
-     * @param GenericDeclaration[] $generics
-     */
-    protected function stringifyGenerics(array $generics): string
-    {
-        $parts = [];
-
-        foreach ($generics as $generic) {
-            $parts[] = $generic->stringify($this->refsResolver);
-        }
-
-        return implode(', ', $parts);
     }
 }

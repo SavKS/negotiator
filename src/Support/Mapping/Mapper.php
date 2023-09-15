@@ -2,21 +2,16 @@
 
 namespace Savks\Negotiator\Support\Mapping;
 
-use Closure;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use JsonSerializable;
 use Savks\Negotiator\Enums\PerformanceTrackers;
 use Savks\Negotiator\Performance\Performance;
+use Savks\Negotiator\Support\DTO\Cast;
 
 use Savks\Negotiator\Exceptions\{
     MappingFail,
     UnexpectedValue
-};
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    Utils\Intersection,
-    Value
 };
 
 /**
@@ -29,8 +24,6 @@ abstract class Mapper implements JsonSerializable, Responsable
      */
     protected ?array $generics = null;
 
-    abstract public function map(): Value|Intersection;
-
     /**
      * @return GenericDeclaration[]
      */
@@ -39,15 +32,14 @@ abstract class Mapper implements JsonSerializable, Responsable
         return [];
     }
 
-    /**
-     * @param Closure(Factory):(Value|Intersection) $callback
-     */
-    public function factory(Closure $callback)
+    public function dd(): never
     {
-        return $callback(new Factory($this));
+        dd(
+            $this->resolve()
+        );
     }
 
-    public function finalize(): mixed
+    public function resolve(): mixed
     {
         $className = class_basename(static::class);
 
@@ -61,30 +53,20 @@ abstract class Mapper implements JsonSerializable, Responsable
 
                 $event->begin();
 
-                $result = $this->map()->compile();
+                $result = $this->schema()->resolve($this, []);
 
                 $event->end();
 
                 return $result;
             }
 
-            return $this->map()->compile();
+            return $this->schema()->resolve($this, []);
         } catch (UnexpectedValue $e) {
             throw new MappingFail($this, $e);
         }
     }
 
-    public function dd(): never
-    {
-        dd(
-            $this->finalize()
-        );
-    }
-
-    public function jsonSerialize(): mixed
-    {
-        return $this->finalize();
-    }
+    abstract public function schema(): Cast;
 
     public function toResponse($request): JsonResponse
     {
@@ -93,6 +75,11 @@ abstract class Mapper implements JsonSerializable, Responsable
             $this->httpStatus(),
             options: $this->jsonOptions(),
         );
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->resolve();
     }
 
     protected function httpStatus(): int

@@ -17,29 +17,24 @@ use Savks\Negotiator\Support\Types\{
     Types
 };
 
-class OneOfConstValue extends NullableValue
+class OneOfConstCast extends NullableCast
 {
     /**
-     * @param ConstValue[] $values
+     * @param ConstCast[] $values
      */
     public function __construct(
-        protected readonly mixed $source,
         protected readonly array $values,
         protected readonly string|Closure|null $accessor = null
     ) {
     }
 
-    protected function finalize(): string|int|float|bool|null
+    protected function finalize(mixed $source, array $sourcesTrace): string|int|float|bool|null
     {
-        $value = $this->resolveValueFromAccessor(
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
-
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
-        }
 
         if ($value === null) {
             return null;
@@ -59,7 +54,7 @@ class OneOfConstValue extends NullableValue
             $types = [];
 
             foreach ($this->values as $constValue) {
-                if ($constValue instanceof ConstEnumValue) {
+                if ($constValue instanceof ConstEnumCast) {
                     $types[] = 'BackedEnum<' . $constValue->originalValue()::class . '>';
                 } else {
                     foreach ($constValue->compileTypes()->types as $type) {

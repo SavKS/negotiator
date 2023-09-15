@@ -8,9 +8,9 @@ use Savks\Negotiator\Support\Types\{
 };
 
 /**
- * @extends ConstValue<bool>
+ * @extends ConstCast<bool>
  */
-class ConstBooleanValue extends ConstValue
+class CastBooleanValue extends ConstCast
 {
     public function __construct(
         protected readonly bool $value,
@@ -23,7 +23,7 @@ class ConstBooleanValue extends ConstValue
         return $this->value;
     }
 
-    protected function finalize(): bool
+    protected function finalize(mixed $source, array $sourcesTrace): bool
     {
         return $this->value;
     }

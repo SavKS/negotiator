@@ -7,12 +7,11 @@ use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Types\StringType;
 use Stringable;
 
-class StringValue extends NullableValue
+class StringCast extends NullableCast
 {
     protected bool $isStringableAllowed = false;
 
     public function __construct(
-        protected mixed $source,
         protected readonly string|Closure|null $accessor = null,
         protected readonly string|Closure|null $default = null
     ) {
@@ -25,20 +24,23 @@ class StringValue extends NullableValue
         return $this;
     }
 
-    protected function finalize(): ?string
+    protected function finalize(mixed $source, array $sourcesTrace): ?string
     {
-        $value = $this->resolveValueFromAccessor(
+        $value = static::resolveValueFromAccessor(
             $this->accessor,
-            $this->source,
-            $this->sourcesTrace
+            $source,
+            $sourcesTrace
         );
 
-        if ($this->accessor && last($this->sourcesTrace) !== $this->source) {
-            $this->sourcesTrace[] = $this->source;
+        if ($this->accessor && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
         }
 
         $value ??= $this->default instanceof Closure ?
-            ($this->default)($this->source, ...$this->sourcesTrace) :
+            ($this->default)(
+                $source,
+                ...array_reverse($sourcesTrace)
+            ) :
             $this->default;
 
         if ($value === null) {

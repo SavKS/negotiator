@@ -14,7 +14,7 @@ use Savks\Negotiator\Support\Types\{
     StringType
 };
 
-class ConstEnumValue extends ConstValue
+class ConstEnumCast extends ConstCast
 {
     public function __construct(protected readonly BackedEnum $case)
     {
@@ -25,7 +25,7 @@ class ConstEnumValue extends ConstValue
         return $this->case;
     }
 
-    protected function finalize(): string|int|null
+    protected function finalize(mixed $source, array $sourcesTrace): string|int|null
     {
         return $this->case->value;
     }

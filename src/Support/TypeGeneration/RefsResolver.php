@@ -28,14 +28,6 @@ class RefsResolver
     ) {
     }
 
-    public function resolve(RefTypes $type, string $target): ?array
-    {
-        return match ($type) {
-            RefTypes::ENUM => $this->resolveEnumRef($target),
-            RefTypes::MAPPER => $this->resolveMapperRef($target)
-        };
-    }
-
     public function resolveImport(RefTypes $type, string $target): ?string
     {
         $parts = $this->resolve($type, $target);
@@ -47,6 +39,14 @@ class RefsResolver
         [$namespace, $mapperName] = $parts;
 
         return "import('{$namespace}').{$mapperName}";
+    }
+
+    public function resolve(RefTypes $type, string $target): ?array
+    {
+        return match ($type) {
+            RefTypes::ENUM => $this->resolveEnumRef($target),
+            RefTypes::MAPPER => $this->resolveMapperRef($target)
+        };
     }
 
     protected function resolveEnumRef(string $enumFQN): array

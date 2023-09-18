@@ -6,9 +6,9 @@ use BackedEnum;
 use Closure;
 use Illuminate\Support\Traits\Macroable;
 
-use Savks\Negotiator\Support\DTO\{
-    Utils\Record,
-    Utils\Spread,
+use Savks\Negotiator\Support\Mapping\Casts\{
+    ObjectUtils\Spread,
+    ObjectUtils\TypedField,
     AnyCast,
     AnyObjectCast,
     ArrayCast,
@@ -47,7 +47,7 @@ class Schema
     }
 
     /**
-     * @param array<string, Cast>|Record $schema
+     * @param array<string, Cast>|Spread[]|TypedField[] $schema
      */
     public static function object(array $schema, string|Closure|null $accessor = null): ObjectCast
     {
@@ -90,9 +90,9 @@ class Schema
     }
 
     /**
-     * @param class-string<Mapper>|Closure $mapper
+     * @param class-string<Mapper>|Mapper|Closure $mapper
      */
-    public static function mapper(string|Closure $mapper, string|Closure|null $accessor = null): MapperCast
+    public static function mapper(string|Mapper|Closure $mapper, string|Closure|null $accessor = null): MapperCast
     {
         return new MapperCast($mapper, $accessor);
     }

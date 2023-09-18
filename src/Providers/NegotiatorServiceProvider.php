@@ -3,8 +3,9 @@
 namespace Savks\Negotiator\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Savks\Negotiator\Mapping\SchemasRepository;
 use Savks\Negotiator\Performance\Performance;
-use Savks\Negotiator\TypeGeneration\MapperAliases;
+use Savks\Negotiator\Support\TypeGeneration\MapperAliases;
 
 class NegotiatorServiceProvider extends ServiceProvider
 {
@@ -12,6 +13,7 @@ class NegotiatorServiceProvider extends ServiceProvider
     {
         $this->app->singleton(MapperAliases::class);
         $this->app->singleton(Performance::class);
+        $this->app->singleton(SchemasRepository::class);
 
         $this->registerConfigs();
     }

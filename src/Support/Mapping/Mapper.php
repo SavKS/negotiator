@@ -6,8 +6,9 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use JsonSerializable;
 use Savks\Negotiator\Enums\PerformanceTrackers;
+use Savks\Negotiator\Mapping\SchemasRepository;
 use Savks\Negotiator\Performance\Performance;
-use Savks\Negotiator\Support\DTO\Cast;
+use Savks\Negotiator\Support\Mapping\Casts\Cast;
 
 use Savks\Negotiator\Exceptions\{
     MappingFail,
@@ -23,6 +24,8 @@ abstract class Mapper implements JsonSerializable, Responsable
      * @var Generic[]|null
      */
     protected ?array $generics = null;
+
+    abstract public static function schema(): Cast;
 
     /**
      * @return GenericDeclaration[]
@@ -43,6 +46,8 @@ abstract class Mapper implements JsonSerializable, Responsable
     {
         $className = class_basename(static::class);
 
+        $schema = app(SchemasRepository::class)->resolve(static::class);
+
         $performance = app(Performance::class);
 
         try {
@@ -53,20 +58,18 @@ abstract class Mapper implements JsonSerializable, Responsable
 
                 $event->begin();
 
-                $result = $this->schema()->resolve($this, []);
+                $result = $schema->resolve($this, []);
 
                 $event->end();
 
                 return $result;
             }
 
-            return $this->schema()->resolve($this, []);
+            return $schema->resolve($this, []);
         } catch (UnexpectedValue $e) {
             throw new MappingFail($this, $e);
         }
     }
-
-    abstract public function schema(): Cast;
 
     public function toResponse($request): JsonResponse
     {

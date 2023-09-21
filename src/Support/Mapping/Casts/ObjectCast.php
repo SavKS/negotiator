@@ -59,7 +59,7 @@ class ObjectCast extends NullableCast
             if ($fieldValue instanceof Spread) {
                 $spread = $fieldValue;
 
-                $spread->applyTo($value, $sourcesTrace, $result);
+                $spread->applyTo($result, $value, $sourcesTrace);
             } elseif ($fieldValue instanceof TypedField) {
                 $typedField = $fieldValue;
 

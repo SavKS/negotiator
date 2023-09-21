@@ -15,13 +15,7 @@ composer require savks/negotiator
 
 namespace App\Http\Mapping;
 
-use App\Models\User;
-use Savks\Negotiator\Support\Mapping\Mapper;
-
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    ObjectValue
-};
+use App\Models\User;use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};use Savks\Negotiator\Support\Mapping\Mapper;
 
 class UserMapper extends Mapper
 {
@@ -29,9 +23,9 @@ class UserMapper extends Mapper
     {
     }
 
-    public function map(): ObjectValue
+    public function map(): ObjectCast
     {
-        return new ObjectValue($this->user, fn (Factory $factory) => [
+        return new ObjectCast($this->user, fn (Factory $factory) => [
             'id' => $factory->string('id'),
             'firstName' => $factory->string('first_name'),
             'lastName' => $factory->string('last_name')->nullable(),
@@ -62,13 +56,9 @@ class UserMapper extends Mapper
 ```php
 <?php
 
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    ArrayValue\Item,
-    ObjectValue
-};
+use Savks\Negotiator\Support\Mapping\{ArrayValue\Item,Casts\ObjectCast,Utils\Factory};
 
-new ObjectValue($this->source, fn (Factory $factory) => [
+new ObjectCast($this->source, fn (Factory $factory) => [
     'items' => $factory->array(
         fn (Item $item) => $item->anyObject(),
         'items'
@@ -80,12 +70,9 @@ new ObjectValue($this->source, fn (Factory $factory) => [
 * `object` — об'єкт зі статичними полями. Приклад:
 
 ```php
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    ObjectValue
-};
+use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
 
-new ObjectValue($this->source, fn (Factory $factory) => [
+new ObjectCast($this->source, fn (Factory $factory) => [
     'field' => $factory->string('field'),
 ]);
 ```
@@ -95,13 +82,9 @@ new ObjectValue($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    ArrayValue\Item,
-    ObjectValue
-};
+use Savks\Negotiator\Support\Mapping\{ArrayValue\Item,Casts\ObjectCast,Utils\Factory};
 
-new ObjectValue($this->source, fn (Factory $factory) => [
+new ObjectCast($this->source, fn (Factory $factory) => [
     'items' => $factory->keyedArray(
         'id',
         fn (Item $item) => $item->anyObject(),
@@ -118,16 +101,9 @@ new ObjectValue($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use App\Models\User;
-use App\Mapping\UserMapper;
+use App\Mapping\UserMapper;use App\Models\User;use Savks\Negotiator\Support\Mapping\{ArrayValue\Item,Casts\ObjectCast,Utils\Factory};
 
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    ArrayValue\Item,
-    ObjectValue
-};
-
-new ObjectValue($this->source, fn (Factory $factory) => [
+new ObjectCast($this->source, fn (Factory $factory) => [
     'user' => $factory->mapper(
         fn (User $item): UserMapper => new UserMapper($user),
         'user'
@@ -142,14 +118,9 @@ new ObjectValue($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use App\Models\User;
+use App\Models\User;use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
 
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    ObjectValue
-};
-
-new ObjectValue($this->source, fn (Factory $factory) => [
+new ObjectCast($this->source, fn (Factory $factory) => [
     'field' => $factory
         ->union()
         ->variant(
@@ -177,12 +148,9 @@ new ObjectValue($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    ObjectValue
-};
+use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
 
-new ObjectValue($this->source, fn (Factory $factory) => [
+new ObjectCast($this->source, fn (Factory $factory) => [
     'field' => $factory->string('field'),
     
     $factory->spread(
@@ -199,14 +167,9 @@ new ObjectValue($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use App\Models\User;
+use App\Models\User;use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
 
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    ObjectValue
-};
-
-new ObjectValue($this->source, fn (Factory $factory) => [
+new ObjectCast($this->source, fn (Factory $factory) => [
     'field' => $factory->intersection(
         $factory->mapper(
             fn (User $user): UserMapper => new UserMapper($user),
@@ -222,15 +185,11 @@ new ObjectValue($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    Utils\Intersection,
-    ObjectValue
-};
+use Savks\Negotiator\Support\Mapping\{Casts\IntersectionCast,Casts\ObjectCast,Utils\Factory};
 
-new Intersection(
+new IntersectionCast(
     new UserMapper($this->user),
-    new ObjectValue($this->user, fn (Factory $factory) => [
+    new ObjectCast($this->user, fn (Factory $factory) => [
         'otherField' => $factory->string('other_field')
     ]),
 );
@@ -241,14 +200,9 @@ new Intersection(
 ```php
 <?php
 
-use App\Models\User;
+use App\Models\User;use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
 
-use Savks\Negotiator\Support\DTO\{
-    Utils\Factory,
-    ObjectValue
-};
-
-new ObjectValue($this->source, fn (Factory $factory) => [
+new ObjectCast($this->source, fn (Factory $factory) => [
     'field' => $factory->oneOfConst([
         $factory->constNumber(1),
         $factory->constNumber(2),
@@ -269,7 +223,7 @@ use Savks\Negotiator\Enums\RefTypes;
 use Illuminate\Support\Str;
 
 use Savks\Negotiator\Support\TypeGeneration\{
-    Generator,
+    TypeScript\Generator,
     Target
 };
 

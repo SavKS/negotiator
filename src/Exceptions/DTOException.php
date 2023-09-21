@@ -2,9 +2,9 @@
 
 namespace Savks\Negotiator\Exceptions;
 
-use Exception;
+use LogicException;
 
-class DTOException extends Exception
+class DTOException extends LogicException
 {
 
 }

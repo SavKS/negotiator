@@ -23,8 +23,6 @@ use Savks\Negotiator\Support\Mapping\{
     Schema
 };
 
-use Savks\Negotiator\Support\Mapping\Mapper;
-
 final class UserMapper extends Mapper
 {
     public function __construct(public readonly User $user)

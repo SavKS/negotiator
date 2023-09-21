@@ -1,6 +1,6 @@
 <?php
 
-namespace Savks\Negotiator\Support\TypeGeneration;
+namespace Savks\Negotiator\Support\TypeGeneration\TypeScript;
 
 use BackedEnum;
 use Closure;

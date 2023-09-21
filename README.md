@@ -15,21 +15,29 @@ composer require savks/negotiator
 
 namespace App\Http\Mapping;
 
-use App\Models\User;use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};use Savks\Negotiator\Support\Mapping\Mapper;
+use App\Models\User;
 
-class UserMapper extends Mapper
+use Savks\Negotiator\Support\Mapping\{
+    Casts\Cast,
+    Mapper,
+    Schema
+};
+
+use Savks\Negotiator\Support\Mapping\Mapper;
+
+final class UserMapper extends Mapper
 {
     public function __construct(public readonly User $user)
     {
     }
 
-    public function map(): ObjectCast
+    public static function schema(): Cast
     {
-        return new ObjectCast($this->user, fn (Factory $factory) => [
-            'id' => $factory->string('id'),
-            'firstName' => $factory->string('first_name'),
-            'lastName' => $factory->string('last_name')->nullable(),
-        ]);
+        return Schema::object([
+            'id' => Schema::string('id'),
+            'firstName' => Schema::string('first_name'),
+            'lastName' => Schema::string('last_name')->nullable(),
+        ], 'user');
     }
 }
 ```
@@ -56,11 +64,14 @@ class UserMapper extends Mapper
 ```php
 <?php
 
-use Savks\Negotiator\Support\Mapping\{ArrayValue\Item,Casts\ObjectCast,Utils\Factory};
+use Savks\Negotiator\Support\Mapping\{
+    Casts\Cast,
+    Schema
+};
 
-new ObjectCast($this->source, fn (Factory $factory) => [
-    'items' => $factory->array(
-        fn (Item $item) => $item->anyObject(),
+Schema::object([
+    'items' => Schema::array(
+        Schema::anyObject(),
         'items'
     ),
 ]);
@@ -70,10 +81,15 @@ new ObjectCast($this->source, fn (Factory $factory) => [
 * `object` — об'єкт зі статичними полями. Приклад:
 
 ```php
-use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
+<?php
 
-new ObjectCast($this->source, fn (Factory $factory) => [
-    'field' => $factory->string('field'),
+use Savks\Negotiator\Support\Mapping\{
+    Casts\Cast,
+    Schema
+};
+
+Schema::object([
+    'field' => Schema::string('field'),
 ]);
 ```
 
@@ -82,12 +98,14 @@ new ObjectCast($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use Savks\Negotiator\Support\Mapping\{ArrayValue\Item,Casts\ObjectCast,Utils\Factory};
+use Savks\Negotiator\Support\Mapping\{
+    Casts\Cast,
+    Schema
+};
 
-new ObjectCast($this->source, fn (Factory $factory) => [
-    'items' => $factory->keyedArray(
-        'id',
-        fn (Item $item) => $item->anyObject(),
+Schema::object([
+    'items' => Schema::keyedArray(
+        Schema::anyObject(),
         'items'
     ),
 ]);
@@ -101,13 +119,22 @@ new ObjectCast($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use App\Mapping\UserMapper;use App\Models\User;use Savks\Negotiator\Support\Mapping\{ArrayValue\Item,Casts\ObjectCast,Utils\Factory};
+use App\Models\User;
 
-new ObjectCast($this->source, fn (Factory $factory) => [
-    'user' => $factory->mapper(
-        fn (User $item): UserMapper => new UserMapper($user),
+use Savks\Negotiator\Support\Mapping\{
+    Casts\Cast,
+    Schema
+};
+
+Schema::object([
+    'user' => Schema::mapper(
+        fn (User $user): UserMapper => new UserMapper($user),
         'user'
     ),
+]);
+
+Schema::object([
+    'user' => Schema::mapper( UserMapper::class, 'user'),
 ]);
 ```
 
@@ -118,26 +145,30 @@ new ObjectCast($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use App\Models\User;use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
+use App\Models\User;
 
-new ObjectCast($this->source, fn (Factory $factory) => [
-    'field' => $factory
-        ->union()
+use Savks\Negotiator\Support\Mapping\{
+    Casts\Cast,
+    Schema
+};
+
+Schema::object([
+    'field' => Schema::union()
         ->variant(
             fn (User $user) => $user->role === 'admin',
-            fn (Factory $factory) => $factory->object(fn (Factory $factory) => [
-                'field' => $factory->string('field'),
+            Schema::object([
+                'field' => Schema::string('field'),
             ])
         )
         ->variant(
             fn (User $user) => $user->role === 'guest',
-            fn (Factory $factory) => $factory->object(fn (Factory $factory) => [
-                'field' => $factory->string('field'),
+            Schema::object([
+                'field' => Schema::string('field'),
             ])
         )
         ->default(
-            fn (Factory $factory) => $factory->object(fn (Factory $factory) => [
-                'field' => $factory->string('field'),
+            Schema::object([
+                'field' => Schema::string('field'),
             ])
         ),
 ]);
@@ -148,17 +179,40 @@ new ObjectCast($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
+use Savks\Negotiator\Support\Mapping\Schema;
 
-new ObjectCast($this->source, fn (Factory $factory) => [
-    'field' => $factory->string('field'),
+use Savks\Negotiator\Support\Mapping\Casts\{
+    ObjectUtils\Spread,
+    Cast
+};
+
+Schema::object([
+    'field' => Schema::string('field'),
     
-    $factory->spread(
-        fn (Factory $factory) => [
-            'otherField' => $factory->string('other_field')
-        ],
-        'accessor'
-    ),
+    new Spread([
+        'otherField' => Schema::string('other_field')
+    ], 'accessor'),
+]);
+```
+
+* `typedField` — дозволяє вказувати поле з типізованим ключем. Приклад:
+
+```php
+<?php
+
+use Savks\Negotiator\Support\Mapping\Schema;
+
+use Savks\Negotiator\Support\Mapping\Casts\{
+    ObjectUtils\TypedField,
+    Cast
+};
+
+Schema::object([
+    'field' => Schema::string('field'),
+    
+    new TypedField(SomeEnum::CASE, [
+        'otherField' => Schema::string('other_field')
+    ]),
 ]);
 ```
 
@@ -167,32 +221,20 @@ new ObjectCast($this->source, fn (Factory $factory) => [
 ```php
 <?php
 
-use App\Models\User;use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
+use Savks\Negotiator\Support\Mapping\{
+    Casts\Cast,
+    Schema
+};
 
-new ObjectCast($this->source, fn (Factory $factory) => [
-    'field' => $factory->intersection(
-        $factory->mapper(
-            fn (User $user): UserMapper => new UserMapper($user),
-            'user'
-        ),
-        $factory->object( fn (Factory $factory) => [
-            'otherField' => $factory->string('other_field')
-        ], 'user' ),
+Schema::object([
+    'field' => Schema::intersection(
+        Schema::mapper(UserMapper::class, 'user'),
+
+        Schema::object([
+            'otherField' => Schema::string('other_field')
+        ], 'user'),
     ),
 ]);
-```
-
-```php
-<?php
-
-use Savks\Negotiator\Support\Mapping\{Casts\IntersectionCast,Casts\ObjectCast,Utils\Factory};
-
-new IntersectionCast(
-    new UserMapper($this->user),
-    new ObjectCast($this->user, fn (Factory $factory) => [
-        'otherField' => $factory->string('other_field')
-    ]),
-);
 ```
 
 * `oneOfConst` — дозволяє вказати, що значення може набувати одного з типів-констант. Приклад:
@@ -200,13 +242,16 @@ new IntersectionCast(
 ```php
 <?php
 
-use App\Models\User;use Savks\Negotiator\Support\Mapping\{Casts\ObjectCast,Utils\Factory};
+use Savks\Negotiator\Support\Mapping\{
+    Casts\Cast,
+    Schema
+};
 
-new ObjectCast($this->source, fn (Factory $factory) => [
-    'field' => $factory->oneOfConst([
-        $factory->constNumber(1),
-        $factory->constNumber(2),
-        $factory->constNumber(3),
+Schema::object([
+    'field' => Schema::oneOfConst([
+        Schema::constNumber(1),
+        Schema::constNumber(2),
+        Schema::constNumber(3),
     ]),
 ]);
 ```
@@ -222,8 +267,8 @@ use App\Http\Mapping\UserMapper;
 use Savks\Negotiator\Enums\RefTypes;
 use Illuminate\Support\Str;
 
-use Savks\Negotiator\Support\TypeGeneration\{
-    TypeScript\Generator,
+use Savks\Negotiator\Support\TypeGeneration\TypeScript\{
+    Generator,
     Target
 };
 

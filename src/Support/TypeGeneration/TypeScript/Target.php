@@ -1,6 +1,6 @@
 <?php
 
-namespace Savks\Negotiator\Support\TypeGeneration;
+namespace Savks\Negotiator\Support\TypeGeneration\TypeScript;
 
 use Closure;
 use Savks\Negotiator\Support\Mapping\Mapper;

@@ -16,8 +16,7 @@ use Savks\Negotiator\Support\Mapping\{
 };
 use Savks\Negotiator\Support\TypeGeneration\{
     TypeScript\TypeProcessor as TypeGenerator,
-    Faker,
-    Target
+    Faker
 };
 
 class Generator

@@ -2,11 +2,12 @@
 
 namespace Savks\Negotiator\Performance;
 
+use LogicException;
 use Savks\Negotiator\Enums\PerformanceTrackers;
 
 class Performance
 {
-    protected readonly PerformanceProvider $provider;
+    protected readonly ?PerformanceProvider $provider;
 
     /**
      * @var array{
@@ -21,18 +22,24 @@ class Performance
 
         $providerFQN = config("negotiator.debug.performance.providers.available.{$providerName}");
 
-        $this->provider = new $providerFQN();
+        $this->provider = config('negotiator.debug.enable') ?
+            new $providerFQN() :
+            null;
 
         $this->trackers = config('negotiator.debug.performance.trackers');
     }
 
     public function event(string $event, array $data): Event
     {
+        if ($this->provider === null) {
+            throw new LogicException('Performance tracking not enabled.');
+        }
+
         return $this->provider->createEvent($event, $data);
     }
 
     public function trackedEnabled(PerformanceTrackers $tracker): bool
     {
-        return $this->trackers[$tracker->value];
+        return $this->provider !== null && $this->trackers[$tracker->value];
     }
 }

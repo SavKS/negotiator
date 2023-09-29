@@ -74,8 +74,10 @@ class Schema
         return new ConstNumberCast($value, $asAnyNumber);
     }
 
-    public static function anyObject(string|Closure|null $accessor = null, array|object|null $default = null): AnyObjectCast
-    {
+    public static function anyObject(
+        string|Closure|null $accessor = null,
+        array|object|null $default = null
+    ): AnyObjectCast {
         return new AnyObjectCast($accessor, $default);
     }
 
@@ -105,11 +107,6 @@ class Schema
     public static function any(string|Closure|null $accessor = null, mixed $default = null): AnyCast
     {
         return new AnyCast($accessor, $default);
-    }
-
-    public static function spread(Closure $callback, string|Closure|null $accessor = null): Spread
-    {
-        return new Spread($callback, $accessor);
     }
 
     public static function intersection(Cast|Mapper ...$objects): IntersectionCast

@@ -4,8 +4,13 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 use Savks\Negotiator\Contexts\IterationContext;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\ArrayType;
+use Throwable;
+
+use Savks\Negotiator\Exceptions\{
+    InternalException,
+    UnexpectedValue
+};
 
 class ArrayCast extends NullableCast
 {
@@ -54,9 +59,11 @@ class ArrayCast extends NullableCast
 
         $value = is_array($value) ? $value : iterator_to_array($value);
 
-        foreach (array_values($value) as $index => $item) {
+        $index = 0;
+
+        foreach ($value as $key => $item) {
             try {
-                $data = (new IterationContext($index))->wrap(
+                $data = (new IterationContext($index, $key))->wrap(
                     fn () => $this->cast->resolve($item, $sourcesTrace)
                 );
 
@@ -67,6 +74,8 @@ class ArrayCast extends NullableCast
                 $result[] = $data;
             } catch (UnexpectedValue $e) {
                 throw UnexpectedValue::wrap($e, $index);
+            } catch (Throwable $e) {
+                throw InternalException::wrap($e, $index);
             }
         }
 

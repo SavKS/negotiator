@@ -72,7 +72,12 @@ class Generator
                         );
 
                         throw new RuntimeException(
-                            "Can't generate types file \"{$safeDestPath}\" for mapper \"{$name}\". Message: {$e->getMessage()}.",
+                            sprintf(
+                                "Can't generate types file \"%s\" for mapper \"%s\". Message: %s.",
+                                $safeDestPath,
+                                is_object($mapper) ? get_class($mapper) : $mapper,
+                                $e->getMessage()
+                            ),
                             previous: $e
                         );
                     }

@@ -3,36 +3,39 @@
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Savks\Negotiator\Support\TypeGeneration\Types\Types;
+use stdClass;
 
 class IntersectionCast extends Cast
 {
-    public readonly array $objects;
+    public readonly array $casts;
 
     public function __construct(Cast ...$objects)
     {
-        $this->objects = $objects;
+        $this->casts = $objects;
     }
 
-    protected function finalize(mixed $source, array $sourcesTrace): array
+    protected function finalize(mixed $source, array $sourcesTrace): stdClass
     {
-        $result = [];
+        $result = new stdClass();
 
-        foreach ($this->objects as $object) {
-            $objectResult = $object->resolve($source, $sourcesTrace);
+        foreach ($this->casts as $cast) {
+            $objectResult = $cast->resolve($source, $sourcesTrace);
 
             if ($objectResult !== null) {
-                $result[] = $objectResult;
+                foreach ((array)$objectResult as $objectResultKey => $objectResultValue) {
+                    $result->{$objectResultKey} = $objectResultValue;
+                }
             }
         }
 
-        return array_merge(...$result);
+        return $result;
     }
 
     protected function types(): Types
     {
         $types = [];
 
-        foreach ($this->objects as $object) {
+        foreach ($this->casts as $object) {
             $types[] = $object->compileTypes()->types;
         }
 

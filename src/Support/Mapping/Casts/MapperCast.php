@@ -61,10 +61,7 @@ class MapperCast extends NullableCast
         }
 
         if (is_string($this->mapper)) {
-            $mapper = new ($this->mapper)(
-                $value,
-                ...array_reverse($sourcesTrace)
-            );
+            $mapper = new ($this->mapper)($value);
         } else {
             $mapper = $this->mapper instanceof Closure ?
                 ($this->mapper)(

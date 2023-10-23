@@ -20,7 +20,7 @@ class AnyObjectCast extends NullableCast
     ) {
     }
 
-    protected function finalize(mixed $source, array $sourcesTrace): object|array|null
+    protected function finalize(mixed $source, array $sourcesTrace): ?object
     {
         $value = static::resolveValueFromAccessor(
             $this->accessor,
@@ -42,7 +42,7 @@ class AnyObjectCast extends NullableCast
             throw new UnexpectedValue(['array<string, mixed>'], $value);
         }
 
-        return $value;
+        return is_array($value) ? (object)$value : $value;
     }
 
     protected function types(): AliasType|RecordType

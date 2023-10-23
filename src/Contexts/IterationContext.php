@@ -6,7 +6,9 @@ use Savks\PhpContexts\Context;
 
 class IterationContext extends Context
 {
-    public function __construct(public readonly int $index)
-    {
+    public function __construct(
+        public readonly int $index,
+        public readonly int|string $key,
+    ) {
     }
 }

@@ -4,12 +4,20 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 use Savks\Negotiator\Contexts\IterationContext;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\RecordType;
+use stdClass;
+use Throwable;
+
+use Savks\Negotiator\Exceptions\{
+    InternalException,
+    UnexpectedValue
+};
 
 class KeyedArrayCast extends NullableCast
 {
     protected string|Closure|null $keyBy = null;
+
+    protected bool $nullIfEmpty = false;
 
     public function __construct(
         protected readonly Cast $cast,
@@ -24,7 +32,15 @@ class KeyedArrayCast extends NullableCast
         return $this;
     }
 
-    protected function finalize(mixed $source, array $sourcesTrace): ?array
+    public function nullIfEmpty(): static
+    {
+        $this->nullIfEmpty = true;
+        $this->nullable = true;
+
+        return $this;
+    }
+
+    protected function finalize(mixed $source, array $sourcesTrace): ?stdClass
     {
         $value = static::resolveValueFromAccessor(
             $this->accessor,
@@ -44,13 +60,15 @@ class KeyedArrayCast extends NullableCast
             throw new UnexpectedValue('iterable', $value);
         }
 
-        $result = [];
+        $result = new stdClass();
 
         $index = 0;
 
+        $hasValues = false;
+
         foreach ($value as $key => $item) {
             if (! $this->keyBy) {
-                $keyValue = $key;
+                $keyValue = (string)$key;
             } else {
                 if (is_string($this->keyBy)) {
                     $keyValue = data_get($item, $this->keyBy);
@@ -68,15 +86,19 @@ class KeyedArrayCast extends NullableCast
             }
 
             try {
-                $result[$keyValue] = (new IterationContext($index++))->wrap(
+                $result->{$keyValue} = (new IterationContext($index++, $key))->wrap(
                     fn () => $this->cast->resolve($item, $sourcesTrace)
                 );
+
+                $hasValues = true;
             } catch (UnexpectedValue $e) {
                 throw UnexpectedValue::wrap($e, "{$key}({$keyValue})");
+            } catch (Throwable $e) {
+                throw InternalException::wrap($e, "{$key}({$keyValue})");
             }
         }
 
-        return $result ?: null;
+        return ! $hasValues && $this->nullIfEmpty ? null : $result;
     }
 
     protected function types(): RecordType

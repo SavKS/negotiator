@@ -6,15 +6,17 @@ use Savks\Negotiator\Support\Mapping\Mapper;
 
 class MappingFail extends DTOException
 {
-    public function __construct(Mapper $mapper, UnexpectedValue $e = null)
-    {
+    public function __construct(
+        public readonly Mapper $mapper,
+        public readonly UnexpectedValue|InternalException|null $exception = null
+    ) {
         parent::__construct(
             sprintf(
                 '[%s]%s',
                 $mapper::class,
-                $e ? " {$e->getMessage()}" : ''
+                $exception ? " {$exception->getMessage()}" : ''
             ),
-            previous: $e
+            previous: $exception
         );
     }
 }

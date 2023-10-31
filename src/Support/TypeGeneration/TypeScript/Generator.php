@@ -5,6 +5,8 @@ namespace Savks\Negotiator\Support\TypeGeneration\TypeScript;
 use BackedEnum;
 use Closure;
 use Illuminate\Support\Str;
+use LogicException;
+use ReflectionClass;
 use RuntimeException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
@@ -56,6 +58,15 @@ class Generator
 
                         if (! $mapper instanceof Mapper) {
                             $mapper = $faker->makeMapper($mapper);
+                        }
+
+                        if (! (new ReflectionClass($mapper))->isFinal()) {
+                            throw new LogicException(
+                                sprintf(
+                                    'Mapper "%s" should be marked as "final"',
+                                    $mapper::class
+                                )
+                            );
                         }
 
                         $generics = $mapper->declareGenerics();

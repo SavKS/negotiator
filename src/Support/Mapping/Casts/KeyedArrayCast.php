@@ -4,7 +4,7 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 use Savks\Negotiator\Contexts\IterationContext;
-use Savks\Negotiator\Support\TypeGeneration\Types\RecordType;
+use Savks\Negotiator\Support\Mapping\Schema;
 use stdClass;
 use Throwable;
 
@@ -12,10 +12,20 @@ use Savks\Negotiator\Exceptions\{
     InternalException,
     UnexpectedValue
 };
+use Savks\Negotiator\Support\TypeGeneration\Types\{
+    RecordType,
+    StringType
+};
 
 class KeyedArrayCast extends NullableCast
 {
-    protected string|Closure|null $keyBy = null;
+    /**
+     * @var array{
+     *     cast: OneOfConstCast|EnumCast|StringCast,
+     *     byKey: bool
+     * }|null
+     */
+    protected array|null $keyBy = null;
 
     protected bool $nullIfEmpty = false;
 
@@ -25,9 +35,22 @@ class KeyedArrayCast extends NullableCast
     ) {
     }
 
+    public function keyBySchema(OneOfConstCast|EnumCast|StringCast $cast, bool $byKey = false): static
+    {
+        $this->keyBy = [
+            'cast' => $cast,
+            'byKey' => $byKey,
+        ];
+
+        return $this;
+    }
+
     public function keyBy(string|Closure $accessor): static
     {
-        $this->keyBy = $accessor;
+        $this->keyBy = [
+            'cast' => Schema::string($accessor),
+            'byKey' => false,
+        ];
 
         return $this;
     }
@@ -70,19 +93,12 @@ class KeyedArrayCast extends NullableCast
             if (! $this->keyBy) {
                 $keyValue = (string)$key;
             } else {
-                if (is_string($this->keyBy)) {
-                    $keyValue = data_get($item, $this->keyBy);
-                } else {
-                    $keyValue = ($this->keyBy)(
-                        $item,
-                        $key,
-                        ...array_reverse($sourcesTrace)
-                    );
-                }
-            }
-
-            if (! is_string($keyValue)) {
-                throw new UnexpectedValue('string', $keyValue);
+                $keyValue = (new IterationContext($index, $key))->wrap(
+                    fn () => $this->keyBy['cast']->resolve(
+                        $this->keyBy['byKey'] ? $key : $item,
+                        array_reverse($sourcesTrace)
+                    )
+                );
             }
 
             try {
@@ -103,8 +119,11 @@ class KeyedArrayCast extends NullableCast
 
     protected function types(): RecordType
     {
+        $cast = $this->keyBy['cast'] ?? null;
+
         return new RecordType(
-            valueType: $this->cast->compileTypes()
+            $cast?->compileTypes() ?? new StringType(),
+            $this->cast->compileTypes()
         );
     }
 }

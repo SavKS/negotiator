@@ -19,10 +19,19 @@ class ArrayCast extends NullableCast
      */
     protected ?Closure $filter = null;
 
+    protected bool $skipIfNull = false;
+
     public function __construct(
         protected readonly Cast $cast,
         protected readonly string|Closure|null $accessor = null
     ) {
+    }
+
+    public function skipIfNull(): static
+    {
+        $this->skipIfNull = true;
+
+        return $this;
     }
 
     /**
@@ -59,9 +68,15 @@ class ArrayCast extends NullableCast
 
         $value = is_array($value) ? $value : iterator_to_array($value);
 
-        $index = 0;
+        $index = -1;
 
         foreach ($value as $key => $item) {
+            $index++;
+
+            if ($this->skipIfNull && $item === null) {
+                continue;
+            }
+
             try {
                 $data = (new IterationContext($index, $key))->wrap(
                     fn () => $this->cast->resolve($item, $sourcesTrace)

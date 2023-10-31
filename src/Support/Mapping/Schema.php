@@ -15,6 +15,7 @@ use Savks\Negotiator\Support\Mapping\Casts\{
     BooleanCast,
     Cast,
     CastBooleanValue,
+    ConstCast,
     ConstEnumCast,
     ConstNumberCast,
     ConstStringCast,
@@ -134,7 +135,7 @@ class Schema
     }
 
     /**
-     * @param ConstEnumCast[] $values
+     * @param ConstCast[] $values
      */
     public static function oneOfConst(array $values, string|Closure|null $accessor = null): OneOfConstCast
     {

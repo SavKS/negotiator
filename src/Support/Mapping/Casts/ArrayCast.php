@@ -4,8 +4,13 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 use Savks\Negotiator\Contexts\IterationContext;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\ArrayType;
+use Throwable;
+
+use Savks\Negotiator\Exceptions\{
+    InternalException,
+    UnexpectedValue
+};
 
 class ArrayCast extends NullableCast
 {
@@ -14,10 +19,19 @@ class ArrayCast extends NullableCast
      */
     protected ?Closure $filter = null;
 
+    protected bool $skipIfNull = false;
+
     public function __construct(
         protected readonly Cast $cast,
         protected readonly string|Closure|null $accessor = null
     ) {
+    }
+
+    public function skipIfNull(): static
+    {
+        $this->skipIfNull = true;
+
+        return $this;
     }
 
     /**
@@ -54,9 +68,17 @@ class ArrayCast extends NullableCast
 
         $value = is_array($value) ? $value : iterator_to_array($value);
 
-        foreach (array_values($value) as $index => $item) {
+        $index = -1;
+
+        foreach ($value as $key => $item) {
+            $index++;
+
+            if ($this->skipIfNull && $item === null) {
+                continue;
+            }
+
             try {
-                $data = (new IterationContext($index))->wrap(
+                $data = (new IterationContext($index, $key))->wrap(
                     fn () => $this->cast->resolve($item, $sourcesTrace)
                 );
 
@@ -67,6 +89,8 @@ class ArrayCast extends NullableCast
                 $result[] = $data;
             } catch (UnexpectedValue $e) {
                 throw UnexpectedValue::wrap($e, $index);
+            } catch (Throwable $e) {
+                throw InternalException::wrap($e, $index);
             }
         }
 

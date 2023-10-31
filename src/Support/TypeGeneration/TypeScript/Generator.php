@@ -5,6 +5,8 @@ namespace Savks\Negotiator\Support\TypeGeneration\TypeScript;
 use BackedEnum;
 use Closure;
 use Illuminate\Support\Str;
+use LogicException;
+use ReflectionClass;
 use RuntimeException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
@@ -58,6 +60,15 @@ class Generator
                             $mapper = $faker->makeMapper($mapper);
                         }
 
+                        if (! (new ReflectionClass($mapper))->isFinal()) {
+                            throw new LogicException(
+                                sprintf(
+                                    'Mapper "%s" should be marked as "final"',
+                                    $mapper::class
+                                )
+                            );
+                        }
+
                         $generics = $mapper->declareGenerics();
 
                         $types = $mapper::schema()->compileTypes();
@@ -72,7 +83,12 @@ class Generator
                         );
 
                         throw new RuntimeException(
-                            "Can't generate types file \"{$safeDestPath}\" for mapper \"{$name}\". Message: {$e->getMessage()}.",
+                            sprintf(
+                                "Can't generate types file \"%s\" for mapper \"%s\". Message: %s.",
+                                $safeDestPath,
+                                is_object($mapper) ? get_class($mapper) : $mapper,
+                                $e->getMessage()
+                            ),
                             previous: $e
                         );
                     }

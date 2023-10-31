@@ -3,9 +3,14 @@
 namespace Savks\Negotiator\Support\Mapping\Casts\ObjectUtils;
 
 use Closure;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\ObjectType;
+use stdClass;
+use Throwable;
 
+use Savks\Negotiator\Exceptions\{
+    InternalException,
+    UnexpectedValue
+};
 use Savks\Negotiator\Support\Mapping\Casts\{
     Cast,
     WorkWithAccessor
@@ -18,7 +23,7 @@ class Spread
     protected array $sourcesTrace = [];
 
     /**
-     * @param array<string, Cast> $schema
+     * @param array<string, Cast|Spread> $schema
      */
     public function __construct(
         protected readonly array $schema,
@@ -26,7 +31,7 @@ class Spread
     ) {
     }
 
-    public function applyTo(array &$data, mixed $source, array $sourcesTrace): void
+    public function applyTo(stdClass $data, mixed $source, array $sourcesTrace): void
     {
         $value = static::resolveValueFromAccessor(
             $this->accessor,
@@ -38,16 +43,18 @@ class Spread
 
         foreach ($this->schema as $field => $fieldValue) {
             if ($fieldValue instanceof Spread) {
-                $fieldValue->applyTo($value, $sourcesTrace, $data);
+                $fieldValue->applyTo($data, $value, $sourcesTrace);
             } else {
                 if (! $fieldValue instanceof Cast) {
                     throw new UnexpectedValue(Cast::class, $fieldValue);
                 }
 
                 try {
-                    $data[$field] = $fieldValue->resolve($value, $sourcesTrace);
+                    $data->{$field} = $fieldValue->resolve($value, $sourcesTrace);
                 } catch (UnexpectedValue $e) {
                     throw UnexpectedValue::wrap($e, $field);
+                } catch (Throwable $e) {
+                    throw InternalException::wrap($e, $field);
                 }
             }
         }

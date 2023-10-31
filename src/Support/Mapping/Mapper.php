@@ -4,6 +4,7 @@ namespace Savks\Negotiator\Support\Mapping;
 
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Benchmark;
 use JsonSerializable;
 use Savks\Negotiator\Enums\PerformanceTrackers;
 use Savks\Negotiator\Mapping\SchemasRepository;
@@ -11,6 +12,7 @@ use Savks\Negotiator\Performance\Performance;
 use Savks\Negotiator\Support\Mapping\Casts\Cast;
 
 use Savks\Negotiator\Exceptions\{
+    InternalException,
     MappingFail,
     UnexpectedValue
 };
@@ -33,6 +35,13 @@ abstract class Mapper implements JsonSerializable, Responsable
     public function declareGenerics(): array
     {
         return [];
+    }
+
+    public function ddMappingTime(int $iterations = 1)
+    {
+        Benchmark::dd([
+            fn () => $this->resolve(),
+        ], $iterations);
     }
 
     public function dd(): never
@@ -66,7 +75,7 @@ abstract class Mapper implements JsonSerializable, Responsable
             }
 
             return $schema->resolve($this, []);
-        } catch (UnexpectedValue $e) {
+        } catch (UnexpectedValue|InternalException $e) {
             throw new MappingFail($this, $e);
         }
     }

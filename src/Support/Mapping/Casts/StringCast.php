@@ -10,6 +10,7 @@ use Stringable;
 class StringCast extends NullableCast
 {
     protected bool $isStringableAllowed = false;
+    protected bool $isCastNumericAllowed = false;
 
     public function __construct(
         protected readonly string|Closure|null $accessor = null,
@@ -20,6 +21,13 @@ class StringCast extends NullableCast
     public function allowStringable(): static
     {
         $this->isStringableAllowed = true;
+
+        return $this;
+    }
+
+    public function allowCastNumeric(): static
+    {
+        $this->isCastNumericAllowed = true;
 
         return $this;
     }
@@ -47,12 +55,22 @@ class StringCast extends NullableCast
             return null;
         }
 
-        if (! is_string($value) && $value instanceof Stringable) {
-            $value = $value->__toString();
-        }
-
         if (! is_string($value)) {
-            throw new UnexpectedValue('string', $value);
+            if ($this->isStringableAllowed) {
+                if ($value instanceof Stringable) {
+                    $value = $value->__toString();
+                } else {
+                    throw new UnexpectedValue('string', $value);
+                }
+            }
+
+            if (is_float($value) || is_int($value)) {
+                if ($this->isCastNumericAllowed) {
+                    $value = (string)$value;
+                } else {
+                    throw new UnexpectedValue('string', $value);
+                }
+            }
         }
 
         return $value;

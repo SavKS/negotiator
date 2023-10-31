@@ -15,7 +15,7 @@ class UnionCast extends NullableCast
 {
     /**
      * @var list<array{
-     *     'condition': bool|Closure(mixed): bool,
+     *     'condition': array{string, mixed}|Closure(mixed): bool,
      *     'cast': Cast
      * }>
      */
@@ -27,7 +27,7 @@ class UnionCast extends NullableCast
     {
     }
 
-    public function variant(bool|Closure $condition, Cast $cast): static
+    public function variant(Closure|array $condition, Cast $cast): static
     {
         $this->variants[] = [
             'condition' => $condition,
@@ -61,10 +61,16 @@ class UnionCast extends NullableCast
         }
 
         foreach ($this->variants as $variant) {
-            $passed = $variant['condition'](
-                $value,
-                ...array_reverse($sourcesTrace)
-            );
+            if (is_array($variant['condition'])) {
+                [$conditionField, $neededConditionFieldValue] = $variant['condition'];
+
+                $passed = data_get($value, $conditionField) === $neededConditionFieldValue;
+            } else {
+                $passed = $variant['condition'](
+                    $value,
+                    ...array_reverse($sourcesTrace)
+                );
+            }
 
             if (! $passed) {
                 continue;

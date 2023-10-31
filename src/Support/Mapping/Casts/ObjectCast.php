@@ -6,13 +6,16 @@ use BackedEnum;
 use Closure;
 use Illuminate\Support\Stringable;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
-use Savks\PhpContexts\Context;
+use stdClass;
+use Throwable;
 
+use Savks\Negotiator\Exceptions\{
+    InternalException,
+    UnexpectedValue
+};
 use Savks\Negotiator\Support\Mapping\Casts\ObjectUtils\{
     Spread,
-    TypedField,
-    TypedRecord
+    TypedField
 };
 use Savks\Negotiator\Support\TypeGeneration\Types\{
     AliasType,
@@ -37,7 +40,7 @@ class ObjectCast extends NullableCast
     ) {
     }
 
-    protected function finalize(mixed $source, array $sourcesTrace): ?array
+    protected function finalize(mixed $source, array $sourcesTrace): ?stdClass
     {
         $value = static::resolveValueFromAccessor(
             $this->accessor,
@@ -53,7 +56,7 @@ class ObjectCast extends NullableCast
             return null;
         }
 
-        $result = [];
+        $result = new stdClass();
 
         foreach ($this->schema as $field => $fieldValue) {
             if ($fieldValue instanceof Spread) {
@@ -71,9 +74,11 @@ class ObjectCast extends NullableCast
                         default => $typedField->key
                     };
 
-                    $result[$fieldAsString] = $typedField->value->resolve($value, $sourcesTrace);
+                    $result->{$fieldAsString} = $typedField->value->resolve($value, $sourcesTrace);
                 } catch (UnexpectedValue $e) {
                     throw UnexpectedValue::wrap($e, $fieldAsString);
+                } catch (Throwable $e) {
+                    throw InternalException::wrap($e, $fieldAsString);
                 }
             } else {
                 if (! $fieldValue instanceof Cast) {
@@ -81,9 +86,11 @@ class ObjectCast extends NullableCast
                 }
 
                 try {
-                    $result[$field] = $fieldValue->resolve($value, $sourcesTrace);
+                    $result->{$field} = $fieldValue->resolve($value, $sourcesTrace);
                 } catch (UnexpectedValue $e) {
                     throw UnexpectedValue::wrap($e, $field);
+                } catch (Throwable $e) {
+                    throw InternalException::wrap($e, $field);
                 }
             }
         }
@@ -93,7 +100,7 @@ class ObjectCast extends NullableCast
 
     protected function types(): ObjectType|Types
     {
-        $typeGenerationContext = Context::use(TypeGenerationContext::class);
+        $typeGenerationContext = TypeGenerationContext::useSelf();
 
         $result = new ObjectType();
 

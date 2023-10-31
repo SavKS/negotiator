@@ -35,7 +35,7 @@ class EnumCast extends NullableCast
             return null;
         }
 
-        if (! is_object($value) && get_class($value) !== $this->enum) {
+        if (! is_object($value) || get_class($value) !== $this->enum) {
             throw new UnexpectedValue("BackedEnum<{$this->enum}>", $value);
         }
 

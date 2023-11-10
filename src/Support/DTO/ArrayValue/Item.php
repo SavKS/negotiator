@@ -8,6 +8,7 @@ class Item extends Castable
 {
     public function __construct(
         public readonly int $index,
+        public readonly int|string $key,
         mixed $source,
         array $sourcesTrace = [],
     ) {

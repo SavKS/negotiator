@@ -48,7 +48,7 @@ class KeyedArrayValue extends NullableValue
 
         foreach ($value as $key => $item) {
             $listItemValue = ($this->iterator)(
-                new Item($index++, $item, $this->sourcesTrace)
+                new Item($index++, $key, $item, $this->sourcesTrace)
             );
 
             if (! $listItemValue instanceof Value) {
@@ -82,7 +82,7 @@ class KeyedArrayValue extends NullableValue
     {
         /** @var Value $listItem */
         $listItem = ($this->iterator)(
-            new Item(0, null)
+            new Item(0, 0, null)
         );
 
         return new RecordType(

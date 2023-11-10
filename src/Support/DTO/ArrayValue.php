@@ -62,7 +62,7 @@ class ArrayValue extends NullableValue
 
         foreach (\array_values($value) as $index => $item) {
             $listItemValue = ($this->iterator)(
-                new Item($index, $item, $this->sourcesTrace)
+                new Item($index, $index, $item, $this->sourcesTrace)
             );
 
             if (! $listItemValue instanceof Value) {
@@ -89,7 +89,7 @@ class ArrayValue extends NullableValue
     {
         /** @var Value $value */
         $value = ($this->iterator)(
-            new Item(0, null)
+            new Item(0, 0, null)
         );
 
         return new ArrayType(

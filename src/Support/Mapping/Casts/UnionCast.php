@@ -4,8 +4,13 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 use Illuminate\Support\Arr;
-use Savks\Negotiator\Exceptions\DTOException;
+use Throwable;
 
+use Savks\Negotiator\Exceptions\{
+    DTOException,
+    InternalException,
+    UnexpectedValue
+};
 use Savks\Negotiator\Support\TypeGeneration\Types\{
     Type,
     Types
@@ -60,6 +65,8 @@ class UnionCast extends NullableCast
             return null;
         }
 
+        $i = 0;
+
         foreach ($this->variants as $variant) {
             if (is_array($variant['condition'])) {
                 [$conditionField, $neededConditionFieldValue] = $variant['condition'];
@@ -73,16 +80,37 @@ class UnionCast extends NullableCast
             }
 
             if (! $passed) {
+                $i++;
+
                 continue;
             }
 
-            return $variant['cast']->resolve($value, $sourcesTrace);
+            try {
+                $i++;
+
+                return $variant['cast']->resolve($value, $sourcesTrace);
+            } catch (UnexpectedValue $e) {
+                throw UnexpectedValue::wrap($e, "[Condition #{$i}]", true);
+            } catch (Throwable $e) {
+                throw InternalException::wrap($e, "[Condition #{$i}]", true);
+            }
         }
 
         if ($this->defaultVariant) {
-            return $this->defaultVariant->resolve($value, $sourcesTrace);
+            try {
+                return $this->defaultVariant->resolve($value, $sourcesTrace);
+            } catch (UnexpectedValue $e) {
+                throw UnexpectedValue::wrap($e, "[Condition #DEFAULT]", true);
+            } catch (Throwable $e) {
+                throw InternalException::wrap($e, "[Condition #DEFAULT]", true);
+            }
         }
 
+        throw new DTOException("Unhandled union type variant for \"{$this->simplifyCondition($value)}\"");
+    }
+
+    protected function simplifyCondition(mixed $value): string
+    {
         $type = is_object($value) ? $value::class : gettype($value);
 
         if ($type === 'array') {
@@ -91,7 +119,7 @@ class UnionCast extends NullableCast
             $type = 'object<' . $value::class . '>';
         }
 
-        throw new DTOException("Unhandled union type variant for \"{$type}\"");
+        return $type;
     }
 
     protected function types(): Type|Types

@@ -32,11 +32,20 @@ class UnexpectedValue extends DTOException
     /**
      * @param string|string[] $path
      */
-    public static function wrap(UnexpectedValue $e, string|int|array $path): static
+    public static function wrap(UnexpectedValue $e, string|int|array $path, bool $prepend = false): static
     {
-        return new static($e->types, $e->value, [
-            ...Arr::wrap($path),
-            ...Arr::wrap($e->path),
-        ]);
+        if ($prepend) {
+            $resultPath = [
+                ...Arr::wrap($e->path),
+                ...Arr::wrap($path),
+            ];
+        } else {
+            $resultPath = [
+                ...Arr::wrap($path),
+                ...Arr::wrap($e->path),
+            ];
+        }
+
+        return new static($e->types, $e->value, $resultPath);
     }
 }

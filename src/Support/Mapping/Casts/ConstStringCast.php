@@ -9,10 +9,20 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
 
 class ConstStringCast extends ConstCast
 {
+    protected bool $asAnyString = false;
+
     public function __construct(
         protected readonly string $value,
-        protected readonly bool $asAnyString
+        bool $asAnyString = false
     ) {
+        $this->asAnyString = $asAnyString;
+    }
+
+    public function asAnyString(): static
+    {
+        $this->asAnyString = true;
+
+        return $this;
     }
 
     public function originalValue(): string

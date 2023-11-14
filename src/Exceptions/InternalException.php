@@ -26,7 +26,8 @@ class InternalException extends DTOException
 
     public static function wrap(
         InternalException|MappingFail|Throwable $exception,
-        string|int|array|null $path = null
+        string|int|array|null $path = null,
+        bool $prepend = false
     ): static {
         if ($exception instanceof MappingFail) {
             $path = Arr::wrap($path);
@@ -37,14 +38,20 @@ class InternalException extends DTOException
         }
 
         if ($exception instanceof InternalException) {
-            $path = [
-                ...Arr::wrap($path),
-                ...Arr::wrap($exception->path),
-            ];
+            $path = $prepend ?
+                [
+                    ...Arr::wrap($exception->path),
+                    ...Arr::wrap($path),
+                ] :
+                [
+                    ...Arr::wrap($path),
+                    ...Arr::wrap($exception->path),
+                ];
 
             $originalException = $exception->originalException;
         } else {
             $path = Arr::wrap($path);
+
             $originalException = $exception;
         }
 

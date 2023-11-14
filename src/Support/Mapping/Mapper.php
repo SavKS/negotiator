@@ -32,7 +32,7 @@ abstract class Mapper implements JsonSerializable, Responsable
     /**
      * @return GenericDeclaration[]
      */
-    public function declareGenerics(): array
+    public static function declareGenerics(): array
     {
         return [];
     }

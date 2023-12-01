@@ -7,8 +7,7 @@ use Savks\Negotiator\Exceptions\UnexpectedNull;
 
 use Savks\Negotiator\Support\TypeGeneration\Types\{
     NullType,
-    Types,
-    UndefinedType
+    Types
 };
 
 abstract class NullableCast extends Cast
@@ -42,7 +41,6 @@ abstract class NullableCast extends Cast
                 ...Arr::wrap($types),
 
                 new NullType(),
-                new UndefinedType(),
             ];
         }
 

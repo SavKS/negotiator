@@ -45,10 +45,14 @@ class Generator
             $result = [];
 
             foreach ($this->targets as $target) {
-                /** @var class-string<Mapper> $mapperFQN */
+                /** @var class-string<Mapper>|Mapper $mapperFQN */
                 foreach ($target->mappersMap as $name => $mapperFQN) {
                     try {
-                        if (! (new ReflectionClass($mapperFQN))->isFinal()) {
+                        $mapperFQN = is_string($mapperFQN) ? $mapperFQN : $mapperFQN::class;
+
+                        $mapperRef = new ReflectionClass($mapperFQN);
+
+                        if (! $mapperRef->isFinal() && ! $mapperRef->isAnonymous()) {
                             throw new LogicException("Mapper \"{$mapperFQN}\" should be marked as \"final\".");
                         }
 

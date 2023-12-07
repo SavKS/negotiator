@@ -14,6 +14,7 @@ use Savks\Negotiator\Support\TypeGeneration\TypeScript\TypeProcessor as TypeGene
 use Throwable;
 
 use Savks\Negotiator\Support\Mapping\{
+    Casts\Cast,
     GenericDeclaration,
     Mapper
 };
@@ -45,20 +46,26 @@ class Generator
             $result = [];
 
             foreach ($this->targets as $target) {
-                /** @var class-string<Mapper>|Mapper $mapperFQN */
-                foreach ($target->mappersMap as $name => $mapperFQN) {
+                /** @var class-string<Mapper>|Mapper|Cast $mapperOrSchema */
+                foreach ($target->mappersMap as $name => $mapperOrSchema) {
+                    $mapperRef = new ReflectionClass($mapperOrSchema);
+
                     try {
-                        $mapperFQN = is_string($mapperFQN) ? $mapperFQN : $mapperFQN::class;
+                        if ($mapperOrSchema instanceof Cast) {
+                            $generics = [];
 
-                        $mapperRef = new ReflectionClass($mapperFQN);
+                            $types = $mapperOrSchema->compileTypes();
+                        } else {
+                            if (! $mapperRef->isFinal() && ! $mapperRef->isAnonymous()) {
+                                $mapperFQN = is_string($mapperOrSchema) ? $mapperOrSchema : $mapperOrSchema::class;
 
-                        if (! $mapperRef->isFinal() && ! $mapperRef->isAnonymous()) {
-                            throw new LogicException("Mapper \"{$mapperFQN}\" should be marked as \"final\".");
+                                throw new LogicException("Mapper \"{$mapperFQN}\" should be marked as \"final\".");
+                            }
+
+                            $generics = $mapperOrSchema::declareGenerics();
+
+                            $types = $mapperOrSchema::schema()->compileTypes();
                         }
-
-                        $generics = $mapperFQN::declareGenerics();
-
-                        $types = $mapperFQN::schema()->compileTypes();
                     } catch (Throwable $e) {
                         $safeDestPath = ltrim(
                             str_replace(
@@ -69,15 +76,28 @@ class Generator
                             '/'
                         );
 
-                        throw new RuntimeException(
-                            sprintf(
-                                "Can't generate types file \"%s\" for mapper \"%s\". Message: %s.",
-                                $safeDestPath,
-                                $mapperFQN,
-                                $e->getMessage()
-                            ),
-                            previous: $e
-                        );
+                        if ($mapperOrSchema instanceof Cast) {
+                            throw new RuntimeException(
+                                sprintf(
+                                    "Can't generate types file \"%s\" for custom schema. Message: %s.",
+                                    $safeDestPath,
+                                    $e->getMessage()
+                                ),
+                                previous: $e
+                            );
+                        } else {
+                            $mapperFQN = is_string($mapperOrSchema) ? $mapperOrSchema : $mapperOrSchema::class;
+
+                            throw new RuntimeException(
+                                sprintf(
+                                    "Can't generate types file \"%s\" for mapper \"%s\". Message: %s.",
+                                    $safeDestPath,
+                                    $mapperFQN,
+                                    $e->getMessage()
+                                ),
+                                previous: $e
+                            );
+                        }
                     }
 
                     $content = (new TypeGenerator($types))->process();

@@ -37,6 +37,14 @@ abstract class Mapper implements JsonSerializable, Responsable
         return [];
     }
 
+    /**
+     * @return string|Cast|null
+     */
+    public static function as(): string|Cast|null
+    {
+        return null;
+    }
+
     public function ddMappingTime(int $iterations = 1)
     {
         Benchmark::dd([

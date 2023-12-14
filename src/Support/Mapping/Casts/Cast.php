@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
 
 use Savks\Negotiator\Support\TypeGeneration\Types\{
+    AliasType,
     Type,
     Types
 };
@@ -15,6 +16,15 @@ abstract class Cast
     use WorkWithAccessor;
 
     protected array $sourcesTrace = [];
+
+    protected string|Cast|null $forcedType = null;
+
+    public function as(string|Cast $type): static
+    {
+        $this->forcedType = $type;
+
+        return $this;
+    }
 
     public function resolve(mixed $source, array $sourcesTrace): mixed
     {
@@ -31,6 +41,14 @@ abstract class Cast
 
     public function compileTypes(): Types
     {
+        if ($this->forcedType) {
+            return is_string($this->forcedType)
+                ? new Types([
+                    new AliasType($this->forcedType),
+                ])
+                : $this->forcedType->types();
+        }
+
         return new Types(
             Arr::wrap(
                 $this->types()

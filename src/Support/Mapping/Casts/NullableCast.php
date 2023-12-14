@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
 
 use Savks\Negotiator\Support\TypeGeneration\Types\{
+    AliasType,
     NullType,
     Types
 };
@@ -34,7 +35,13 @@ abstract class NullableCast extends Cast
 
     public function compileTypes(): Types
     {
-        $types = $this->types();
+        if ($this->forcedType) {
+            $types = is_string($this->forcedType)
+                ? new AliasType($this->forcedType)
+                : $this->forcedType->types();
+        } else {
+            $types = $this->types();
+        }
 
         if ($this->nullable) {
             $types = [

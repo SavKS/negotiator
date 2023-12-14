@@ -18,6 +18,10 @@ use Savks\Negotiator\Support\Mapping\{
     GenericDeclaration,
     Mapper
 };
+use Savks\Negotiator\Support\TypeGeneration\Types\{
+    AliasType,
+    Types
+};
 
 class Generator
 {
@@ -62,9 +66,19 @@ class Generator
                                 throw new LogicException("Mapper \"{$mapperFQN}\" should be marked as \"final\".");
                             }
 
-                            $generics = $mapperOrSchema::declareGenerics();
+                            $forcedType = $mapperOrSchema::as();
 
-                            $types = $mapperOrSchema::schema()->compileTypes();
+                            if ($forcedType) {
+                                $generics = [];
+
+                                $types = is_string($forcedType)
+                                    ? new Types([new AliasType($forcedType)])
+                                    : $forcedType->compileTypes();
+                            } else {
+                                $generics = $mapperOrSchema::declareGenerics();
+
+                                $types = $mapperOrSchema::schema()->compileTypes();
+                            }
                         }
                     } catch (Throwable $e) {
                         $safeDestPath = ltrim(

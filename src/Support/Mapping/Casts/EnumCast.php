@@ -14,6 +14,8 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
 
 class EnumCast extends NullableCast
 {
+    protected bool $tryCast = false;
+
     /**
      * @param class-string<BackedEnum> $enum
      */
@@ -21,6 +23,13 @@ class EnumCast extends NullableCast
         protected readonly string $enum,
         protected readonly string|Closure|null $accessor = null,
     ) {
+    }
+
+    public function tryCast(): static
+    {
+        $this->tryCast = true;
+
+        return $this;
     }
 
     protected function finalize(mixed $source, array $sourcesTrace): string|int|null
@@ -35,7 +44,18 @@ class EnumCast extends NullableCast
             return null;
         }
 
+        /** @var class-string<BackedEnum> $enum */
+        $enum = $this->enum;
+
         if (! is_object($value) || get_class($value) !== $this->enum) {
+            if (
+                $this->tryCast
+                && (is_string($value) || is_numeric($value))
+                && $enum::tryFrom($value)
+            ) {
+                return $value;
+            }
+
             throw new UnexpectedValue("BackedEnum<{$this->enum}>", $value);
         }
 

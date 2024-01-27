@@ -12,7 +12,7 @@ use Savks\Negotiator\Exceptions\{
     UnexpectedValue
 };
 
-class ArrayCast extends NullableCast
+class ArrayCast extends OptionalCast
 {
     /**
      * @var Closure(mixed): bool|null

@@ -17,7 +17,7 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
     StringType
 };
 
-class KeyedArrayCast extends NullableCast
+class KeyedArrayCast extends OptionalCast
 {
     /**
      * @var array{
@@ -58,7 +58,8 @@ class KeyedArrayCast extends NullableCast
     public function nullIfEmpty(): static
     {
         $this->nullIfEmpty = true;
-        $this->nullable = true;
+
+        $this->nullable();
 
         return $this;
     }

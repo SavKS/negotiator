@@ -10,7 +10,7 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
     RecordType
 };
 
-class AnyObjectCast extends NullableCast
+class AnyObjectCast extends OptionalCast
 {
     use CanBeGeneric;
 

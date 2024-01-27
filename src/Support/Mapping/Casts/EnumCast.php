@@ -12,7 +12,7 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
     StringType
 };
 
-class EnumCast extends NullableCast
+class EnumCast extends OptionalCast
 {
     protected bool $tryCast = false;
 

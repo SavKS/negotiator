@@ -7,9 +7,10 @@ use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\StringType;
 use Stringable;
 
-class StringCast extends NullableCast
+class StringCast extends OptionalCast
 {
     protected bool $isStringableAllowed = false;
+
     protected bool $isCastNumericAllowed = false;
 
     public function __construct(

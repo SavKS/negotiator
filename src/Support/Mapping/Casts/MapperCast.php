@@ -14,7 +14,7 @@ use Savks\Negotiator\Support\Mapping\{
     Mapper
 };
 
-class MapperCast extends NullableCast
+class MapperCast extends OptionalCast
 {
     use CanBeGeneric;
 

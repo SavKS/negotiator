@@ -9,7 +9,7 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
     AnyType
 };
 
-class AnyCast extends NullableCast
+class AnyCast extends OptionalCast
 {
     use CanBeGeneric;
 

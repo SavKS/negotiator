@@ -13,6 +13,7 @@ use Savks\Negotiator\Exceptions\{
 };
 use Savks\Negotiator\Support\Mapping\Casts\{
     Cast,
+    OptionalCast,
     WorkWithAccessor
 };
 
@@ -50,7 +51,16 @@ class Spread
                 }
 
                 try {
-                    $data->{$field} = $fieldValue->resolve($value, $sourcesTrace);
+                    $resolvedValue = $fieldValue->resolve($value, $sourcesTrace);
+
+                    $skip = $resolvedValue === null
+                        && $fieldValue instanceof OptionalCast
+                        && $fieldValue->optional['value']
+                        && ! $fieldValue->optional['asNull'];
+
+                    if (! $skip) {
+                        $data->{$field} = $resolvedValue;
+                    }
                 } catch (UnexpectedValue $e) {
                     throw UnexpectedValue::wrap($e, $field);
                 } catch (Throwable $e) {

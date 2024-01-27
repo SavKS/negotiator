@@ -17,7 +17,7 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
     Types
 };
 
-class OneOfConstCast extends NullableCast
+class OneOfConstCast extends OptionalCast
 {
     /**
      * @param ConstCast[] $values

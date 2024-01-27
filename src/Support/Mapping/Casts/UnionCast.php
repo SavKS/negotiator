@@ -16,7 +16,7 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
     Types
 };
 
-class UnionCast extends NullableCast
+class UnionCast extends OptionalCast
 {
     /**
      * @var list<array{

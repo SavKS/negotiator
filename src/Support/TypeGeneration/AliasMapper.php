@@ -6,7 +6,7 @@ use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
 
 use Savks\Negotiator\Support\Mapping\{
     Casts\Cast,
-    Casts\NullableCast,
+    Casts\OptionalCast,
     Mapper
 };
 
@@ -20,7 +20,7 @@ final class AliasMapper extends Mapper
 
     public static function schema(): Cast
     {
-        return new class (static::$alias) extends NullableCast {
+        return new class (static::$alias) extends OptionalCast {
             public function __construct(public readonly string $alias)
             {
             }

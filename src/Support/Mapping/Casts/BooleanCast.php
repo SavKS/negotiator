@@ -6,7 +6,7 @@ use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\BooleanType;
 
-class BooleanCast extends NullableCast
+class BooleanCast extends OptionalCast
 {
     public function __construct(
         protected readonly string|Closure|null $accessor = null,

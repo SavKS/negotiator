@@ -4,7 +4,7 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Savks\Negotiator\Support\TypeGeneration\Types\NullType;
 
-class NullCast extends NullableCast
+class NullCast extends OptionalCast
 {
     public bool $nullable = true;
 

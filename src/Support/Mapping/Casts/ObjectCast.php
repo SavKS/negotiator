@@ -6,6 +6,7 @@ use BackedEnum;
 use Closure;
 use Illuminate\Support\Stringable;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\Negotiator\Enums\RefTypes;
 use stdClass;
 use Throwable;
 
@@ -135,11 +136,14 @@ class ObjectCast extends OptionalCast
                 if ($typedField->key instanceof Stringable) {
                     $fieldAsString = (string)$typedField->key;
                 } elseif ($typedField->key instanceof BackedEnum) {
-                    $mapperRef = $typeGenerationContext->resolveEnumRef($typedField->key::class);
+                    $enumRef = $typeGenerationContext->resolveEnumRef($typedField->key::class);
 
-                    if ($mapperRef) {
+                    if ($enumRef) {
                         $additionalRecords[] = new RecordType(
-                            new AliasType("{$mapperRef}.{$typedField->key->name}"),
+                            new AliasType("{$enumRef}.{$typedField->key->name}", ref: [
+                                'type' => RefTypes::ENUM,
+                                'fqn' => $typedField->key::class,
+                            ]),
                             $typedField->value->compileTypes()
                         );
 

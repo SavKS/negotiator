@@ -5,6 +5,7 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 use BackedEnum;
 use Closure;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\Negotiator\Enums\RefTypes;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 
 use Savks\Negotiator\Support\TypeGeneration\Types\{
@@ -67,7 +68,10 @@ class EnumCast extends OptionalCast
         $enumRef = TypeGenerationContext::useSelf()->resolveEnumRef($this->enum);
 
         if ($enumRef) {
-            return new AliasType($enumRef);
+            return new AliasType($enumRef, ref: [
+                'type' => RefTypes::ENUM,
+                'fqn' => $this->enum,
+            ]);
         }
 
         return new StringType();

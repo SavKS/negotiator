@@ -15,8 +15,6 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
 
 abstract class OptionalCast extends Cast
 {
-    public bool $nullable = false;
-
     /**
      * @var array{
      *     value: OptionalModes[]|bool,

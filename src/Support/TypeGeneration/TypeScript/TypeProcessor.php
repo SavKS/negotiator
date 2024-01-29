@@ -4,8 +4,12 @@ namespace Savks\Negotiator\Support\TypeGeneration\TypeScript;
 
 use RuntimeException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
-use Savks\Negotiator\Support\Mapping\Generic;
+use Savks\Negotiator\Enums\RefTypes;
 
+use Savks\Negotiator\Support\Mapping\{
+    Generic,
+    Mapper
+};
 use Savks\Negotiator\Support\TypeGeneration\Types\{
     AliasType,
     AnyType,
@@ -99,9 +103,52 @@ class TypeProcessor
         $lines = [];
 
         foreach ($type->props as $key => $type) {
-            $lines[] = "'{$key}': {$this->processType($type)}";
+            $isOptional = $this->detectOptional(
+                match (true) {
+                    $type instanceof Type => [$type],
+                    $type instanceof Types => $type->types,
+                }
+            );
+
+            $optionalSymbol = $isOptional ? '?' : '';
+
+            $lines[] = "'{$key}'{$optionalSymbol}: {$this->processType($type)}";
         }
 
         return '{' . implode(',', $lines) . '}';
+    }
+
+    /**
+     * @param Type[] $types
+     */
+    protected function detectOptional(array $types): bool
+    {
+        foreach ($types as $type) {
+            if ($type instanceof UndefinedType) {
+                return true;
+            }
+
+            if (
+                ! ($type instanceof AliasType)
+                || ! $type->ref
+                || $type->ref['type'] === RefTypes::ENUM
+            ) {
+                continue;
+            }
+
+            /** @var class-string<Mapper> $mapperFQN */
+            $mapperFQN = $type->ref['fqn'];
+
+            if (
+                in_array(
+                    new UndefinedType(),
+                    $mapperFQN::schema()->compileTypes()->types
+                )
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

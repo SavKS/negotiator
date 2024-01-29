@@ -6,6 +6,7 @@ use BackedEnum;
 use ReflectionEnum;
 use ReflectionNamedType;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\Negotiator\Enums\RefTypes;
 use Savks\PhpContexts\Context;
 
 use Savks\Negotiator\Support\TypeGeneration\Types\{
@@ -38,7 +39,10 @@ class ConstEnumCast extends ConstCast
         $enumRef = $typeGenerationContext->resolveEnumRef($this->case::class);
 
         if ($enumRef) {
-            return new AliasType("{$enumRef}.{$this->case->name}");
+            return new AliasType("{$enumRef}.{$this->case->name}", ref: [
+                'type' => RefTypes::ENUM,
+                'fqn' => $this->case::class,
+            ]);
         }
 
         /** @var ReflectionNamedType $type */

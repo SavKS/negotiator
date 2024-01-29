@@ -6,6 +6,7 @@ use Closure;
 use ReflectionFunction;
 use ReflectionNamedType;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
+use Savks\Negotiator\Enums\RefTypes;
 use Savks\Negotiator\Exceptions\TypeGenerateException;
 use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
 
@@ -122,7 +123,13 @@ class MapperCast extends OptionalCast
         }
 
         return $this->generics ?
-            new AliasType($mapperRef, $this->generics) :
-            new AliasType($mapperRef);
+            new AliasType($mapperRef, $this->generics, [
+                'type' => RefTypes::MAPPER,
+                'fqn' => $mapperFQN,
+            ]) :
+            new AliasType($mapperRef, ref: [
+                'type' => RefTypes::MAPPER,
+                'fqn' => $mapperFQN,
+            ]);
     }
 }

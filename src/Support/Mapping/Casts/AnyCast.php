@@ -13,8 +13,6 @@ class AnyCast extends OptionalCast
 {
     use CanBeGeneric;
 
-    public bool $nullable = true;
-
     public function __construct(
         protected readonly string|Closure|null $accessor = null,
         protected readonly mixed $default = null

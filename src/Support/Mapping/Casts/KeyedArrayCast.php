@@ -103,11 +103,20 @@ class KeyedArrayCast extends OptionalCast
             }
 
             try {
-                $result->{$keyValue} = (new IterationContext($index++, $key))->wrap(
+                $resolvedValue = (new IterationContext($index++, $key))->wrap(
                     fn () => $this->cast->resolve($item, $sourcesTrace)
                 );
 
-                $hasValues = true;
+                $skip = $resolvedValue === null
+                    && $this->cast instanceof OptionalCast
+                    && $this->cast->optional['value']
+                    && ! $this->cast->optional['asNull'];
+
+                if (! $skip) {
+                    $result->{$keyValue} = $resolvedValue;
+
+                    $hasValues = true;
+                }
             } catch (UnexpectedValue $e) {
                 throw UnexpectedValue::wrap($e, "{$key}({$keyValue})");
             } catch (Throwable $e) {

@@ -4,6 +4,7 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 use Savks\Negotiator\Contexts\IterationContext;
+use Savks\Negotiator\Enums\OptionalModes;
 use Savks\Negotiator\Support\TypeGeneration\Types\ArrayType;
 use Throwable;
 
@@ -32,6 +33,11 @@ class ArrayCast extends OptionalCast
         $this->skipIfNull = true;
 
         return $this;
+    }
+
+    public function optionalIfEmpty(): static
+    {
+        return $this->optional(OptionalModes::EMPTY_ARRAY_AS_OPTIONAL);
     }
 
     /**

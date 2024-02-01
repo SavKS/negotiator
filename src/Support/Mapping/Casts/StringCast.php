@@ -3,6 +3,7 @@
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
+use Savks\Negotiator\Enums\OptionalModes;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\StringType;
 use Stringable;
@@ -31,6 +32,11 @@ class StringCast extends OptionalCast
         $this->isCastNumericAllowed = true;
 
         return $this;
+    }
+
+    public function optionalIfEmpty(): static
+    {
+        return $this->optional(OptionalModes::EMPTY_STRING_AS_OPTIONAL);
     }
 
     protected function finalize(mixed $source, array $sourcesTrace): ?string

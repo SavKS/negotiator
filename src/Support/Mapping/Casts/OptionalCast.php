@@ -44,11 +44,6 @@ abstract class OptionalCast extends Cast
         return $this;
     }
 
-    public function optionalIfFalse(): static
-    {
-        return $this->optional(OptionalModes::FALSE_AS_OPTIONAL);
-    }
-
     public function resolve(mixed $source, array $sourcesTrace): mixed
     {
         $value = $this->finalize($source, $sourcesTrace);

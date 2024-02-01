@@ -6,7 +6,10 @@ use Savks\Negotiator\Support\TypeGeneration\Types\NullType;
 
 class NullCast extends OptionalCast
 {
-    public bool $nullable = true;
+    public function __construct()
+    {
+        $this->nullable();
+    }
 
     protected function finalize(mixed $source, array $sourcesTrace): mixed
     {

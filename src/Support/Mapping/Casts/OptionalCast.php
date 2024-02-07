@@ -71,7 +71,6 @@ abstract class OptionalCast extends Cast
             }
         }
 
-
         if ($value === null && ! $this->optional['value']) {
             throw new UnexpectedNull('NOT NULL', $value);
         }

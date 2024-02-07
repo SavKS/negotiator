@@ -17,6 +17,11 @@ class ScopeCast extends Cast
     ) {
     }
 
+    public function resolve(mixed $source, array $sourcesTrace): mixed
+    {
+        return $this->finalize($source, $sourcesTrace);
+    }
+
     protected function finalize(mixed $source, array $sourcesTrace): mixed
     {
         $value = static::resolveValueFromAccessor(

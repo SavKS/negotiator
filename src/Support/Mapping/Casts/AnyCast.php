@@ -21,7 +21,7 @@ class AnyCast extends OptionalCast
     ) {
     }
 
-    protected function finalize(mixed $source, array $sourcesTrace): object|array|null
+    protected function finalize(mixed $source, array $sourcesTrace): mixed
     {
         $value = static::resolveValueFromAccessor(
             $this->accessor,

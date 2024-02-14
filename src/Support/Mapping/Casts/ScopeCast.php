@@ -17,7 +17,7 @@ class ScopeCast extends Cast
     ) {
     }
 
-    public function resolve(mixed $source, array $sourcesTrace): mixed
+    public function resolve(mixed $source, array $sourcesTrace = []): mixed
     {
         return $this->finalize($source, $sourcesTrace);
     }

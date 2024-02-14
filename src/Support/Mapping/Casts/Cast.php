@@ -26,7 +26,7 @@ abstract class Cast
         return $this;
     }
 
-    public function resolve(mixed $source, array $sourcesTrace): mixed
+    public function resolve(mixed $source, array $sourcesTrace = []): mixed
     {
         $value = $this->finalize($source, $sourcesTrace);
 

@@ -23,6 +23,7 @@ class EnumCast extends OptionalCast
     public function __construct(
         protected readonly string $enum,
         protected readonly string|Closure|null $accessor = null,
+        protected readonly ?BackedEnum $defaultValue = null
     ) {
     }
 
@@ -42,7 +43,7 @@ class EnumCast extends OptionalCast
         );
 
         if ($value === null) {
-            return null;
+            return $this->defaultValue?->value;
         }
 
         /** @var class-string<BackedEnum> $enum */

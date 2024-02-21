@@ -119,9 +119,12 @@ class Schema
     /**
      * @param class-string<BackedEnum> $enum
      */
-    public static function enum(string $enum, string|Closure|null $accessor = null): EnumCast
-    {
-        return new EnumCast($enum, $accessor);
+    public static function enum(
+        string $enum,
+        string|Closure|null $accessor = null,
+        BackedEnum $defaultValue = null
+    ): EnumCast {
+        return new EnumCast($enum, $accessor, $defaultValue);
     }
 
     public static function constEnum(BackedEnum $case): ConstEnumCast

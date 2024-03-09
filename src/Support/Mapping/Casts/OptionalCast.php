@@ -18,6 +18,7 @@ abstract class OptionalCast extends Cast
     /**
      * @var array{
      *     value: OptionalModes[]|bool,
+     *     type?: true,
      *     asNull: bool
      * }
      */
@@ -26,9 +27,9 @@ abstract class OptionalCast extends Cast
         'asNull' => false,
     ];
 
-    public function nullable(): static
+    public function nullable(array|OptionalModes|null $mode = null): static
     {
-        return $this->optional(asNull: true);
+        return $this->optional($mode, true);
     }
 
     /**
@@ -42,6 +43,22 @@ abstract class OptionalCast extends Cast
         ];
 
         return $this;
+    }
+
+    public function maybeOptional(bool $asNull = false): static
+    {
+        $this->optional = [
+            'value' => false,
+            'type' => true,
+            'asNull' => $asNull,
+        ];
+
+        return $this;
+    }
+
+    public function maybeNullable(bool $asNull = false): static
+    {
+        return $this->maybeOptional($asNull);
     }
 
     public function resolve(mixed $source, array $sourcesTrace = []): mixed
@@ -88,7 +105,10 @@ abstract class OptionalCast extends Cast
             $types = $this->types();
         }
 
-        if ($this->optional['value']) {
+        if (
+            $this->optional['value']
+            || ($this->optional['type'] ?? false) === true
+        ) {
             $types = [
                 ...Arr::wrap($types),
 

@@ -13,13 +13,14 @@ use Savks\Negotiator\Exceptions\{
 };
 use Savks\Negotiator\Support\Mapping\Casts\{
     Cast,
-    OptionalCast,
-    WorkWithAccessor
+    WorkWithAccessor,
+    WorkWithOptionalFields
 };
 
 class Spread
 {
     use WorkWithAccessor;
+    use WorkWithOptionalFields;
 
     protected array $sourcesTrace = [];
 
@@ -53,12 +54,7 @@ class Spread
                 try {
                     $resolvedValue = $fieldValue->resolve($value, $sourcesTrace);
 
-                    $skip = $resolvedValue === null
-                        && $fieldValue instanceof OptionalCast
-                        && $fieldValue->optional['value']
-                        && ! $fieldValue->optional['asNull'];
-
-                    if (! $skip) {
+                    if (! $this->needSkip($resolvedValue, $fieldValue)) {
                         $data->{$field} = $resolvedValue;
                     }
                 } catch (UnexpectedValue $e) {

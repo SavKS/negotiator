@@ -28,6 +28,12 @@ class ConstEnumCast extends ConstCast
 
     protected function finalize(mixed $source, array $sourcesTrace): string|int|null
     {
+        $this->assertMatching(
+            $source,
+            $sourcesTrace,
+            $this->case::class . '::' . $this->case->name
+        );
+
         return $this->case->value;
     }
 

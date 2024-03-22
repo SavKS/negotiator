@@ -9,12 +9,17 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
     Types
 };
 
-class ScopeCast extends Cast
+class ScopeCast extends Cast implements ForwardedCast
 {
     public function __construct(
         protected readonly Cast $cast,
         protected readonly string|Closure $accessor
     ) {
+    }
+
+    public function nestedCast(): Cast
+    {
+        return $this->cast;
     }
 
     public function resolve(mixed $source, array $sourcesTrace = []): mixed

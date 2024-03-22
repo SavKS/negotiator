@@ -20,8 +20,9 @@ class UnionCast extends OptionalCast
 {
     /**
      * @var list<array{
-     *     'condition': array{string, mixed}|Closure(mixed): bool,
-     *     'cast': Cast
+     *     condition: array{string, mixed}|Closure(mixed): bool,
+     *     cast: Cast,
+     *     label?: string
      * }>
      */
     protected array $variants = [];
@@ -32,11 +33,12 @@ class UnionCast extends OptionalCast
     {
     }
 
-    public function variant(Closure|array $condition, Cast $cast): static
+    public function variant(Closure|array $condition, Cast $cast, ?string $label = null): static
     {
         $this->variants[] = [
             'condition' => $condition,
             'cast' => $cast,
+            'label' => $label,
         ];
 
         return $this;
@@ -90,9 +92,13 @@ class UnionCast extends OptionalCast
 
                 return $variant['cast']->resolve($value, $sourcesTrace);
             } catch (UnexpectedValue $e) {
-                throw UnexpectedValue::wrap($e, "[Condition #{$i}]", true);
+                $variantLabel = $variant['label'] ? "{$i} ({$variant['label']})" : $i;
+
+                throw UnexpectedValue::wrap($e, "[Condition #{$variantLabel}]", true);
             } catch (Throwable $e) {
-                throw InternalException::wrap($e, "[Condition #{$i}]", true);
+                $variantLabel = $variant['label'] ? "{$i} ({$variant['label']})" : $i;
+
+                throw InternalException::wrap($e, "[Condition #{$variantLabel}]", true);
             }
         }
 

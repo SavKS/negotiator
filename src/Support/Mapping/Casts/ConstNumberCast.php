@@ -22,6 +22,8 @@ class ConstNumberCast extends ConstCast
 
     protected function finalize(mixed $source, array $sourcesTrace): int|float
     {
+        $this->assertMatching($source, $sourcesTrace);
+
         return $this->value;
     }
 

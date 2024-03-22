@@ -27,6 +27,8 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
 
 class ObjectCast extends OptionalCast
 {
+    use WorkWithOptionalFields;
+
     /**
      * @var array<string, Cast>|null
      */
@@ -77,12 +79,7 @@ class ObjectCast extends OptionalCast
 
                     $resolvedValue = $typedField->value->resolve($value, $sourcesTrace);
 
-                    $skip = $resolvedValue === null
-                        && $typedField->value instanceof OptionalCast
-                        && $typedField->value->optional['value']
-                        && ! $typedField->value->optional['asNull'];
-
-                    if (! $skip) {
+                    if (! $this->needSkip($resolvedValue, $typedField->value)) {
                         $result->{$fieldAsString} = $resolvedValue;
                     }
                 } catch (UnexpectedValue $e) {
@@ -98,12 +95,7 @@ class ObjectCast extends OptionalCast
                 try {
                     $resolvedValue = $fieldValue->resolve($value, $sourcesTrace);
 
-                    $skip = $resolvedValue === null
-                        && $fieldValue instanceof OptionalCast
-                        && $fieldValue->optional['value']
-                        && ! $fieldValue->optional['asNull'];
-
-                    if (! $skip) {
+                    if (! $this->needSkip($resolvedValue, $fieldValue)) {
                         $result->{$field} = $resolvedValue;
                     }
                 } catch (UnexpectedValue $e) {

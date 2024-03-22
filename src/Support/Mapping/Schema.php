@@ -22,6 +22,7 @@ use Savks\Negotiator\Support\Mapping\Casts\{
     EnumCast,
     IntersectionCast,
     KeyedArrayCast,
+    LazyCast,
     MapperCast,
     NullCast,
     NumberCast,
@@ -148,5 +149,10 @@ class Schema
     public static function scope(Cast $cast, string|Closure $accessor): ScopeCast
     {
         return new ScopeCast($cast, $accessor);
+    }
+
+    public static function lazy(Closure $lazyValueResolver, Cast $schema): LazyCast
+    {
+        return new LazyCast($lazyValueResolver, $schema);
     }
 }

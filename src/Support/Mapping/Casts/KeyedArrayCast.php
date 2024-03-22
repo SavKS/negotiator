@@ -19,6 +19,8 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
 
 class KeyedArrayCast extends OptionalCast
 {
+    use WorkWithOptionalFields;
+
     /**
      * @var array{
      *     cast: OneOfConstCast|EnumCast|StringCast,
@@ -107,12 +109,7 @@ class KeyedArrayCast extends OptionalCast
                     fn () => $this->cast->resolve($item, $sourcesTrace)
                 );
 
-                $skip = $resolvedValue === null
-                    && $this->cast instanceof OptionalCast
-                    && $this->cast->optional['value']
-                    && ! $this->cast->optional['asNull'];
-
-                if (! $skip) {
+                if (! $this->needSkip($resolvedValue, $this->cast)) {
                     $result->{$keyValue} = $resolvedValue;
 
                     $hasValues = true;

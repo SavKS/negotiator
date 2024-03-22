@@ -32,6 +32,8 @@ class ConstStringCast extends ConstCast
 
     protected function finalize(mixed $source, array $sourcesTrace): string
     {
+        $this->assertMatching($source, $sourcesTrace);
+
         return $this->value;
     }
 

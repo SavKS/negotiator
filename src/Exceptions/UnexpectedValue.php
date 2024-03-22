@@ -2,6 +2,7 @@
 
 namespace Savks\Negotiator\Exceptions;
 
+use BackedEnum;
 use Illuminate\Support\Arr;
 
 class UnexpectedValue extends DTOException
@@ -11,7 +12,13 @@ class UnexpectedValue extends DTOException
         public readonly mixed $value,
         public readonly string|int|array|null $path = null
     ) {
-        $valueType = gettype($value);
+        if (! is_string($this->value) && $this->value instanceof BackedEnum) {
+            $normalizedValueType = $this->value::class . '::' . $this->value->name;
+        } elseif (is_object($this->value)) {
+            $normalizedValueType = 'object<' . get_class($this->value) . '>';
+        } else {
+            $normalizedValueType = gettype($value);
+        }
 
         parent::__construct(
             sprintf(
@@ -24,7 +31,7 @@ class UnexpectedValue extends DTOException
                     '.',
                     Arr::wrap($path ?? 'ROOT')
                 ),
-                $valueType === 'object' ? 'object<' . $this->value::class . '>' : $valueType
+                $normalizedValueType
             )
         );
     }

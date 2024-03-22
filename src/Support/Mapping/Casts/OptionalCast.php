@@ -105,14 +105,26 @@ abstract class OptionalCast extends Cast
             $types = $this->types();
         }
 
+        if ($this instanceof ForwardedCast) {
+            $nestedCast = $this->nestedCast();
+
+            if ($nestedCast instanceof OptionalCast) {
+                $optional = $nestedCast->optional;
+            } else {
+                $optional['value'] = false;
+            }
+        } else {
+            $optional = $this->optional;
+        }
+
         if (
-            $this->optional['value']
-            || ($this->optional['type'] ?? false) === true
+            $optional['value']
+            || ($optional['type'] ?? false) === true
         ) {
             $types = [
                 ...Arr::wrap($types),
 
-                $this->optional['asNull'] ? new NullType() : new UndefinedType(),
+                $optional['asNull'] ? new NullType() : new UndefinedType(),
             ];
         }
 

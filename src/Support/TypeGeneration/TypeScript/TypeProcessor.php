@@ -119,11 +119,17 @@ class TypeProcessor
     }
 
     /**
-     * @param Type[] $types
+     * @param list<Type|Types> $types
      */
     protected function detectOptional(array $types): bool
     {
         foreach ($types as $type) {
+            if ($type instanceof Types
+                && $this->detectOptional($type->types)
+            ) {
+                return true;
+            }
+
             if ($type instanceof UndefinedType) {
                 return true;
             }

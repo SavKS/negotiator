@@ -25,9 +25,9 @@ class KeyedArrayCast extends OptionalCast
      * @var array{
      *     cast: OneOfConstCast|EnumCast|StringCast,
      *     byKey: bool
-     * }|null
+     * }|OneOfConstCast|EnumCast|StringCast|null
      */
-    protected array|null $keyBy = null;
+    protected array|OneOfConstCast|EnumCast|StringCast|null $keyBy = null;
 
     protected bool $nullIfEmpty = false;
 
@@ -53,6 +53,13 @@ class KeyedArrayCast extends OptionalCast
             'cast' => Schema::string($accessor),
             'byKey' => false,
         ];
+
+        return $this;
+    }
+
+    public function keySchema(OneOfConstCast|EnumCast|StringCast $cast): static
+    {
+        $this->keyBy = $cast;
 
         return $this;
     }
@@ -93,8 +100,10 @@ class KeyedArrayCast extends OptionalCast
         $hasValues = false;
 
         foreach ($value as $key => $item) {
-            if (! $this->keyBy) {
-                $keyValue = (string)$key;
+            if (! $this->keyBy || $this->keyBy instanceof Cast) {
+                $keyValue = $this->keyBy instanceof Cast
+                    ? $this->keyBy->resolve($key)
+                    : (string)$key;
             } else {
                 $keyValue = (new IterationContext($index, $key))->wrap(
                     fn () => $this->keyBy['cast']->resolve(
@@ -126,7 +135,11 @@ class KeyedArrayCast extends OptionalCast
 
     protected function types(): RecordType
     {
-        $cast = $this->keyBy['cast'] ?? null;
+        if ($this->keyBy instanceof Cast) {
+            $cast = $this->keyBy;
+        } else {
+            $cast = $this->keyBy['cast'] ?? null;
+        }
 
         return new RecordType(
             $cast?->compileTypes() ?? new StringType(),

@@ -18,6 +18,10 @@ class UnexpectedValue extends DTOException
             $normalizedValueType = 'object<' . get_class($this->value) . '>';
         } else {
             $normalizedValueType = gettype($value);
+
+            if (is_scalar($this->value)) {
+                $normalizedValueType = "{$normalizedValueType}<{$this->value}>";
+            }
         }
 
         parent::__construct(

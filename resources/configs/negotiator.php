@@ -17,4 +17,6 @@ return [
             ],
         ],
     ],
+
+    'ignore_exceptions' => [],
 ];

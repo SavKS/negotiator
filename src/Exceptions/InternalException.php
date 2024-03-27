@@ -29,6 +29,10 @@ class InternalException extends DTOException
         string|int|array|null $path = null,
         bool $prepend = false
     ): static {
+        if (static::needIgnore($exception)) {
+            throw $exception;
+        }
+
         if ($exception instanceof MappingFail) {
             $path = Arr::wrap($path);
 
@@ -56,5 +60,22 @@ class InternalException extends DTOException
         }
 
         return new static($originalException, $path);
+    }
+
+    protected static function needIgnore(Throwable $exception): bool
+    {
+        $ignore = config('negotiator.ignore_exceptions');
+
+        if (! $ignore) {
+            return false;
+        }
+
+        foreach ($ignore as $ignoreException) {
+            if (is_a($exception, $ignoreException)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

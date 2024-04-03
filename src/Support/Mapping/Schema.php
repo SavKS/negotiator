@@ -14,7 +14,7 @@ use Savks\Negotiator\Support\Mapping\Casts\{
     ArrayCast,
     BooleanCast,
     Cast,
-    CastBooleanValue,
+    ConstBooleanCast,
     ConstCast,
     ConstEnumCast,
     ConstNumberCast,
@@ -67,9 +67,9 @@ class Schema
         return new BooleanCast($accessor, $default);
     }
 
-    public static function constBoolean(bool $value, bool $asAnyBool = false): CastBooleanValue
+    public static function constBoolean(bool $value, bool $asAnyBool = false): ConstBooleanCast
     {
-        return new CastBooleanValue($value, $asAnyBool);
+        return new ConstBooleanCast($value, $asAnyBool);
     }
 
     public static function constNumber(int|float $value, bool $asAnyNumber = false): ConstNumberCast

@@ -16,12 +16,15 @@ final readonly class LazyCastResolver implements JsonSerializable
 
     public function jsonSerialize(): mixed
     {
-        if (! method_exists($this->lazyValue, 'resolve')) {
+        if (
+            $this->lazyValue !== null
+            && ! method_exists($this->lazyValue, 'resolve')
+        ) {
             throw new LogicException('Lazy value object must have "resolve" method.');
         }
 
         return $this->schema->resolve(
-            $this->lazyValue->resolve()
+            $this->lazyValue?->resolve()
         );
     }
 }

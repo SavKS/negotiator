@@ -15,7 +15,7 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
 class LazyCast extends OptionalCast implements ForwardedCast
 {
     /**
-     * @param Closure(array ...$source): LazyValue $lazyValueResolver
+     * @param Closure(array ...$source): (LazyValue|null) $lazyValueResolver
      */
     public function __construct(
         protected readonly Closure $lazyValueResolver,
@@ -35,7 +35,7 @@ class LazyCast extends OptionalCast implements ForwardedCast
             ...array_reverse($sourcesTrace)
         );
 
-        if (! ($lazyValue instanceof LazyValue)) {
+        if ($lazyValue !== null && ! ($lazyValue instanceof LazyValue)) {
             throw new UnexpectedValue([LazyValue::class], $lazyValue);
         }
 

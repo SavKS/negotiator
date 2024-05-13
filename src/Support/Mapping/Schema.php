@@ -37,7 +37,7 @@ class Schema
 {
     use Macroable;
 
-    public static function string(string|Closure|null $accessor = null, string $default = null): StringCast
+    public static function string(string|Closure|null $accessor = null, ?string $default = null): StringCast
     {
         return new StringCast($accessor, $default);
     }
@@ -62,7 +62,7 @@ class Schema
         return new ConstStringCast($value, $asAnyString);
     }
 
-    public static function boolean(string|Closure|null $accessor = null, bool $default = null): BooleanCast
+    public static function boolean(string|Closure|null $accessor = null, ?bool $default = null): BooleanCast
     {
         return new BooleanCast($accessor, $default);
     }
@@ -123,7 +123,7 @@ class Schema
     public static function enum(
         string $enum,
         string|Closure|null $accessor = null,
-        BackedEnum $defaultValue = null
+        ?BackedEnum $defaultValue = null
     ): EnumCast {
         return new EnumCast($enum, $accessor, $defaultValue);
     }

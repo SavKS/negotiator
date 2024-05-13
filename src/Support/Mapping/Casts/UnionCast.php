@@ -106,9 +106,9 @@ class UnionCast extends OptionalCast
             try {
                 return $this->defaultVariant->resolve($value, $sourcesTrace);
             } catch (UnexpectedValue $e) {
-                throw UnexpectedValue::wrap($e, "[Condition #DEFAULT]", true);
+                throw UnexpectedValue::wrap($e, '[Condition #DEFAULT]', true);
             } catch (Throwable $e) {
-                throw InternalException::wrap($e, "[Condition #DEFAULT]", true);
+                throw InternalException::wrap($e, '[Condition #DEFAULT]', true);
             }
         }
 

@@ -11,7 +11,7 @@ class BooleanCast extends OptionalCast
 {
     public function __construct(
         protected readonly string|Closure|null $accessor = null,
-        protected readonly bool|null $default = null
+        protected readonly ?bool $default = null
     ) {
     }
 

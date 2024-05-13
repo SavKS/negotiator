@@ -20,7 +20,8 @@ final class AliasMapper extends Mapper
 
     public static function schema(): Cast
     {
-        return new class (static::$alias) extends OptionalCast {
+        return new class(self::$alias) extends OptionalCast
+        {
             public function __construct(public readonly string $alias)
             {
             }

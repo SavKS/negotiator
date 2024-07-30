@@ -31,10 +31,19 @@ class KeyedArrayCast extends OptionalCast
 
     protected bool $nullIfEmpty = false;
 
+    protected bool $stdClassCastAllowed = false;
+
     public function __construct(
         protected readonly Cast $cast,
         protected readonly string|Closure|null $accessor = null
     ) {
+    }
+
+    public function allowCastStdClass(): static
+    {
+        $this->stdClassCastAllowed = true;
+
+        return $this;
     }
 
     public function keyBySchema(OneOfConstCast|EnumCast|StringCast $cast, bool $byKey = false): static
@@ -90,7 +99,13 @@ class KeyedArrayCast extends OptionalCast
         }
 
         if (! is_iterable($value)) {
-            throw new UnexpectedValue('iterable', $value);
+            if ($this->stdClassCastAllowed) {
+                if (! ($value instanceof stdClass)) {
+                    throw new UnexpectedValue(['stdClass', 'iterable'], $value);
+                }
+            } else {
+                throw new UnexpectedValue('iterable', $value);
+            }
         }
 
         $result = new stdClass();

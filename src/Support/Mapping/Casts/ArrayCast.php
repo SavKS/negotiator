@@ -6,6 +6,7 @@ use Closure;
 use Savks\Negotiator\Contexts\IterationContext;
 use Savks\Negotiator\Enums\OptionalModes;
 use Savks\Negotiator\Support\TypeGeneration\Types\ArrayType;
+use stdClass;
 use Throwable;
 
 use Savks\Negotiator\Exceptions\{
@@ -22,10 +23,19 @@ class ArrayCast extends OptionalCast
 
     protected bool $skipIfNull = false;
 
+    protected bool $stdClassCastAllowed = false;
+
     public function __construct(
         protected readonly Cast $cast,
         protected readonly string|Closure|null $accessor = null
     ) {
+    }
+
+    public function allowCastStdClass(): static
+    {
+        $this->stdClassCastAllowed = true;
+
+        return $this;
     }
 
     public function skipIfNull(): static
@@ -67,12 +77,22 @@ class ArrayCast extends OptionalCast
         }
 
         if (! is_iterable($value)) {
-            throw new UnexpectedValue('iterable', $value);
+            if ($this->stdClassCastAllowed) {
+                if (! ($value instanceof stdClass)) {
+                    throw new UnexpectedValue(['stdClass', 'iterable'], $value);
+                }
+            } else {
+                throw new UnexpectedValue('iterable', $value);
+            }
         }
 
         $result = [];
 
-        $value = is_array($value) ? $value : iterator_to_array($value);
+        if ($value instanceof stdClass) {
+            $value = (array)$value;
+        } else {
+            $value = is_array($value) ? $value : iterator_to_array($value);
+        }
 
         $index = -1;
 

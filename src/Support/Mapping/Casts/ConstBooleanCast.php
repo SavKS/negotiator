@@ -14,8 +14,15 @@ class ConstBooleanCast extends ConstCast
 {
     public function __construct(
         protected readonly bool $value,
-        protected readonly bool $asAnyBool
+        protected bool $asAnyBoolean
     ) {
+    }
+
+    public function asAnyBoolean(): static
+    {
+        $this->asAnyBoolean = true;
+
+        return $this;
     }
 
     public function originalValue(): bool
@@ -30,6 +37,6 @@ class ConstBooleanCast extends ConstCast
 
     protected function types(): BooleanType|ConstBooleanType
     {
-        return $this->asAnyBool ? new BooleanType() : new ConstBooleanType($this->value);
+        return $this->asAnyBoolean ? new BooleanType() : new ConstBooleanType($this->value);
     }
 }

@@ -5,6 +5,8 @@ namespace Savks\Negotiator\Support\Mapping;
 use BackedEnum;
 use Closure;
 use Illuminate\Support\Traits\Macroable;
+use LogicException;
+use Savks\Negotiator\Contexts\IterationContext;
 
 use Savks\Negotiator\Support\Mapping\Casts\{
     ObjectUtils\Spread,
@@ -40,6 +42,34 @@ class Schema
     public static function string(string|Closure|null $accessor = null, ?string $default = null): StringCast
     {
         return new StringCast($accessor, $default);
+    }
+
+    public static function iterationIndex(int $increase = 0): NumberCast
+    {
+        return self::number(function () use ($increase) {
+            $iterationContext = IterationContext::tryUseSelf();
+
+            if (! $iterationContext) {
+                throw new LogicException('The method "iterationIndex" works only in array or keyedArray casts');
+            }
+
+            return $iterationContext->index + $increase;
+        });
+    }
+
+    public static function iterationKey(?Cast $keySchema = null): Cast
+    {
+        $keySchema ??= self::string();
+
+        return self::scope($keySchema, function () {
+            $iterationContext = IterationContext::tryUseSelf();
+
+            if (! $iterationContext) {
+                throw new LogicException('The method "iterationIndex" works only in array or keyedArray casts');
+            }
+
+            return $iterationContext->key;
+        });
     }
 
     public static function number(

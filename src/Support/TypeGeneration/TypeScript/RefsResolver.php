@@ -87,13 +87,7 @@ class RefsResolver
         }
 
         return [
-            implode(
-                '/',
-                array_map(
-                    Str::kebab(...),
-                    $namespaceSegments
-                )
-            ),
+            implode('/', $namespaceSegments),
             $enumName,
         ];
     }

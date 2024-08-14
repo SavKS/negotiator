@@ -9,10 +9,20 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
 
 class ConstNumberCast extends ConstCast
 {
+    protected bool $asAnyNumber = false;
+
     public function __construct(
         protected readonly int|float $value,
-        protected readonly bool $asAnyNumber
+        bool $asAnyNumber
     ) {
+        $this->asAnyNumber = $asAnyNumber;
+    }
+
+    public function asAnyNumber(): static
+    {
+        $this->asAnyNumber = true;
+
+        return $this;
     }
 
     public function originalValue(): int|float

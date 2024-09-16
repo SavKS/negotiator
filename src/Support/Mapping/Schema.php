@@ -32,6 +32,7 @@ use Savks\Negotiator\Support\Mapping\Casts\{
     OneOfConstCast,
     ScopeCast,
     StringCast,
+    TupleCast,
     UnionCast
 };
 
@@ -145,6 +146,14 @@ class Schema
     public static function intersection(Cast|Mapper ...$objects): IntersectionCast
     {
         return new IntersectionCast(...$objects);
+    }
+
+    /**
+     * @param list<Cast|Mapper> $casts
+     */
+    public static function tuple(array $casts, string|Closure|null $accessor = null): TupleCast
+    {
+        return new TupleCast($casts, $accessor);
     }
 
     /**

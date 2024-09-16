@@ -2,6 +2,7 @@
 
 namespace Savks\Negotiator\Support\TypeGeneration\TypeScript;
 
+use Illuminate\Support\Arr;
 use RuntimeException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
@@ -23,6 +24,7 @@ use Savks\Negotiator\Support\TypeGeneration\Types\{
     ObjectType,
     RecordType,
     StringType,
+    TupleType,
     Type,
     Types,
     UndefinedType,
@@ -93,6 +95,17 @@ class TypeProcessor
             ),
 
             $type instanceof ArrayType => "Array<{$this->processType($type->types)}>",
+
+            $type instanceof TupleType => sprintf(
+                '[%s]',
+                implode(
+                    ',',
+                    Arr::map(
+                        $type->types,
+                        fn (Types $types) => $this->processType($types)
+                    )
+                )
+            ),
 
             default => throw new RuntimeException('Unprocessed type "' . $type::class . '"')
         };

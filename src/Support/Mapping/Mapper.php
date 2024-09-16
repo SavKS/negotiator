@@ -72,14 +72,14 @@ abstract class Mapper implements JsonSerializable, Responsable
 
                 $event->begin();
 
-                $result = $schema->resolve($this, []);
+                $result = $schema->resolve($this);
 
                 $event->end();
 
                 return $result;
             }
 
-            return $schema->resolve($this, []);
+            return $schema->resolve($this);
         } catch (UnexpectedValue|InternalException $e) {
             throw new MappingFail($this, $e);
         }

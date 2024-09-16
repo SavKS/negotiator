@@ -62,7 +62,14 @@ class MapperCast extends OptionalCast
         }
 
         if (is_string($this->mapper)) {
-            $mapper = new ($this->mapper)($value);
+            if (method_exists($this->mapper, 'factory')) {
+                $mapper = $this->mapper::factory(
+                    $value,
+                    ...array_reverse($sourcesTrace)
+                );
+            } else {
+                $mapper = new ($this->mapper)($value);
+            }
         } else {
             $mapper = $this->mapper instanceof Closure ?
                 ($this->mapper)(

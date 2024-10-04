@@ -29,7 +29,7 @@ class KeyedArrayCast extends OptionalCast
      */
     protected array|OneOfConstCast|EnumCast|StringCast|null $keyBy = null;
 
-    protected bool $nullIfEmpty = false;
+    protected bool $optionalIfEmpty = false;
 
     protected bool $stdClassCastAllowed = false;
 
@@ -75,9 +75,18 @@ class KeyedArrayCast extends OptionalCast
 
     public function nullIfEmpty(): static
     {
-        $this->nullIfEmpty = true;
+        $this->optionalIfEmpty = true;
 
         $this->nullable();
+
+        return $this;
+    }
+
+    public function optionalIfEmpty(): static
+    {
+        $this->optionalIfEmpty = true;
+
+        $this->optional();
 
         return $this;
     }
@@ -145,7 +154,7 @@ class KeyedArrayCast extends OptionalCast
             }
         }
 
-        return ! $hasValues && $this->nullIfEmpty ? null : $result;
+        return ! $hasValues && $this->optionalIfEmpty ? null : $result;
     }
 
     protected function types(): RecordType

@@ -8,15 +8,18 @@ class MappingFail extends DTOException
 {
     public function __construct(
         public readonly Mapper $mapper,
-        public readonly UnexpectedValue|InternalException|null $exception = null
+        public readonly UnexpectedValue|InternalException|string|null $exception = null
     ) {
         parent::__construct(
             sprintf(
                 '[%s]%s',
                 $mapper::class,
-                $exception ? " {$exception->getMessage()}" : ''
+                is_string($exception)
+                    ? $this->exception
+                    : ($exception ? " {$exception->getMessage()}" : '')
+
             ),
-            previous: $exception
+            previous: ! is_string($exception) ? $exception : null
         );
     }
 }

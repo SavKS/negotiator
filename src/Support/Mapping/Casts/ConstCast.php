@@ -17,7 +17,7 @@ abstract class ConstCast extends Cast
      */
     abstract public function originalValue(): mixed;
 
-    public function check(string|Closure|null $comparisonAccessor): self
+    public function check(string|Closure|null $comparisonAccessor): static
     {
         $this->comparisonAccessor = $comparisonAccessor;
 

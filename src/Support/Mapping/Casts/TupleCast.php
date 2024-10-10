@@ -3,7 +3,6 @@
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
-use Illuminate\Support\Arr;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\Support\TypeGeneration\Types\TupleType;
 use Throwable;
@@ -44,7 +43,7 @@ class TupleCast extends OptionalCast
 
         foreach (array_values($this->casts) as $index => $cast) {
             try {
-                $result[] = $cast->resolve($source, $sourcesTrace);
+                $result[] = $cast->resolve($value, $sourcesTrace);
             } catch (UnexpectedValue $e) {
                 throw UnexpectedValue::wrap($e, $index);
             } catch (Throwable $e) {
@@ -63,8 +62,6 @@ class TupleCast extends OptionalCast
             $types[] = $object->compileTypes()->types;
         }
 
-        return new TupleType(
-            Arr::collapse($types)
-        );
+        return new TupleType($types);
     }
 }

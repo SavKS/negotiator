@@ -39,6 +39,11 @@ class StringCast extends OptionalCast
         return $this->optional(OptionalModes::EMPTY_STRING_AS_OPTIONAL);
     }
 
+    public function nullableIfEmpty(): static
+    {
+        return $this->nullable(OptionalModes::EMPTY_STRING_AS_OPTIONAL);
+    }
+
     protected function finalize(mixed $source, array $sourcesTrace): ?string
     {
         $value = static::resolveValueFromAccessor(

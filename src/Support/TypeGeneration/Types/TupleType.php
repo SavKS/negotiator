@@ -10,14 +10,14 @@ class TupleType extends Type
     public readonly array $types;
 
     /**
-     * @param list<Type|Types> $types
+     * @param list<Type[]> $types
      */
     public function __construct(array $types)
     {
         $result = [];
 
         foreach ($types as $type) {
-            $result[] = $type instanceof Type ? new Types([$type]) : $type;
+            $result[] = new Types($type);
         }
 
         $this->types = $result;

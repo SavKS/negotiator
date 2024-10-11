@@ -185,7 +185,7 @@ class Schema
         return new OneOfConstCast($values, $accessor);
     }
 
-    public static function scope(Cast $cast, string|Closure $accessor): ScopeCast
+    public static function scope(Cast $cast, string|Closure|null $accessor): ScopeCast
     {
         return new ScopeCast($cast, $accessor);
     }

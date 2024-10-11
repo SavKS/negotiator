@@ -13,12 +13,20 @@ class ScopeCast extends Cast implements ForwardedCast
 {
     public function __construct(
         protected readonly Cast $cast,
-        protected readonly string|Closure $accessor
+        protected readonly string|Closure|null $accessor
     ) {
     }
 
-    public function nestedCast(): Cast
+    public function nestedCast(?Closure $callback = null): Cast|static
     {
+        if ($callback) {
+            $callback(
+                $this->nestedCast()
+            );
+
+            return $this;
+        }
+
         return $this->cast;
     }
 
@@ -29,14 +37,18 @@ class ScopeCast extends Cast implements ForwardedCast
 
     protected function finalize(mixed $source, array $sourcesTrace): mixed
     {
-        $value = static::resolveValueFromAccessor(
-            $this->accessor,
-            $source,
-            $sourcesTrace
-        );
+        if ($this->accessor) {
+            $value = static::resolveValueFromAccessor(
+                $this->accessor,
+                $source,
+                $sourcesTrace
+            );
 
-        if ($this->accessor && last($sourcesTrace) !== $source) {
-            $sourcesTrace[] = $source;
+            if (last($sourcesTrace) !== $source) {
+                $sourcesTrace[] = $source;
+            }
+        } else {
+            $value = $source;
         }
 
         return $this->cast->resolve($value, $sourcesTrace);

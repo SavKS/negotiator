@@ -23,11 +23,11 @@ class KeyedArrayCast extends OptionalCast
 
     /**
      * @var array{
-     *     cast: OneOfConstCast|EnumCast|StringCast,
+     *     cast: OneOfConstCast|EnumCast|StringCast|MapperCast,
      *     byKey: bool
-     * }|OneOfConstCast|EnumCast|StringCast|null
+     * }|OneOfConstCast|EnumCast|StringCast|MapperCast|null
      */
-    protected array|OneOfConstCast|EnumCast|StringCast|null $keyBy = null;
+    protected array|OneOfConstCast|EnumCast|StringCast|MapperCast|null $keyBy = null;
 
     protected bool $optionalIfEmpty = false;
 
@@ -66,7 +66,7 @@ class KeyedArrayCast extends OptionalCast
         return $this;
     }
 
-    public function keySchema(OneOfConstCast|EnumCast|StringCast $cast): static
+    public function keySchema(OneOfConstCast|EnumCast|StringCast|MapperCast $cast): static
     {
         $this->keyBy = $cast;
 

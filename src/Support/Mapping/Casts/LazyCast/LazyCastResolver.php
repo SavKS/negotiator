@@ -10,7 +10,8 @@ final readonly class LazyCastResolver implements JsonSerializable
 {
     public function __construct(
         protected mixed $lazyValue,
-        protected Cast $schema
+        protected Cast $schema,
+        protected array $sources
     ) {
     }
 
@@ -24,7 +25,8 @@ final readonly class LazyCastResolver implements JsonSerializable
         }
 
         return $this->schema->resolve(
-            $this->lazyValue?->resolve()
+            $this->lazyValue?->resolve(),
+            $this->sources
         );
     }
 }

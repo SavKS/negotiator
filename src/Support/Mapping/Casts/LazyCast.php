@@ -7,9 +7,9 @@ use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Casts\LazyCast\LazyCastResolver;
 use Shelter\Utils\Support\LazyResolve\LazyValue;
 
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    Type,
-    Types
+use Savks\Negotiator\Support\TypeGeneration\{
+    Types\Type,
+    Types\Types
 };
 
 class LazyCast extends OptionalCast implements ForwardedCast
@@ -39,7 +39,11 @@ class LazyCast extends OptionalCast implements ForwardedCast
             throw new UnexpectedValue([LazyValue::class], $lazyValue);
         }
 
-        return new LazyCastResolver($lazyValue, $this->cast);
+        return new LazyCastResolver(
+            $lazyValue,
+            $this->cast,
+            [...$sourcesTrace, $source]
+        );
     }
 
     protected function types(): Type|Types

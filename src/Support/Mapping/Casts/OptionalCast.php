@@ -5,13 +5,10 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 use Illuminate\Support\Arr;
 use Savks\Negotiator\Enums\OptionalModes;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
-
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    AliasType,
-    NullType,
-    Types,
-    UndefinedType
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\NullType;
+use Savks\Negotiator\Support\TypeGeneration\Types\Types;
+use Savks\Negotiator\Support\TypeGeneration\Types\UndefinedType;
 
 abstract class OptionalCast extends Cast
 {

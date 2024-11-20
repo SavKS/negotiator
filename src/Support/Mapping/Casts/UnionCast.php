@@ -4,17 +4,12 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 use Illuminate\Support\Arr;
+use Savks\Negotiator\Exceptions\DTOException;
+use Savks\Negotiator\Exceptions\InternalException;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
+use Savks\Negotiator\Support\TypeGeneration\Types\Type;
+use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 use Throwable;
-
-use Savks\Negotiator\Exceptions\{
-    DTOException,
-    InternalException,
-    UnexpectedValue
-};
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    Type,
-    Types
-};
 
 class UnionCast extends OptionalCast
 {
@@ -123,6 +118,8 @@ class UnionCast extends OptionalCast
             $type = 'array<' . json_encode($value, JSON_UNESCAPED_UNICODE) . '>';
         } elseif ($type === 'object') {
             $type = 'object<' . $value::class . '>';
+        } elseif (is_scalar($value)) {
+            $type = "{$type}<{$value}>";
         }
 
         return $type;

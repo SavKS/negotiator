@@ -11,7 +11,7 @@ class NullCast extends OptionalCast
         $this->nullable();
     }
 
-    protected function finalize(mixed $source, array $sourcesTrace): mixed
+    protected function finalize(mixed $source, array $sourcesTrace): null
     {
         return null;
     }

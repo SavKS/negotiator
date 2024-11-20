@@ -7,15 +7,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Benchmark;
 use JsonSerializable;
 use Savks\Negotiator\Enums\PerformanceTrackers;
+use Savks\Negotiator\Exceptions\InternalException;
+use Savks\Negotiator\Exceptions\MappingFail;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
+
 use Savks\Negotiator\Mapping\SchemasRepository;
 use Savks\Negotiator\Performance\Performance;
 use Savks\Negotiator\Support\Mapping\Casts\Cast;
-
-use Savks\Negotiator\Exceptions\{
-    InternalException,
-    MappingFail,
-    UnexpectedValue
-};
 
 /**
  * @method static customMock()
@@ -42,7 +40,7 @@ abstract class Mapper implements JsonSerializable, Responsable
         return null;
     }
 
-    public function ddMappingTime(int $iterations = 1)
+    public function ddMappingTime(int $iterations = 1): never
     {
         Benchmark::dd([
             fn () => $this->resolve(),

@@ -2,10 +2,8 @@
 
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    BooleanType,
-    ConstBooleanType
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\BooleanType;
+use Savks\Negotiator\Support\TypeGeneration\Types\ConstBooleanType;
 
 /**
  * @extends ConstCast<bool>

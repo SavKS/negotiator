@@ -2,10 +2,8 @@
 
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    ConstStringType,
-    StringType
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\ConstStringType;
+use Savks\Negotiator\Support\TypeGeneration\Types\StringType;
 
 class ConstStringCast extends ConstCast
 {

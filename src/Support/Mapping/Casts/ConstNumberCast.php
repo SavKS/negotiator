@@ -2,10 +2,8 @@
 
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    ConstNumberType,
-    NumberType
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\ConstNumberType;
+use Savks\Negotiator\Support\TypeGeneration\Types\NumberType;
 
 class ConstNumberCast extends ConstCast
 {

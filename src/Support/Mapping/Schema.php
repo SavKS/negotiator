@@ -7,45 +7,19 @@ use Closure;
 use Illuminate\Support\Traits\Macroable;
 use LogicException;
 use Savks\Negotiator\Contexts\IterationContext;
-
-use Savks\Negotiator\Support\Mapping\Casts\{
-    ObjectUtils\Spread,
-    ObjectUtils\TypedField,
-    AnyCast,
-    AnyObjectCast,
-    ArrayCast,
-    BooleanCast,
-    Cast,
-    ConstBooleanCast,
-    ConstCast,
-    ConstEnumCast,
-    ConstNumberCast,
-    ConstStringCast,
-    EnumCast,
-    IntersectionCast,
-    KeyedArrayCast,
-    LazyCast,
-    MapperCast,
-    NullCast,
-    NumberCast,
-    ObjectCast,
-    OneOfConstCast,
-    ScopeCast,
-    StringCast,
-    TupleCast,
-    UnionCast
-};
+use Savks\Negotiator\Support\Mapping\Casts\ObjectUtils\Spread;
+use Savks\Negotiator\Support\Mapping\Casts\ObjectUtils\TypedField;
 
 class Schema
 {
     use Macroable;
 
-    public static function string(string|Closure|null $accessor = null, ?string $default = null): StringCast
+    public static function string(string|Closure|null $accessor = null, ?string $default = null): Casts\StringCast
     {
-        return new StringCast($accessor, $default);
+        return new Casts\StringCast($accessor, $default);
     }
 
-    public static function iterationIndex(int $increase = 0): NumberCast
+    public static function iterationIndex(int $increase = 0): Casts\NumberCast
     {
         return self::number(function () use ($increase) {
             $iterationContext = IterationContext::tryUseSelf();
@@ -58,7 +32,7 @@ class Schema
         });
     }
 
-    public static function iterationKey(?Cast $keySchema = null): Cast
+    public static function iterationKey(?Casts\Cast $keySchema = null): Casts\Cast
     {
         $keySchema ??= self::string();
 
@@ -76,84 +50,84 @@ class Schema
     public static function number(
         string|Closure|null $accessor = null,
         int|float|Closure|null $default = null
-    ): NumberCast {
-        return new NumberCast($accessor, $default);
+    ): Casts\NumberCast {
+        return new Casts\NumberCast($accessor, $default);
     }
 
     /**
-     * @param array<string, Cast>|Spread[]|TypedField[] $schema
+     * @param array<string, Casts\Cast>|Spread[]|TypedField[] $schema
      */
-    public static function object(array $schema, string|Closure|null $accessor = null): ObjectCast
+    public static function object(array $schema, string|Closure|null $accessor = null): Casts\ObjectCast
     {
-        return new ObjectCast($schema, $accessor);
+        return new Casts\ObjectCast($schema, $accessor);
     }
 
-    public static function constString(string $value, bool $asAnyString = false): ConstStringCast
+    public static function constString(string $value, bool $asAnyString = false): Casts\ConstStringCast
     {
-        return new ConstStringCast($value, $asAnyString);
+        return new Casts\ConstStringCast($value, $asAnyString);
     }
 
-    public static function boolean(string|Closure|null $accessor = null, ?bool $default = null): BooleanCast
+    public static function boolean(string|Closure|null $accessor = null, ?bool $default = null): Casts\BooleanCast
     {
-        return new BooleanCast($accessor, $default);
+        return new Casts\BooleanCast($accessor, $default);
     }
 
-    public static function constBoolean(bool $value, bool $asAnyBool = false): ConstBooleanCast
+    public static function constBoolean(bool $value, bool $asAnyBool = false): Casts\ConstBooleanCast
     {
-        return new ConstBooleanCast($value, $asAnyBool);
+        return new Casts\ConstBooleanCast($value, $asAnyBool);
     }
 
-    public static function constNumber(int|float $value, bool $asAnyNumber = false): ConstNumberCast
+    public static function constNumber(int|float $value, bool $asAnyNumber = false): Casts\ConstNumberCast
     {
-        return new ConstNumberCast($value, $asAnyNumber);
+        return new Casts\ConstNumberCast($value, $asAnyNumber);
     }
 
     public static function anyObject(
         string|Closure|null $accessor = null,
         array|object|null $default = null
-    ): AnyObjectCast {
-        return new AnyObjectCast($accessor, $default);
+    ): Casts\AnyObjectCast {
+        return new Casts\AnyObjectCast($accessor, $default);
     }
 
-    public static function array(Cast $cast, string|Closure|null $accessor = null): ArrayCast
+    public static function array(Casts\Cast $cast, string|Closure|null $accessor = null): Casts\ArrayCast
     {
-        return new ArrayCast($cast, $accessor);
+        return new Casts\ArrayCast($cast, $accessor);
     }
 
-    public static function keyedArray(Cast $cast, string|Closure|null $accessor = null): KeyedArrayCast
+    public static function keyedArray(Casts\Cast $cast, string|Closure|null $accessor = null): Casts\KeyedArrayCast
     {
-        return new KeyedArrayCast($cast, $accessor);
+        return new Casts\KeyedArrayCast($cast, $accessor);
     }
 
     /**
      * @param class-string<Mapper>|Mapper|Closure $mapper
      */
-    public static function mapper(string|Mapper|Closure $mapper, string|Closure|null $accessor = null): MapperCast
+    public static function mapper(string|Mapper|Closure $mapper, string|Closure|null $accessor = null): Casts\MapperCast
     {
-        return new MapperCast($mapper, $accessor);
+        return new Casts\MapperCast($mapper, $accessor);
     }
 
-    public static function union(string|Closure|null $accessor = null): UnionCast
+    public static function union(string|Closure|null $accessor = null): Casts\UnionCast
     {
-        return new UnionCast($accessor);
+        return new Casts\UnionCast($accessor);
     }
 
-    public static function any(string|Closure|null $accessor = null, mixed $default = null): AnyCast
+    public static function any(string|Closure|null $accessor = null, mixed $default = null): Casts\AnyCast
     {
-        return new AnyCast($accessor, $default);
+        return new Casts\AnyCast($accessor, $default);
     }
 
-    public static function intersection(Cast|Mapper ...$objects): IntersectionCast
+    public static function intersection(Casts\Cast|Mapper ...$objects): Casts\IntersectionCast
     {
-        return new IntersectionCast(...$objects);
+        return new Casts\IntersectionCast(...$objects);
     }
 
     /**
-     * @param list<Cast|Mapper> $casts
+     * @param list<Casts\Cast|Mapper> $casts
      */
-    public static function tuple(array $casts, string|Closure|null $accessor = null): TupleCast
+    public static function tuple(array $casts, string|Closure|null $accessor = null): Casts\TupleCast
     {
-        return new TupleCast($casts, $accessor);
+        return new Casts\TupleCast($casts, $accessor);
     }
 
     /**
@@ -163,35 +137,35 @@ class Schema
         string $enum,
         string|Closure|null $accessor = null,
         ?BackedEnum $defaultValue = null
-    ): EnumCast {
-        return new EnumCast($enum, $accessor, $defaultValue);
+    ): Casts\EnumCast {
+        return new Casts\EnumCast($enum, $accessor, $defaultValue);
     }
 
-    public static function constEnum(BackedEnum $case): ConstEnumCast
+    public static function constEnum(BackedEnum $case): Casts\ConstEnumCast
     {
-        return new ConstEnumCast($case);
+        return new Casts\ConstEnumCast($case);
     }
 
-    public static function null(): NullCast
+    public static function null(): Casts\NullCast
     {
-        return new NullCast();
+        return new Casts\NullCast();
     }
 
     /**
-     * @param ConstCast[] $values
+     * @param Casts\ConstCast[] $values
      */
-    public static function oneOfConst(array $values, string|Closure|null $accessor = null): OneOfConstCast
+    public static function oneOfConst(array $values, string|Closure|null $accessor = null): Casts\OneOfConstCast
     {
-        return new OneOfConstCast($values, $accessor);
+        return new Casts\OneOfConstCast($values, $accessor);
     }
 
-    public static function scope(Cast $cast, string|Closure|null $accessor): ScopeCast
+    public static function scope(Casts\Cast $cast, string|Closure|null $accessor): Casts\ScopeCast
     {
-        return new ScopeCast($cast, $accessor);
+        return new Casts\ScopeCast($cast, $accessor);
     }
 
-    public static function lazy(Closure $lazyValueResolver, Cast $schema): LazyCast
+    public static function lazy(Closure $lazyValueResolver, Casts\Cast $schema): Casts\LazyCast
     {
-        return new LazyCast($lazyValueResolver, $schema);
+        return new Casts\LazyCast($lazyValueResolver, $schema);
     }
 }

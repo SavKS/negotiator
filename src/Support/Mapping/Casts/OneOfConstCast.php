@@ -6,16 +6,13 @@ use BackedEnum;
 use Closure;
 use RuntimeException;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
-
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    BooleanType,
-    ConstBooleanType,
-    ConstNumberType,
-    ConstStringType,
-    NumberType,
-    StringType,
-    Types
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\BooleanType;
+use Savks\Negotiator\Support\TypeGeneration\Types\ConstBooleanType;
+use Savks\Negotiator\Support\TypeGeneration\Types\ConstNumberType;
+use Savks\Negotiator\Support\TypeGeneration\Types\ConstStringType;
+use Savks\Negotiator\Support\TypeGeneration\Types\NumberType;
+use Savks\Negotiator\Support\TypeGeneration\Types\StringType;
+use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 
 class OneOfConstCast extends OptionalCast
 {

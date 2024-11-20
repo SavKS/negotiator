@@ -3,11 +3,8 @@
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
-
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    AliasType,
-    AnyType
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\AnyType;
 
 class AnyCast extends OptionalCast
 {

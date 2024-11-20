@@ -2,10 +2,8 @@
 
 namespace Savks\Negotiator\Mapping;
 
-use Savks\Negotiator\Support\Mapping\{
-    Casts\Cast,
-    Mapper
-};
+use Savks\Negotiator\Support\Mapping\Casts\Cast;
+use Savks\Negotiator\Support\Mapping\Mapper;
 
 class SchemasRepository
 {

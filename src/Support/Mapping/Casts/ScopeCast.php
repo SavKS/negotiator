@@ -3,11 +3,8 @@
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
-
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    Type,
-    Types
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\Type;
+use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 
 class ScopeCast extends Cast implements ForwardedCast
 {
@@ -37,7 +34,7 @@ class ScopeCast extends Cast implements ForwardedCast
 
     protected function finalize(mixed $source, array $sourcesTrace): mixed
     {
-        if ($this->accessor) {
+        if ($this->accessor !== null) {
             $value = static::resolveValueFromAccessor(
                 $this->accessor,
                 $source,

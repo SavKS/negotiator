@@ -4,12 +4,9 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Illuminate\Support\Arr;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
-
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    AliasType,
-    Type,
-    Types
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\Type;
+use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 
 abstract class Cast
 {

@@ -4,18 +4,22 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use BackedEnum;
 use Closure;
+use ReflectionEnum;
+use ReflectionException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
-
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    AliasType,
-    StringType
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\ConstNumberType;
+use Savks\Negotiator\Support\TypeGeneration\Types\ConstStringType;
+use Savks\Negotiator\Support\TypeGeneration\Types\StringType;
+use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 
 class EnumCast extends OptionalCast
 {
     protected bool $tryCast = false;
+
+    protected bool $unpack = false;
 
     /**
      * @param class-string<BackedEnum> $enum
@@ -25,6 +29,13 @@ class EnumCast extends OptionalCast
         protected readonly string|Closure|null $accessor = null,
         protected readonly ?BackedEnum $defaultValue = null
     ) {
+    }
+
+    public function unpack(): static
+    {
+        $this->unpack = true;
+
+        return $this;
     }
 
     public function tryCast(): static
@@ -64,8 +75,29 @@ class EnumCast extends OptionalCast
         return $value->value;
     }
 
-    protected function types(): StringType|AliasType
+    /**
+     * @throws ReflectionException
+     */
+    protected function types(): StringType|AliasType|Types
     {
+        if ($this->unpack) {
+            $refEnum = new ReflectionEnum($this->enum);
+
+            $enumType = $refEnum->getBackingType()->getName();
+
+            $types = [];
+
+            foreach ($this->enum::cases() as $case) {
+                if ($enumType === 'string') {
+                    $types[] = new ConstStringType($case->value);
+                } else {
+                    $types[] = new ConstNumberType($case->value);
+                }
+            }
+
+            return new Types($types);
+        }
+
         $enumRef = TypeGenerationContext::useSelf()->resolveEnumRef($this->enum);
 
         if ($enumRef) {

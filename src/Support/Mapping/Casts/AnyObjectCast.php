@@ -4,11 +4,8 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
-
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    AliasType,
-    RecordType
-};
+use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\RecordType;
 
 class AnyObjectCast extends OptionalCast
 {

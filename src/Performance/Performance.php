@@ -10,9 +10,7 @@ class Performance
     protected readonly ?PerformanceProvider $provider;
 
     /**
-     * @var array{
-     *     mappers: bool
-     * }
+     * @var array{ mappers: bool }
      */
     protected readonly array $trackers;
 

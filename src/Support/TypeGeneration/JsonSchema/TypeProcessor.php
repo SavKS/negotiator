@@ -3,29 +3,11 @@
 namespace Savks\Negotiator\Support\TypeGeneration\JsonSchema;
 
 use RuntimeException;
-
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    AliasType,
-    AnyType,
-    ArrayType,
-    BooleanType,
-    ConstBooleanType,
-    ConstNumberType,
-    ConstStringType,
-    NullType,
-    NumberType,
-    ObjectType,
-    RecordType,
-    StringType,
-    Type,
-    Types,
-    UndefinedType,
-    VoidType
-};
+use Savks\Negotiator\Support\TypeGeneration\Types;
 
 class TypeProcessor
 {
-    public function __construct(protected readonly Type|Types $type)
+    public function __construct(protected readonly Types\Type|Types\Types $type)
     {
     }
 
@@ -34,61 +16,64 @@ class TypeProcessor
         return $this->processType($this->type);
     }
 
-    protected function processType(Type|Types $type): ?array
+    protected function processType(Types\Type|Types\Types $type): ?array
     {
         return match (true) {
-            $type instanceof Types => $this->processTypes($type),
+            $type instanceof Types\Types => $this->processTypes($type),
 
-            $type instanceof ObjectType => $this->processObjectType($type),
+            $type instanceof Types\ObjectType => $this->processObjectType($type),
 
-            $type instanceof AnyType => [
+            $type instanceof Types\AnyType => [
                 'type' => 'any',
             ],
 
-            $type instanceof BooleanType => [
+            $type instanceof Types\BooleanType => [
                 'type' => 'boolean',
             ],
 
-            $type instanceof ConstBooleanType => [
+            $type instanceof Types\ConstBooleanType => [
                 'type' => 'boolean',
                 'enum' => [$type->value],
             ],
 
-            $type instanceof StringType => [
+            $type instanceof Types\StringType => [
                 'type' => 'string',
             ],
 
-            $type instanceof ConstStringType => [
+            $type instanceof Types\ConstStringType => [
                 'type' => 'string',
                 'enum' => [$type->value],
             ],
 
-            $type instanceof NumberType => [
+            $type instanceof Types\NumberType => [
                 'type' => 'number',
             ],
 
-            $type instanceof ConstNumberType => [
+            $type instanceof Types\ConstNumberType => [
                 'type' => 'number',
                 'enum' => [$type->value],
             ],
 
-            $type instanceof NullType => [
+            $type instanceof Types\NullType => [
                 'type' => 'null',
             ],
 
-            $type instanceof VoidType, $type instanceof UndefinedType => null,
+            $type instanceof Types\VoidType,
+            $type instanceof Types\UndefinedType => null,
 
-            $type instanceof RecordType => [
+            $type instanceof Types\RecordType => [
                 'type' => 'object',
                 'patternProperties' => [
                     '.*' => $this->processType($type->valueType),
                 ],
             ],
-            $type instanceof ArrayType => [
+
+            $type instanceof Types\ArrayType => [
                 'type' => 'array',
                 'items' => $this->processType($type->types),
             ],
-            $type instanceof AliasType => [
+
+            $type instanceof Types\AliasType => [
                 '$ref' => $type->alias,
             ],
 
@@ -96,7 +81,7 @@ class TypeProcessor
         };
     }
 
-    protected function processTypes(Types $type): array
+    protected function processTypes(Types\Types $type): array
     {
         if (count($type->types) === 1) {
             return $this->processType($type->types[0]);
@@ -134,7 +119,7 @@ class TypeProcessor
         ];
     }
 
-    protected function processObjectType(ObjectType $type): array
+    protected function processObjectType(Types\ObjectType $type): array
     {
         $result = [
             'type' => 'object',
@@ -148,9 +133,9 @@ class TypeProcessor
 
             $isRequired = true;
 
-            if ($value instanceof Types) {
+            if ($value instanceof Types\Types) {
                 foreach ($value->types as $subType) {
-                    if ($subType instanceof UndefinedType) {
+                    if ($subType instanceof Types\UndefinedType) {
                         $isRequired = false;
                     }
                 }

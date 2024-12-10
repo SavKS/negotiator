@@ -3,7 +3,6 @@
 namespace Savks\Negotiator\Support\TypeGeneration;
 
 use Savks\Negotiator\Support\Mapping\Casts\Cast;
-
 use Savks\Negotiator\Support\Mapping\Casts\OptionalCast;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;

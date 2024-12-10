@@ -10,18 +10,13 @@ use ReflectionClass;
 use RuntimeException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
+use Savks\Negotiator\Support\Mapping\Casts\Cast;
+use Savks\Negotiator\Support\Mapping\GenericDeclaration;
+use Savks\Negotiator\Support\Mapping\Mapper;
+use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 use Savks\Negotiator\Support\TypeGeneration\TypeScript\TypeProcessor as TypeGenerator;
 use Throwable;
-
-use Savks\Negotiator\Support\Mapping\{
-    Casts\Cast,
-    GenericDeclaration,
-    Mapper
-};
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    AliasType,
-    Types
-};
 
 class Generator
 {

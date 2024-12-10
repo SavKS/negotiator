@@ -5,14 +5,11 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 use Closure;
 use Savks\Negotiator\Contexts\IterationContext;
 use Savks\Negotiator\Enums\OptionalModes;
+use Savks\Negotiator\Exceptions\InternalException;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\ArrayType;
 use stdClass;
 use Throwable;
-
-use Savks\Negotiator\Exceptions\{
-    InternalException,
-    UnexpectedValue
-};
 
 class ArrayCast extends OptionalCast
 {

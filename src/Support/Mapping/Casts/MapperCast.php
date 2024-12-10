@@ -8,12 +8,9 @@ use ReflectionNamedType;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
 use Savks\Negotiator\Exceptions\TypeGenerateException;
+use Savks\Negotiator\Support\Mapping\Generic;
+use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
-
-use Savks\Negotiator\Support\Mapping\{
-    Generic,
-    Mapper
-};
 
 class MapperCast extends OptionalCast
 {

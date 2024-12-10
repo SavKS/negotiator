@@ -3,19 +3,14 @@
 namespace Savks\Negotiator\Support\Mapping\Casts\ObjectUtils;
 
 use Closure;
+use Savks\Negotiator\Exceptions\InternalException;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
+use Savks\Negotiator\Support\Mapping\Casts\Cast;
+use Savks\Negotiator\Support\Mapping\Casts\WorkWithAccessor;
+use Savks\Negotiator\Support\Mapping\Casts\WorkWithOptionalFields;
 use Savks\Negotiator\Support\TypeGeneration\Types\ObjectType;
 use stdClass;
 use Throwable;
-
-use Savks\Negotiator\Exceptions\{
-    InternalException,
-    UnexpectedValue
-};
-use Savks\Negotiator\Support\Mapping\Casts\{
-    Cast,
-    WorkWithAccessor,
-    WorkWithOptionalFields
-};
 
 class Spread
 {

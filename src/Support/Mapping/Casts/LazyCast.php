@@ -5,12 +5,9 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Casts\LazyCast\LazyCastResolver;
+use Savks\Negotiator\Support\TypeGeneration\Types\Type;
+use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 use Shelter\Utils\Support\LazyResolve\LazyValue;
-
-use Savks\Negotiator\Support\TypeGeneration\{
-    Types\Type,
-    Types\Types
-};
 
 class LazyCast extends OptionalCast implements ForwardedCast
 {

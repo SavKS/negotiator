@@ -4,18 +4,13 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 use Savks\Negotiator\Contexts\IterationContext;
+use Savks\Negotiator\Exceptions\InternalException;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Schema;
+use Savks\Negotiator\Support\TypeGeneration\Types\RecordType;
+use Savks\Negotiator\Support\TypeGeneration\Types\StringType;
 use stdClass;
 use Throwable;
-
-use Savks\Negotiator\Exceptions\{
-    InternalException,
-    UnexpectedValue
-};
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    RecordType,
-    StringType
-};
 
 class KeyedArrayCast extends OptionalCast
 {

@@ -10,7 +10,6 @@ use Savks\Negotiator\Enums\PerformanceTrackers;
 use Savks\Negotiator\Exceptions\InternalException;
 use Savks\Negotiator\Exceptions\MappingFail;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
-
 use Savks\Negotiator\Mapping\SchemasRepository;
 use Savks\Negotiator\Performance\Performance;
 use Savks\Negotiator\Support\Mapping\Casts\Cast;

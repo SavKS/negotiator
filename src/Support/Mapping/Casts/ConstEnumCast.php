@@ -7,13 +7,10 @@ use ReflectionEnum;
 use ReflectionNamedType;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
+use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\NumberType;
+use Savks\Negotiator\Support\TypeGeneration\Types\StringType;
 use Savks\PhpContexts\Context;
-
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    AliasType,
-    NumberType,
-    StringType
-};
 
 class ConstEnumCast extends ConstCast
 {

@@ -3,14 +3,11 @@
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
+use Savks\Negotiator\Exceptions\InternalException;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Mapper;
 use Savks\Negotiator\Support\TypeGeneration\Types\TupleType;
 use Throwable;
-
-use Savks\Negotiator\Exceptions\{
-    InternalException,
-    UnexpectedValue
-};
 
 class TupleCast extends OptionalCast
 {

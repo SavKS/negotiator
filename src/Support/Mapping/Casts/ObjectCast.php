@@ -7,23 +7,16 @@ use Closure;
 use Illuminate\Support\Stringable;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
+use Savks\Negotiator\Exceptions\InternalException;
+use Savks\Negotiator\Exceptions\UnexpectedValue;
+use Savks\Negotiator\Support\Mapping\Casts\ObjectUtils\Spread;
+use Savks\Negotiator\Support\Mapping\Casts\ObjectUtils\TypedField;
+use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\ObjectType;
+use Savks\Negotiator\Support\TypeGeneration\Types\RecordType;
+use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 use stdClass;
 use Throwable;
-
-use Savks\Negotiator\Exceptions\{
-    InternalException,
-    UnexpectedValue
-};
-use Savks\Negotiator\Support\Mapping\Casts\ObjectUtils\{
-    Spread,
-    TypedField
-};
-use Savks\Negotiator\Support\TypeGeneration\Types\{
-    AliasType,
-    ObjectType,
-    RecordType,
-    Types
-};
 
 class ObjectCast extends OptionalCast
 {

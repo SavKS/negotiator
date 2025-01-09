@@ -68,20 +68,20 @@ class StringCast extends OptionalCast
         }
 
         if (! is_string($value)) {
-            if ($this->isStringableAllowed) {
-                if ($value instanceof Stringable) {
+            if ($value instanceof Stringable) {
+                if ($this->isStringableAllowed) {
                     $value = $value->__toString();
                 } else {
                     throw new UnexpectedValue('string', $value);
                 }
-            }
-
-            if (is_float($value) || is_int($value)) {
+            } elseif (is_float($value) || is_int($value)) {
                 if ($this->isCastNumericAllowed) {
                     $value = (string)$value;
                 } else {
                     throw new UnexpectedValue('string', $value);
                 }
+            } else {
+                throw new UnexpectedValue('string', $value);
             }
         }
 

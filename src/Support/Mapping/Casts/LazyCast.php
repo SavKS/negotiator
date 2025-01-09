@@ -3,20 +3,19 @@
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
-use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Casts\LazyCast\LazyCastResolver;
 use Savks\Negotiator\Support\TypeGeneration\Types\Type;
 use Savks\Negotiator\Support\TypeGeneration\Types\Types;
-use Shelter\Utils\Support\LazyResolve\LazyValue;
 
 class LazyCast extends OptionalCast implements ForwardedCast
 {
     /**
-     * @param Closure(array ...$source): (LazyValue|null) $lazyValueResolver
+     * @param Closure(array ...$source):mixed $lazyValueResolver
      */
     public function __construct(
         protected readonly Closure $lazyValueResolver,
         protected readonly Cast $cast,
+        protected readonly string|Closure|null $accessor = null
     ) {
     }
 
@@ -27,19 +26,33 @@ class LazyCast extends OptionalCast implements ForwardedCast
 
     protected function finalize(mixed $source, array $sourcesTrace): ?LazyCastResolver
     {
-        $lazyValue = ($this->lazyValueResolver)(
+        $value = static::resolveValueFromAccessor(
+            $this->accessor,
             $source,
-            ...array_reverse($sourcesTrace)
+            $sourcesTrace
         );
 
-        if ($lazyValue !== null && ! ($lazyValue instanceof LazyValue)) {
-            throw new UnexpectedValue([LazyValue::class], $lazyValue);
+        if ($this->accessor && last($sourcesTrace) !== $source) {
+            $sourcesTrace[] = $source;
         }
+
+        if ($value === null) {
+            return new LazyCastResolver(
+                $value,
+                $this->cast,
+                [...$sourcesTrace, $source]
+            );
+        }
+
+        $lazyValue = ($this->lazyValueResolver)(
+            $value,
+            ...array_reverse($sourcesTrace)
+        );
 
         return new LazyCastResolver(
             $lazyValue,
             $this->cast,
-            [...$sourcesTrace, $source]
+            [...$sourcesTrace, $value]
         );
     }
 

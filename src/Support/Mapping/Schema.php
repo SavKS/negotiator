@@ -40,7 +40,7 @@ class Schema
             $iterationContext = IterationContext::tryUseSelf();
 
             if (! $iterationContext) {
-                throw new LogicException('The method "iterationIndex" works only in array or keyedArray casts');
+                throw new LogicException('The method "iterationKey" works only in array or keyedArray casts');
             }
 
             return $iterationContext->key;
@@ -164,8 +164,11 @@ class Schema
         return new Casts\ScopeCast($cast, $accessor);
     }
 
-    public static function lazy(Closure $lazyValueResolver, Casts\Cast $schema): Casts\LazyCast
-    {
-        return new Casts\LazyCast($lazyValueResolver, $schema);
+    public static function lazy(
+        Closure $lazyValueResolver,
+        Casts\Cast $schema,
+        string|Closure|null $accessor = null
+    ): Casts\LazyCast {
+        return new Casts\LazyCast($lazyValueResolver, $schema, $accessor);
     }
 }

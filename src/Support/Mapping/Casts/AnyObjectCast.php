@@ -6,6 +6,7 @@ use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
 use Savks\Negotiator\Support\TypeGeneration\Types\RecordType;
+use stdClass;
 
 class AnyObjectCast extends OptionalCast
 {
@@ -29,6 +30,10 @@ class AnyObjectCast extends OptionalCast
 
         if ($value === null) {
             return null;
+        }
+
+        if (is_array($value) && ! $value) {
+            return new stdClass();
         }
 
         if (! is_object($value) && ! is_array($value)) {

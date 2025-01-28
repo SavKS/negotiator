@@ -9,10 +9,33 @@ use Savks\Negotiator\Support\TypeGeneration\Types\BooleanType;
 
 class BooleanCast extends OptionalCast
 {
+    protected bool $allowCast = false;
+
+    protected bool $falseIfNull = false;
+
     public function __construct(
         protected readonly string|Closure|null $accessor = null,
         protected readonly ?bool $default = null
     ) {
+    }
+
+    public function falseIfNull(): static
+    {
+        $this->falseIfNull = true;
+
+        return $this;
+    }
+
+    public function allowCast(): static
+    {
+        $this->allowCast = true;
+
+        return $this;
+    }
+
+    public function forceCast(): static
+    {
+        return $this->falseIfNull()->allowCast();
     }
 
     public function optionalIfFalse(): static
@@ -31,10 +54,18 @@ class BooleanCast extends OptionalCast
         $value ??= $this->default;
 
         if ($value === null) {
+            if ($this->falseIfNull) {
+                return false;
+            }
+
             return null;
         }
 
         if (! is_bool($value)) {
+            if ($this->allowCast) {
+                return (bool)$value;
+            }
+
             throw new UnexpectedValue('boolean', $value);
         }
 

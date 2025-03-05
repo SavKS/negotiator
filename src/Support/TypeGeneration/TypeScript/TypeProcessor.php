@@ -75,16 +75,7 @@ class TypeProcessor
 
             $type instanceof Types\ArrayType => "Array<{$this->processType($type->types)}>",
 
-            $type instanceof Types\TupleType => sprintf(
-                '[%s]',
-                implode(
-                    ',',
-                    Arr::map(
-                        $type->types,
-                        fn (Types\Types $types) => $this->processType($types)
-                    )
-                )
-            ),
+            $type instanceof Types\TupleType => $this->processTupleType($type),
 
             default => throw new RuntimeException('Unprocessed type "' . $type::class . '"')
         };
@@ -148,5 +139,26 @@ class TypeProcessor
         }
 
         return false;
+    }
+
+    public function processTupleType(Types\TupleType $type): string
+    {
+        $types = Arr::map(
+            $type->types,
+            fn (Types\Types $types) => $this->processType($types)
+        );
+
+        if (! $type->restType) {
+            return sprintf(
+                '[%s]',
+                implode(',', $types)
+            );
+        }
+
+        return sprintf(
+            '[%s, ...Array<%s>]',
+            implode(',', $types),
+            $this->processType($type->restType)
+        );
     }
 }

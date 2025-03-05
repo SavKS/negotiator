@@ -2,6 +2,8 @@
 
 namespace Savks\Negotiator\Support\TypeGeneration\Types;
 
+use Illuminate\Support\Arr;
+
 class TupleType extends Type
 {
     /**
@@ -12,14 +14,13 @@ class TupleType extends Type
     /**
      * @param list<Type[]> $types
      */
-    public function __construct(array $types)
-    {
-        $result = [];
-
-        foreach ($types as $type) {
-            $result[] = new Types($type);
-        }
-
-        $this->types = $result;
+    public function __construct(
+        array $types,
+        public readonly ?Types $restType = null
+    ) {
+        $this->types = Arr::map(
+            $types,
+            fn (array $type) => new Types($type)
+        );
     }
 }

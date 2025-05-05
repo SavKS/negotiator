@@ -2,6 +2,7 @@
 
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
+use BackedEnum;
 use Closure;
 use Illuminate\Support\Arr;
 use Savks\Negotiator\Exceptions\DTOException;
@@ -28,12 +29,12 @@ class UnionCast extends OptionalCast
     {
     }
 
-    public function variant(Closure|array $condition, Cast $cast, ?string $label = null): static
+    public function variant(Closure|array $condition, Cast $cast, string|BackedEnum|null $label = null): static
     {
         $this->variants[] = [
             'condition' => $condition,
             'cast' => $cast,
-            'label' => $label,
+            'label' => $label instanceof BackedEnum ? $label->value : $label,
         ];
 
         return $this;

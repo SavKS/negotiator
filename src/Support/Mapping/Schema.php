@@ -151,6 +151,11 @@ class Schema
         return new Casts\NullCast();
     }
 
+    public static function undefined(): Casts\UndefinedCast
+    {
+        return new Casts\UndefinedCast();
+    }
+
     /**
      * @param Casts\ConstCast[] $values
      */

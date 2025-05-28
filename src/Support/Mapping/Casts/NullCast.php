@@ -3,6 +3,7 @@
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Savks\Negotiator\Support\TypeGeneration\Types\NullType;
+use Savks\Negotiator\Support\TypeGeneration\Types\UndefinedType;
 
 class NullCast extends OptionalCast
 {
@@ -16,8 +17,12 @@ class NullCast extends OptionalCast
         return null;
     }
 
-    protected function types(): NullType
+    protected function types(): NullType|UndefinedType
     {
+        if (! $this->optional['asNull']) {
+            return new UndefinedType();
+        }
+
         return new NullType();
     }
 }

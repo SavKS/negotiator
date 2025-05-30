@@ -9,49 +9,72 @@ use LogicException;
 use Savks\Negotiator\Enums\RefTypes;
 use Savks\Negotiator\Support\Mapping\Mapper;
 
+/**
+ * @phpstan-type MatchResult array{string|string[],string}
+ * @phpstan-type MapperVariantRule string|(Closure(class-string<Mapper> $mapperFQN):bool)
+ * @phpstan-type MapperVariantResolver Closure(string[]|null $matches, class-string<Mapper> $mapperFQN):(MatchResult|null)
+ * @phpstan-type MapperVariantMatch Closure(class-string<Mapper>):(MatchResult|null)
+ * @phpstan-type MapperVariantConfig array{
+ *     rule: EnumVariantRule,
+ *     resolver: EnumVariantResolver
+ * }
+ * @phpstan-type EnumVariantRule string|(Closure(class-string<BackedEnum> $enumFQN):bool)
+ * @phpstan-type EnumVariantResolver Closure(string[]|null $matches, class-string<BackedEnum> $enumFQN):(MatchResult|null)
+ * @phpstan-type EnumVariantMatch Closure(class-string<BackedEnum> $enumFQN):(MatchResult|null)
+ * @phpstan-type EnumVariantConfig array{
+ *     rule: MapperVariantRule,
+ *     resolver: MapperVariantResolver,
+ * }
+ */
 class RefsResolver
 {
     /**
-     * @param list<array{
-     *     rule: string | (Closure(class-string): bool),
-     *     resolver: Closure(array, class-string<Mapper>): (list<string[]|string>|null),
-     * } | (Closure(class-string<Mapper>): (list<string[]|string>|null))> $mapperVariants
-     * @param list<array{
-     *     rule: string | (Closure(class-string): bool),
-     *     resolver: Closure(array, class-string<BackedEnum>): (list<string[]|string>|null),
-     * } | (Closure(class-string<BackedEnum>): (list<string[]|string>|null))> $enumVariants
+     * @param list<EnumVariantConfig|MapperVariantMatch> $mapperVariants
+     * @param list<MapperVariantConfig|EnumVariantMatch> $enumVariants
      */
     public function __construct(
         protected readonly array $mapperVariants,
-        protected readonly array $enumVariants,
-        protected readonly ?array $config = null
+        protected readonly array $enumVariants
     ) {
     }
 
-    public function resolveImport(RefTypes $type, string $target): ?string
+    /**
+     * @param class-string<Mapper>|class-string<BackedEnum> $target $target
+     */
+    public function resolveImport(RefTypes $type, string $target): string
     {
-        $parts = $this->resolve($type, $target);
-
-        if (! $parts) {
-            return null;
-        }
-
-        [$namespace, $mapperName] = $parts;
+        [$namespace, $mapperName] = $this->resolve($type, $target);
 
         return "import('{$namespace}').{$mapperName}";
     }
 
-    public function resolve(RefTypes $type, string $target): ?array
+    /**
+     * @param class-string<Mapper>|class-string<BackedEnum> $target
+     *
+     * @return array{string, string}
+     */
+    public function resolve(RefTypes $type, string $target): array
     {
-        return match ($type) {
-            RefTypes::ENUM => $this->resolveEnumRef($target),
-            RefTypes::MAPPER => $this->resolveMapperRef($target)
-        };
+        if ($type === RefTypes::ENUM) {
+            /** @var class-string<BackedEnum> $target */
+            return $this->resolveEnumRef($target);
+        }
+
+        /** @var class-string<Mapper> $target */
+        return $this->resolveMapperRef($target);
     }
 
+    /**
+     * @param class-string<BackedEnum> $enumFQN
+     *
+     * @return array{string, string}
+     */
     protected function resolveEnumRef(string $enumFQN): array
     {
+        /** @var string|string[]|null $namespaceSegments */
         $namespaceSegments = null;
+
+        /** @var string|null $enumName */
         $enumName = null;
 
         foreach ($this->enumVariants as $variant) {
@@ -82,19 +105,33 @@ class RefsResolver
             }
         }
 
+        if (! $namespaceSegments) {
+            throw new LogicException("Can't resolve \"{$enumFQN}\" namespace.");
+        }
+
         if (! $enumName) {
             throw new LogicException("Can't resolve \"{$enumFQN}\" enum.");
         }
 
-        return [
-            implode('/', $namespaceSegments),
-            $enumName,
-        ];
+        $namespace = implode(
+            '/',
+            is_array($namespaceSegments) ? $namespaceSegments : [$namespaceSegments]
+        );
+
+        return [$namespace, $enumName];
     }
 
+    /**
+     * @param class-string<Mapper> $mapperFQN
+     *
+     * @return array{string, string}
+     */
     protected function resolveMapperRef(string $mapperFQN): array
     {
+        /** @var string|string[]|null $namespaceSegments */
         $namespaceSegments = null;
+
+        /** @var string|null $mapperName */
         $mapperName = null;
 
         foreach ($this->mapperVariants as $variant) {
@@ -125,6 +162,10 @@ class RefsResolver
             }
         }
 
+        if (! $namespaceSegments) {
+            throw new LogicException("Can't resolve \"{$mapperFQN}\" namespace.");
+        }
+
         if (! $mapperName) {
             throw new LogicException("Can't resolve \"{$mapperFQN}\" mapper.");
         }
@@ -133,7 +174,7 @@ class RefsResolver
             '/',
             array_map(
                 Str::kebab(...),
-                $namespaceSegments
+                is_array($namespaceSegments) ? $namespaceSegments : [$namespaceSegments]
             )
         );
 

@@ -12,6 +12,9 @@ abstract class Cast
 {
     use WorkWithAccessor;
 
+    /**
+     * @var list<mixed> $sourcesTrace
+     */
     protected array $sourcesTrace = [];
 
     protected string|Cast|null $forcedType = null;
@@ -23,6 +26,9 @@ abstract class Cast
         return $this;
     }
 
+    /**
+     * @param list<mixed> $sourcesTrace
+     */
     public function resolve(mixed $source, array $sourcesTrace = []): mixed
     {
         $value = $this->finalize($source, $sourcesTrace);
@@ -34,6 +40,9 @@ abstract class Cast
         return $value;
     }
 
+    /**
+     * @param list<mixed> $sourcesTrace
+     */
     abstract protected function finalize(mixed $source, array $sourcesTrace): mixed;
 
     public function compileTypes(): Types

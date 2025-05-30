@@ -7,6 +7,9 @@ use Throwable;
 
 class InternalException extends DTOException
 {
+    /**
+     * @param string|int|list<string|int>|null $path
+     */
     final protected function __construct(
         public readonly Throwable $originalException,
         public readonly string|int|array|null $path = null
@@ -24,6 +27,11 @@ class InternalException extends DTOException
         );
     }
 
+    /**
+     * @param string|int|list<string|int>|null $path
+     *
+     * @throws Throwable
+     */
     public static function wrap(
         InternalException|MappingFail|Throwable $exception,
         string|int|array|null $path = null,
@@ -34,6 +42,7 @@ class InternalException extends DTOException
         }
 
         if ($exception instanceof MappingFail) {
+            /** @var list<string|int> $path */
             $path = Arr::wrap($path);
 
             array_splice($path, 1, 0, '<' . $exception->mapper::class . '>');
@@ -42,18 +51,20 @@ class InternalException extends DTOException
         }
 
         if ($exception instanceof InternalException) {
-            $path = $prepend ?
-                [
+            /** @var list<string|int> $path */
+            $path = $prepend
+                ? [
                     ...Arr::wrap($exception->path),
                     ...Arr::wrap($path),
-                ] :
-                [
+                ]
+                : [
                     ...Arr::wrap($path),
                     ...Arr::wrap($exception->path),
                 ];
 
             $originalException = $exception->originalException;
         } else {
+            /** @var list<string|int> $path */
             $path = Arr::wrap($path);
 
             $originalException = $exception;

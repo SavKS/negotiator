@@ -107,6 +107,14 @@ class Schema
         return new Casts\MapperCast($mapper, $accessor);
     }
 
+    /**
+     * @param class-string<Mapper> $mapperFQN
+     */
+    public static function constMapper(string $mapperFQN, string|Closure|null $accessor = null): Casts\ConstMapperCast
+    {
+        return new Casts\ConstMapperCast($mapperFQN, $accessor);
+    }
+
     public static function union(string|Closure|null $accessor = null): Casts\UnionCast
     {
         return new Casts\UnionCast($accessor);

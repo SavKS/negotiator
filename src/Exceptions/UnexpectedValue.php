@@ -7,6 +7,10 @@ use Illuminate\Support\Arr;
 
 class UnexpectedValue extends DTOException
 {
+    /**
+     * @param string[]|string $types
+     * @param string|int|list<string|int>|null $path
+     */
     final public function __construct(
         public readonly string|array $types,
         public readonly mixed $value,
@@ -41,16 +45,18 @@ class UnexpectedValue extends DTOException
     }
 
     /**
-     * @param string|string[] $path
+     * @param string|int|list<string|int> $path
      */
     public static function wrap(UnexpectedValue $e, string|int|array $path, bool $prepend = false): static
     {
         if ($prepend) {
+            /** @var list<string|int> $resultPath */
             $resultPath = [
                 ...Arr::wrap($e->path),
                 ...Arr::wrap($path),
             ];
         } else {
+            /** @var list<string|int> $resultPath */
             $resultPath = [
                 ...Arr::wrap($path),
                 ...Arr::wrap($e->path),

@@ -2,6 +2,7 @@
 
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
+use Closure;
 use Illuminate\Support\Arr;
 use Savks\Negotiator\Enums\OptionalModes;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
@@ -95,9 +96,11 @@ abstract class OptionalCast extends Cast
     public function compileTypes(): Types
     {
         if ($this->forcedType) {
-            $types = is_string($this->forcedType)
-                ? new AliasType($this->forcedType)
-                : $this->forcedType->types();
+            $forcedType = $this->forcedType instanceof Closure ? ($this->forcedType)() : $this->forcedType;
+
+            $types = is_string($forcedType)
+                ? new AliasType($forcedType)
+                : $forcedType->types();
         } else {
             $types = $this->types();
         }

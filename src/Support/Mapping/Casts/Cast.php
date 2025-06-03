@@ -2,6 +2,7 @@
 
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
+use Closure;
 use Illuminate\Support\Arr;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
 use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
@@ -17,9 +18,17 @@ abstract class Cast
      */
     protected array $sourcesTrace = [];
 
-    protected string|Cast|null $forcedType = null;
+    /**
+     * @var string|Cast|Closure():(string|Cast)|null $forcedType
+     */
+    protected string|Cast|Closure|null $forcedType = null;
 
-    public function as(string|Cast $type): static
+    /**
+     * @param string|Cast|Closure():(string|Cast) $type
+     *
+     * @return $this
+     */
+    public function as(string|Cast|Closure $type): static
     {
         $this->forcedType = $type;
 
@@ -48,11 +57,13 @@ abstract class Cast
     public function compileTypes(): Types
     {
         if ($this->forcedType) {
-            return is_string($this->forcedType)
+            $forcedType = $this->forcedType instanceof Closure ? ($this->forcedType)() : $this->forcedType;
+
+            return is_string($forcedType)
                 ? new Types([
-                    new AliasType($this->forcedType),
+                    new AliasType($forcedType),
                 ])
-                : $this->forcedType->types();
+                : $forcedType->types();
         }
 
         return new Types(

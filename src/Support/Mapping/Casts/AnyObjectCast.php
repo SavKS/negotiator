@@ -5,17 +5,37 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 use Closure;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\AnyType;
 use Savks\Negotiator\Support\TypeGeneration\Types\RecordType;
+use Savks\Negotiator\Support\TypeGeneration\Types\StringType;
 use stdClass;
 
 class AnyObjectCast extends OptionalCast
 {
     use CanBeGeneric;
 
+    protected ?Cast $keySchema = null;
+
+    protected ?Cast $valueSchema = null;
+
     public function __construct(
         protected readonly string|Closure|null $accessor = null,
         protected readonly array|object|null $default = null
     ) {
+    }
+
+    public function keySchema(Cast $schema): static
+    {
+        $this->keySchema = $schema;
+
+        return $this;
+    }
+
+    public function valueSchema(Cast $schema): static
+    {
+        $this->valueSchema = $schema;
+
+        return $this;
     }
 
     protected function finalize(mixed $source, array $sourcesTrace): ?object
@@ -53,6 +73,9 @@ class AnyObjectCast extends OptionalCast
             return new AliasType($this->assignedToGeneric);
         }
 
-        return new RecordType();
+        return new RecordType(
+            $this->keySchema?->compileTypes() ?? new StringType(),
+            $this->valueSchema?->compileTypes() ?? new AnyType()
+        );
     }
 }

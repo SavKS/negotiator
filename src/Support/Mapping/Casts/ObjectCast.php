@@ -12,8 +12,10 @@ use Savks\Negotiator\Exceptions\UnexpectedValue;
 use Savks\Negotiator\Support\Mapping\Casts\ObjectUtils\Spread;
 use Savks\Negotiator\Support\Mapping\Casts\ObjectUtils\TypedField;
 use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
+use Savks\Negotiator\Support\TypeGeneration\Types\AnyType;
 use Savks\Negotiator\Support\TypeGeneration\Types\ObjectType;
 use Savks\Negotiator\Support\TypeGeneration\Types\RecordType;
+use Savks\Negotiator\Support\TypeGeneration\Types\StringType;
 use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 use stdClass;
 use Throwable;
@@ -28,12 +30,30 @@ class ObjectCast extends OptionalCast
     protected ?array $value;
 
     /**
+     * @var array{
+     *     keySchema: Cast|null,
+     *     valueSchema: Cast|null,
+     * }|null
+     */
+    protected ?array $asAnyObject = null;
+
+    /**
      * @param array<string, Cast>|Spread[]|TypedField[] $schema
      */
     public function __construct(
         protected readonly array $schema,
         protected readonly string|Closure|null $accessor = null
     ) {
+    }
+
+    public function asAnyObject(?Cast $keySchema = null, ?Cast $valueSchema = null): static
+    {
+        $this->asAnyObject = [
+            'keySchema' => $keySchema,
+            'valueSchema' => $valueSchema,
+        ];
+
+        return $this;
     }
 
     protected function finalize(mixed $source, array $sourcesTrace): ?stdClass
@@ -102,8 +122,15 @@ class ObjectCast extends OptionalCast
         return $result;
     }
 
-    protected function types(): ObjectType|Types
+    protected function types(): ObjectType|RecordType|Types
     {
+        if ($this->asAnyObject) {
+            $keyType = $this->asAnyObject['keySchema']?->compileTypes() ?? new StringType();
+            $valueType = $this->asAnyObject['valueSchema']?->compileTypes() ?? new AnyType();
+
+            return new RecordType($keyType, $valueType);
+        }
+
         $typeGenerationContext = TypeGenerationContext::useSelf();
 
         $result = new ObjectType();

@@ -43,7 +43,15 @@ abstract class OptionalCast extends Cast
         return $this;
     }
 
+    /**
+     * @deprecated Use implicitOptional instead
+     */
     public function maybeOptional(bool $asNull = false): static
+    {
+        return $this->implicitOptional($asNull);
+    }
+
+    public function implicitOptional(bool $asNull = false): static
     {
         $this->optional = [
             'value' => false,
@@ -54,9 +62,17 @@ abstract class OptionalCast extends Cast
         return $this;
     }
 
+    /**
+     * @deprecated Use implicitNullable instead
+     */
     public function maybeNullable(bool $asNull = false): static
     {
-        return $this->maybeOptional($asNull);
+        return $this->implicitOptional($asNull);
+    }
+
+    public function implicitNullable(): static
+    {
+        return $this->maybeOptional();
     }
 
     public function resolve(mixed $source, array $sourcesTrace = []): mixed

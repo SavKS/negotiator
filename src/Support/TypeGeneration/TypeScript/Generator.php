@@ -26,7 +26,7 @@ class Generator
     protected array $targets = [];
 
     /**
-     * @param (Closure(RefTypes, class-string<Mapper|BackedEnum>): string)|null $refsResolver
+     * @param (Closure(RefTypes $refType, class-string<Mapper>|class-string<BackedEnum> $target): string)|null $refsResolver
      */
     public function __construct(protected readonly ?Closure $refsResolver = null)
     {
@@ -39,24 +39,24 @@ class Generator
         return $this;
     }
 
-    public function saveTo(string $destPath): bool
+    public function saveTo(string $destPath, bool $force = false): bool
     {
         $schema = (new TypeGenerationContext($this->refsResolver))->wrap(function () use ($destPath) {
             $result = [];
 
             foreach ($this->targets as $target) {
-                /** @var class-string<Mapper>|Mapper|Cast $mapperOrSchema */
+                /** @var class-string<Mapper>|Cast $mapperOrSchema */
                 foreach ($target->mappersMap as $name => $mapperOrSchema) {
-                    $mapperRef = new ReflectionClass($mapperOrSchema);
-
                     try {
                         if ($mapperOrSchema instanceof Cast) {
                             $generics = [];
 
                             $types = $mapperOrSchema->compileTypes();
                         } else {
+                            $mapperRef = new ReflectionClass($mapperOrSchema);
+
                             if (! $mapperRef->isFinal() && ! $mapperRef->isAnonymous()) {
-                                $mapperFQN = is_string($mapperOrSchema) ? $mapperOrSchema : $mapperOrSchema::class;
+                                $mapperFQN = $mapperOrSchema;
 
                                 throw new LogicException("Mapper \"{$mapperFQN}\" should be marked as \"final\".");
                             }
@@ -95,13 +95,11 @@ class Generator
                                 previous: $e
                             );
                         } else {
-                            $mapperFQN = is_string($mapperOrSchema) ? $mapperOrSchema : $mapperOrSchema::class;
-
                             throw new RuntimeException(
                                 sprintf(
                                     "Can't generate types file \"%s\" for mapper \"%s\". Message: %s.",
                                     $safeDestPath,
-                                    $mapperFQN,
+                                    $mapperOrSchema,
                                     $e->getMessage()
                                 ),
                                 previous: $e
@@ -124,7 +122,8 @@ class Generator
 
         return $this->write(
             $this->generateCode($schema),
-            $destPath
+            $destPath,
+            $force
         );
     }
 
@@ -140,19 +139,6 @@ class Generator
         }
 
         return implode(', ', $parts);
-    }
-
-    protected function write(string $content, string $destPath): bool
-    {
-        $destDir = dirname($destPath);
-
-        if (! is_dir($destDir)) {
-            mkdir($destDir, recursive: true);
-        }
-
-        $status = file_put_contents($destPath, $content);
-
-        return $status !== false;
     }
 
     /**
@@ -187,5 +173,56 @@ class Generator
         }
 
         return implode("\n\n", $blocks);
+    }
+
+    protected function write(string $content, string $destPath, bool $force): bool
+    {
+        if (
+            ! $force
+            && ! $this->isHashedContentChanged($content, $destPath)
+        ) {
+            return false;
+        }
+
+        $destDir = dirname($destPath);
+
+        if (! is_dir($destDir)) {
+            mkdir($destDir, recursive: true);
+        }
+
+        $status = file_put_contents(
+            $destPath,
+            $this->addHashToContent($content)
+        );
+
+        if (! $status) {
+            throw new RuntimeException("Can't write to file \"{$destPath}\".");
+        }
+
+        return true;
+    }
+
+    protected function addHashToContent(string $content): string
+    {
+        return '/* sourceHash=' . sha1($content) . " */\n\n" . $content;
+    }
+
+    protected function isHashedContentChanged(string $content, string $filePath): bool
+    {
+        if (! file_exists($filePath)) {
+            return true;
+        }
+
+        $fileContent = file_get_contents($filePath);
+
+        if ($fileContent === false) {
+            return true;
+        }
+
+        if (! preg_match('/^\/\* sourceHash=(?<hash>\w+) *\*\//', $fileContent, $matches)) {
+            return true;
+        }
+
+        return $matches['hash'] !== sha1($content);
     }
 }

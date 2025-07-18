@@ -28,13 +28,11 @@ final class GenericDeclaration
     }
 
     /**
-     * @param Closure(RefTypes, string):string|null $refsResolver
+     * @param (Closure(RefTypes $refType, class-string<Mapper>|class-string<BackedEnum> $target): string)|null $refsResolver
      */
     public function stringify(?Closure $refsResolver = null): string
     {
-        $extends = $refsResolver ?
-            $this->resolveExtends($refsResolver) :
-            null;
+        $extends = $refsResolver ? $this->resolveExtends($refsResolver) : null;
 
         if (! $extends) {
             return $this->name;
@@ -44,7 +42,7 @@ final class GenericDeclaration
     }
 
     /**
-     * @param Closure(RefTypes, string):string $refsResolver
+     * @param Closure(RefTypes $refType, class-string<Mapper>|class-string<BackedEnum> $target): string $refsResolver
      */
     protected function resolveExtends(Closure $refsResolver): ?string
     {

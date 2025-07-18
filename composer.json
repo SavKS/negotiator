@@ -7,6 +7,9 @@
         "savks/php-contexts": "^1.0"
     },
     "autoload": {
+        "files": [
+            "src/helpers.php"
+        ],
         "psr-4": {
             "Savks\\Negotiator\\": "src/"
         }

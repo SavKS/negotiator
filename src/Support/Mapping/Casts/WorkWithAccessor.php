@@ -4,6 +4,8 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
 
+use function Savks\Negotiator\resolve_value_from_accessor;
+
 trait WorkWithAccessor
 {
     protected static function resolveValueFromAccessor(
@@ -11,15 +13,9 @@ trait WorkWithAccessor
         mixed $source,
         array $sourcesTrace
     ): mixed {
-        return match (true) {
-            $accessor === null => $source,
-
-            is_string($accessor) => data_get($source, $accessor),
-
-            default => $accessor(
-                $source,
-                ...array_reverse($sourcesTrace)
-            )
-        };
+        return resolve_value_from_accessor($accessor, [
+            $source,
+            ...array_reverse($sourcesTrace),
+        ]);
     }
 }

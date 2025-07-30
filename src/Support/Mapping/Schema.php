@@ -131,7 +131,7 @@ class Schema
     }
 
     /**
-     * @param list<Casts\Cast|Mapper> $casts
+     * @param array<Casts\Cast|Mapper> $casts
      */
     public static function tuple(array $casts, string|Closure|null $accessor = null): Casts\TupleCast
     {

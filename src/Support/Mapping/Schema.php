@@ -94,9 +94,17 @@ class Schema
         return new Casts\ArrayCast($cast, $accessor);
     }
 
+    /**
+     * @deprecated use record instead
+     */
     public static function keyedArray(Casts\Cast $cast, string|Closure|null $accessor = null): Casts\KeyedArrayCast
     {
         return new Casts\KeyedArrayCast($cast, $accessor);
+    }
+
+    public static function record(Casts\Cast $cast, string|Closure|null $accessor = null): Casts\RecordCast
+    {
+        return new Casts\RecordCast($cast, $accessor);
     }
 
     /**

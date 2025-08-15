@@ -3,7 +3,6 @@
 namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use Closure;
-use Illuminate\Support\Arr;
 use Savks\Negotiator\Exceptions\UnexpectedNull;
 use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
 use Savks\Negotiator\Support\TypeGeneration\Types\Type;
@@ -14,7 +13,7 @@ abstract class Cast
     use WorkWithAccessor;
 
     /**
-     * @var list<mixed> $sourcesTrace
+     * @var mixed[] $sourcesTrace
      */
     protected array $sourcesTrace = [];
 
@@ -36,7 +35,7 @@ abstract class Cast
     }
 
     /**
-     * @param list<mixed> $sourcesTrace
+     * @param mixed[] $sourcesTrace
      */
     public function resolve(mixed $source, array $sourcesTrace = []): mixed
     {
@@ -50,11 +49,11 @@ abstract class Cast
     }
 
     /**
-     * @param list<mixed> $sourcesTrace
+     * @param mixed[] $sourcesTrace
      */
     abstract protected function finalize(mixed $source, array $sourcesTrace): mixed;
 
-    public function compileTypes(): Types
+    public function compileTypes(): Type|Types
     {
         if ($this->forcedType) {
             $forcedType = $this->forcedType instanceof Closure ? ($this->forcedType)() : $this->forcedType;
@@ -66,16 +65,19 @@ abstract class Cast
                 : $forcedType->types();
         }
 
-        return new Types(
-            Arr::wrap(
-                $this->types()
-            )
-        );
+        $types = $this->types();
+
+        return new Types($types instanceof Types ? $types->types : [$types]);
     }
 
     abstract protected function types(): Type|Types;
 
-    public function setSourcesTrace(mixed $trace): static
+    /**
+     * @param mixed[] $trace
+     *
+     * @return $this
+     */
+    public function setSourcesTrace(array $trace): static
     {
         $this->sourcesTrace = [...$this->sourcesTrace, ...$trace];
 

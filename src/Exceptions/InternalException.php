@@ -48,6 +48,13 @@ class InternalException extends DTOException
             array_splice($path, 1, 0, '<' . $exception->mapper::class . '>');
 
             $exception = $exception->exception;
+        } elseif ($exception instanceof CastFail) {
+            /** @var list<string|int> $path */
+            $path = Arr::wrap($path);
+
+            array_splice($path, 1, 0, "label({$exception->label})");
+
+            $exception = $exception->exception;
         }
 
         if ($exception instanceof InternalException) {

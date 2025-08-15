@@ -1,5 +1,6 @@
 <?php
 
+use Savks\Negotiator\Enums\PerformanceTrackers;
 use Savks\Negotiator\Performance\ClockworkProvider;
 
 return [
@@ -13,7 +14,8 @@ return [
                 ],
             ],
             'trackers' => [
-                'mappers' => env('NEGOTIATOR_TRACK_MAPPERS_PERFORMANCE', true),
+                PerformanceTrackers::MAPPERS->value => env('NEGOTIATOR_TRACK_MAPPERS_PERFORMANCE', true),
+                PerformanceTrackers::CASTS->value => env('NEGOTIATOR_TRACK_CASTS_PERFORMANCE', true),
             ],
         ],
     ],

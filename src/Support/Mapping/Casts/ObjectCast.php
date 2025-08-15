@@ -37,6 +37,8 @@ class ObjectCast extends OptionalCast
      */
     protected ?array $asAnyObject = null;
 
+    protected bool $associative = false;
+
     /**
      * @param array<string, Cast>|Spread[]|TypedField[] $schema
      */
@@ -44,6 +46,13 @@ class ObjectCast extends OptionalCast
         protected readonly array $schema,
         protected readonly string|Closure|null $accessor = null
     ) {
+    }
+
+    public function associative(): static
+    {
+        $this->associative = true;
+
+        return $this;
     }
 
     public function asAnyObject(?Cast $keySchema = null, ?Cast $valueSchema = null): static
@@ -56,7 +65,14 @@ class ObjectCast extends OptionalCast
         return $this;
     }
 
-    protected function finalize(mixed $source, array $sourcesTrace): ?stdClass
+    /**
+     * @param mixed[] $sourcesTrace
+     *
+     * @return stdClass|array<array-key, mixed>|null
+     *
+     * @throws Throwable
+     */
+    protected function finalize(mixed $source, array $sourcesTrace): stdClass|array|null
     {
         $value = static::resolveValueFromAccessor(
             $this->accessor,
@@ -74,6 +90,8 @@ class ObjectCast extends OptionalCast
 
         $result = new stdClass();
 
+        $hasValues = false;
+
         foreach ($this->schema as $field => $fieldValue) {
             if ($fieldValue instanceof Spread) {
                 $spread = $fieldValue;
@@ -82,18 +100,20 @@ class ObjectCast extends OptionalCast
             } elseif ($fieldValue instanceof TypedField) {
                 $typedField = $fieldValue;
 
+                $fieldAsString = match (true) {
+                    $typedField->key instanceof BackedEnum => $typedField->key->value,
+                    $typedField->key instanceof Stringable => (string)$typedField->key,
+
+                    default => $typedField->key
+                };
+
                 try {
-                    $fieldAsString = match (true) {
-                        $typedField->key instanceof BackedEnum => $typedField->key->value,
-                        $typedField->key instanceof Stringable => (string)$typedField->key,
-
-                        default => $typedField->key
-                    };
-
                     $resolvedValue = $typedField->value->resolve($value, $sourcesTrace);
 
                     if (! $this->needSkip($resolvedValue, $typedField->value)) {
                         $result->{$fieldAsString} = $resolvedValue;
+
+                        $hasValues = true;
                     }
                 } catch (UnexpectedValue $e) {
                     throw UnexpectedValue::wrap($e, $fieldAsString);
@@ -101,15 +121,13 @@ class ObjectCast extends OptionalCast
                     throw InternalException::wrap($e, $fieldAsString);
                 }
             } else {
-                if (! $fieldValue instanceof Cast) {
-                    throw new UnexpectedValue(Cast::class, $fieldValue);
-                }
-
                 try {
                     $resolvedValue = $fieldValue->resolve($value, $sourcesTrace);
 
                     if (! $this->needSkip($resolvedValue, $fieldValue)) {
                         $result->{$field} = $resolvedValue;
+
+                        $hasValues = true;
                     }
                 } catch (UnexpectedValue $e) {
                     throw UnexpectedValue::wrap($e, $field);
@@ -119,7 +137,11 @@ class ObjectCast extends OptionalCast
             }
         }
 
-        return $result;
+        if (! $hasValues && $this->associative) {
+            return null;
+        }
+
+        return $this->associative ? (array)$result : $result;
     }
 
     protected function types(): ObjectType|RecordType|Types

@@ -65,9 +65,7 @@ abstract class Cast
                 : $forcedType->types();
         }
 
-        $types = $this->types();
-
-        return new Types($types instanceof Types ? $types->types : [$types]);
+        return new Types([$this->types()]);
     }
 
     abstract protected function types(): Type|Types;

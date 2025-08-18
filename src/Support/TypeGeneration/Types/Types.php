@@ -5,7 +5,7 @@ namespace Savks\Negotiator\Support\TypeGeneration\Types;
 class Types
 {
     /**
-     * @param Type[] $types
+     * @param array<Type|Types> $types
      */
     public function __construct(
         public readonly array $types,

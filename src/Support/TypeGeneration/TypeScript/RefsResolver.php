@@ -8,33 +8,34 @@ use Illuminate\Support\Str;
 use LogicException;
 use Savks\Negotiator\Enums\RefTypes;
 use Savks\Negotiator\Support\Mapping\Mapper;
+use Savks\Negotiator\Support\TypeGeneration\TypeScript\RefResolver\RefRuleRegistry;
 
 /**
- * @phpstan-type MatchResult array{string|string[],string}
- * @phpstan-type MapperVariantRule string|(Closure(class-string<Mapper> $mapperFQN):bool)
- * @phpstan-type MapperVariantResolver Closure(string[]|null $matches, class-string<Mapper> $mapperFQN):(MatchResult|null)
- * @phpstan-type MapperVariantMatch Closure(class-string<Mapper>):(MatchResult|null)
- * @phpstan-type MapperVariantConfig array{
- *     rule: EnumVariantRule,
- *     resolver: EnumVariantResolver
+ * @phpstan-type RawMatchResult array{string|string[],string}
+ * @phpstan-type RawMapperVariantRule string|(Closure(class-string<Mapper> $mapperFQN):bool)
+ * @phpstan-type RawMapperVariantResolver Closure(string[]|null $matches, class-string<Mapper> $mapperFQN):(RawMatchResult|null)
+ * @phpstan-type RawMapperVariantMatch Closure(class-string<Mapper>):(RawMatchResult|null)
+ * @phpstan-type RawMapperVariantConfig array{
+ *     rule: RawMapperVariantRule,
+ *     resolver: RawMapperVariantResolver,
  * }
- * @phpstan-type EnumVariantRule string|(Closure(class-string<BackedEnum> $enumFQN):bool)
- * @phpstan-type EnumVariantResolver Closure(string[]|null $matches, class-string<BackedEnum> $enumFQN):(MatchResult|null)
- * @phpstan-type EnumVariantMatch Closure(class-string<BackedEnum> $enumFQN):(MatchResult|null)
- * @phpstan-type EnumVariantConfig array{
- *     rule: MapperVariantRule,
- *     resolver: MapperVariantResolver,
+ * @phpstan-type RawEnumVariantRule string|(Closure(class-string<BackedEnum> $enumFQN):bool)
+ * @phpstan-type RawEnumVariantResolver Closure(string[]|null $matches, class-string<BackedEnum> $enumFQN):(RawMatchResult|null)
+ * @phpstan-type RawEnumVariantMatch Closure(class-string<BackedEnum> $enumFQN):(RawMatchResult|null)
+ * @phpstan-type RawEnumVariantConfig array{
+ *     rule: RawEnumVariantRule,
+ *     resolver: RawEnumVariantResolver,
  * }
  */
 class RefsResolver
 {
     /**
-     * @param list<EnumVariantConfig|MapperVariantMatch> $mapperVariants
-     * @param list<MapperVariantConfig|EnumVariantMatch> $enumVariants
+     * @param array<RawMapperVariantConfig|RawMapperVariantMatch>|RefRuleRegistry<Mapper> $mapperVariants
+     * @param array<RawEnumVariantConfig|RawEnumVariantMatch>|RefRuleRegistry<BackedEnum> $enumVariants
      */
     public function __construct(
-        protected readonly array $mapperVariants,
-        protected readonly array $enumVariants
+        protected readonly array|RefRuleRegistry $mapperVariants,
+        protected readonly array|RefRuleRegistry $enumVariants
     ) {
     }
 
@@ -77,30 +78,41 @@ class RefsResolver
         /** @var string|null $enumName */
         $enumName = null;
 
-        foreach ($this->enumVariants as $variant) {
-            if (is_callable($variant)) {
-                $resolvedValue = $variant($enumFQN);
+        if ($this->enumVariants instanceof RefRuleRegistry) {
+            foreach ($this->enumVariants->rules as $refRule) {
+                $resolvedValue = $refRule->resolve($enumFQN);
 
                 if ($resolvedValue) {
-                    [$namespaceSegments, $enumName] = $resolvedValue;
+                    $namespaceSegments = $resolvedValue->namespaceSegments;
+                    $enumName = $resolvedValue->name;
                 }
-            } else {
-                if (is_callable($variant['rule'])) {
-                    $isMatch = $variant['rule']($enumFQN);
-
-                    $matches = null;
-                } else {
-                    $isMatch = preg_match($variant['rule'], $enumFQN, $matches) > 0;
-                }
-
-                if ($isMatch) {
-                    $resolvedValue = $variant['resolver']($matches, $enumFQN);
+            }
+        } else {
+            foreach ($this->enumVariants as $variant) {
+                if (is_callable($variant)) {
+                    $resolvedValue = $variant($enumFQN);
 
                     if ($resolvedValue) {
                         [$namespaceSegments, $enumName] = $resolvedValue;
                     }
+                } else {
+                    if (is_callable($variant['rule'])) {
+                        $isMatch = $variant['rule']($enumFQN);
 
-                    break;
+                        $matches = null;
+                    } else {
+                        $isMatch = preg_match($variant['rule'], $enumFQN, $matches) > 0;
+                    }
+
+                    if ($isMatch) {
+                        $resolvedValue = $variant['resolver']($matches, $enumFQN);
+
+                        if ($resolvedValue) {
+                            [$namespaceSegments, $enumName] = $resolvedValue;
+                        }
+
+                        break;
+                    }
                 }
             }
         }
@@ -134,30 +146,41 @@ class RefsResolver
         /** @var string|null $mapperName */
         $mapperName = null;
 
-        foreach ($this->mapperVariants as $variant) {
-            if (is_callable($variant)) {
-                $resolvedValue = $variant($mapperFQN);
+        if ($this->mapperVariants instanceof RefRuleRegistry) {
+            foreach ($this->mapperVariants->rules as $refRule) {
+                $resolvedValue = $refRule->resolve($mapperFQN);
 
                 if ($resolvedValue) {
-                    [$namespaceSegments, $mapperName] = $resolvedValue;
+                    $namespaceSegments = $resolvedValue->namespaceSegments;
+                    $mapperName = $resolvedValue->name;
                 }
-            } else {
-                if (is_callable($variant['rule'])) {
-                    $isMatch = $variant['rule']($mapperFQN);
-
-                    $matches = null;
-                } else {
-                    $isMatch = preg_match($variant['rule'], $mapperFQN, $matches) > 0;
-                }
-
-                if ($isMatch) {
-                    $resolvedValue = $variant['resolver']($matches, $mapperFQN);
+            }
+        } else {
+            foreach ($this->mapperVariants as $variant) {
+                if (is_callable($variant)) {
+                    $resolvedValue = $variant($mapperFQN);
 
                     if ($resolvedValue) {
                         [$namespaceSegments, $mapperName] = $resolvedValue;
                     }
+                } else {
+                    if (is_callable($variant['rule'])) {
+                        $isMatch = $variant['rule']($mapperFQN);
 
-                    break;
+                        $matches = null;
+                    } else {
+                        $isMatch = preg_match($variant['rule'], $mapperFQN, $matches) > 0;
+                    }
+
+                    if ($isMatch) {
+                        $resolvedValue = $variant['resolver']($matches, $mapperFQN);
+
+                        if ($resolvedValue) {
+                            [$namespaceSegments, $mapperName] = $resolvedValue;
+                        }
+
+                        break;
+                    }
                 }
             }
         }

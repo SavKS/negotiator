@@ -4,8 +4,6 @@ namespace Savks\Negotiator\Support\Mapping\Casts;
 
 use BackedEnum;
 use Closure;
-use ReflectionEnum;
-use ReflectionException;
 use Savks\Negotiator\Contexts\TypeGenerationContext;
 use Savks\Negotiator\Enums\RefTypes;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
@@ -64,9 +62,11 @@ class EnumCast extends OptionalCast
             if (
                 $this->tryCast
                 && (is_string($value) || is_numeric($value))
-                && $enum::tryFrom($value)
+                && $enum::tryFrom(
+                    is_numeric($value) ? (int)$value : $value
+                )
             ) {
-                return $value;
+                return is_numeric($value) ? (int)$value : $value;
             }
 
             throw new UnexpectedValue("BackedEnum<{$this->enum}>", $value);
@@ -75,20 +75,13 @@ class EnumCast extends OptionalCast
         return $value->value;
     }
 
-    /**
-     * @throws ReflectionException
-     */
     protected function types(): StringType|AliasType|Types
     {
         if ($this->unpack) {
-            $refEnum = new ReflectionEnum($this->enum);
-
-            $enumType = $refEnum->getBackingType()->getName();
-
             $types = [];
 
             foreach ($this->enum::cases() as $case) {
-                if ($enumType === 'string') {
+                if (is_string($case->value)) {
                     $types[] = new ConstStringType($case->value);
                 } else {
                     $types[] = new ConstNumberType($case->value);

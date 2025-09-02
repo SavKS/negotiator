@@ -26,6 +26,9 @@ namespace Savks\Negotiator {
         };
     }
 
+    /**
+     * @throws CastFail
+     */
     function cast(string $label, mixed $value, Cast $schema): mixed
     {
         $performance = app(Performance::class);

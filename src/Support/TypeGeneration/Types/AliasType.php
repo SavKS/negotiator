@@ -11,7 +11,7 @@ class AliasType extends Type
      * @param Generic[] $generics
      * @param array{
      *     type: RefTypes,
-     *     fqn: class-string
+     *     class: class-string
      * }|null $ref
      */
     public function __construct(

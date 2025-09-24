@@ -18,26 +18,26 @@ class TypeGenerationContext extends Context
     }
 
     /**
-     * @param class-string<Mapper> $mapperFQN
+     * @param class-string<Mapper> $mapper
      */
-    public function resolveMapperRef(string $mapperFQN): ?string
+    public function resolveMapperRef(string $mapper): ?string
     {
         if (! $this->refsResolver) {
             return null;
         }
 
-        return ($this->refsResolver)(RefTypes::MAPPER, $mapperFQN);
+        return ($this->refsResolver)(RefTypes::MAPPER, $mapper);
     }
 
     /**
-     * @param class-string<BackedEnum> $enumFQN
+     * @param class-string<BackedEnum> $enum
      */
-    public function resolveEnumRef(string $enumFQN): ?string
+    public function resolveEnumRef(string $enum): ?string
     {
         if (! $this->refsResolver) {
             return null;
         }
 
-        return ($this->refsResolver)(RefTypes::ENUM, $enumFQN);
+        return ($this->refsResolver)(RefTypes::ENUM, $enum);
     }
 }

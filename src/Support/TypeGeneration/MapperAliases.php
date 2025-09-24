@@ -11,15 +11,23 @@ class MapperAliases
      */
     protected array $aliases = [];
 
-    public function add(string $mapperFQN, string $alias): static
+    /**
+     * @param class-string<Mapper> $mapper
+     *
+     * @return $this
+     */
+    public function add(string $mapper, string $alias): static
     {
-        $this->aliases[$mapperFQN] = $alias;
+        $this->aliases[$mapper] = $alias;
 
         return $this;
     }
 
-    public function resolve(string $mapperFQN): ?string
+    /**
+     * @param class-string<Mapper> $mapper
+     */
+    public function resolve(string $mapper): ?string
     {
-        return $this->aliases[$mapperFQN] ?? null;
+        return $this->aliases[$mapper] ?? null;
     }
 }

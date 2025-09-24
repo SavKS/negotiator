@@ -13,14 +13,14 @@ class SchemasRepository
     protected array $schemas = [];
 
     /**
-     * @param class-string<Mapper> $mapperFQN
+     * @param class-string<Mapper> $mapper
      */
-    public function resolve(string $mapperFQN): Cast
+    public function resolve(string $mapper): Cast
     {
-        if (! isset($this->schemas[$mapperFQN])) {
-            $this->schemas[$mapperFQN] = $mapperFQN::schema();
+        if (! isset($this->schemas[$mapper])) {
+            $this->schemas[$mapper] = $mapper::schema();
         }
 
-        return $this->schemas[$mapperFQN];
+        return $this->schemas[$mapper];
     }
 }

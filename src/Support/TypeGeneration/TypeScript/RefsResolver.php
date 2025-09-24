@@ -12,16 +12,16 @@ use Savks\Negotiator\Support\TypeGeneration\TypeScript\RefResolver\RefRuleRegist
 
 /**
  * @phpstan-type RawMatchResult array{string|string[],string}
- * @phpstan-type RawMapperVariantRule string|(Closure(class-string<Mapper> $mapperFQN):bool)
- * @phpstan-type RawMapperVariantResolver Closure(string[]|null $matches, class-string<Mapper> $mapperFQN):(RawMatchResult|null)
+ * @phpstan-type RawMapperVariantRule string|(Closure(class-string<Mapper> $mapper):bool)
+ * @phpstan-type RawMapperVariantResolver Closure(string[]|null $matches, class-string<Mapper> $mapper):(RawMatchResult|null)
  * @phpstan-type RawMapperVariantMatch Closure(class-string<Mapper>):(RawMatchResult|null)
  * @phpstan-type RawMapperVariantConfig array{
  *     rule: RawMapperVariantRule,
  *     resolver: RawMapperVariantResolver,
  * }
- * @phpstan-type RawEnumVariantRule string|(Closure(class-string<BackedEnum> $enumFQN):bool)
- * @phpstan-type RawEnumVariantResolver Closure(string[]|null $matches, class-string<BackedEnum> $enumFQN):(RawMatchResult|null)
- * @phpstan-type RawEnumVariantMatch Closure(class-string<BackedEnum> $enumFQN):(RawMatchResult|null)
+ * @phpstan-type RawEnumVariantRule string|(Closure(class-string<BackedEnum> $enum):bool)
+ * @phpstan-type RawEnumVariantResolver Closure(string[]|null $matches, class-string<BackedEnum> $enum):(RawMatchResult|null)
+ * @phpstan-type RawEnumVariantMatch Closure(class-string<BackedEnum> $enum):(RawMatchResult|null)
  * @phpstan-type RawEnumVariantConfig array{
  *     rule: RawEnumVariantRule,
  *     resolver: RawEnumVariantResolver,
@@ -66,11 +66,11 @@ class RefsResolver
     }
 
     /**
-     * @param class-string<BackedEnum> $enumFQN
+     * @param class-string<BackedEnum> $enum
      *
      * @return array{string, string}
      */
-    protected function resolveEnumRef(string $enumFQN): array
+    protected function resolveEnumRef(string $enum): array
     {
         /** @var string|string[]|null $namespaceSegments */
         $namespaceSegments = null;
@@ -80,7 +80,7 @@ class RefsResolver
 
         if ($this->enumVariants instanceof RefRuleRegistry) {
             foreach ($this->enumVariants->rules as $refRule) {
-                $resolvedValue = $refRule->resolve($enumFQN);
+                $resolvedValue = $refRule->resolve($enum);
 
                 if ($resolvedValue) {
                     $namespaceSegments = $resolvedValue->namespaceSegments;
@@ -90,22 +90,22 @@ class RefsResolver
         } else {
             foreach ($this->enumVariants as $variant) {
                 if (is_callable($variant)) {
-                    $resolvedValue = $variant($enumFQN);
+                    $resolvedValue = $variant($enum);
 
                     if ($resolvedValue) {
                         [$namespaceSegments, $enumName] = $resolvedValue;
                     }
                 } else {
                     if (is_callable($variant['rule'])) {
-                        $isMatch = $variant['rule']($enumFQN);
+                        $isMatch = $variant['rule']($enum);
 
                         $matches = null;
                     } else {
-                        $isMatch = preg_match($variant['rule'], $enumFQN, $matches) > 0;
+                        $isMatch = preg_match($variant['rule'], $enum, $matches) > 0;
                     }
 
                     if ($isMatch) {
-                        $resolvedValue = $variant['resolver']($matches, $enumFQN);
+                        $resolvedValue = $variant['resolver']($matches, $enum);
 
                         if ($resolvedValue) {
                             [$namespaceSegments, $enumName] = $resolvedValue;
@@ -118,11 +118,11 @@ class RefsResolver
         }
 
         if (! $namespaceSegments) {
-            throw new LogicException("Can't resolve \"{$enumFQN}\" namespace.");
+            throw new LogicException("Can't resolve \"{$enum}\" namespace.");
         }
 
         if (! $enumName) {
-            throw new LogicException("Can't resolve \"{$enumFQN}\" enum.");
+            throw new LogicException("Can't resolve \"{$enum}\" enum.");
         }
 
         $namespace = implode(
@@ -134,11 +134,11 @@ class RefsResolver
     }
 
     /**
-     * @param class-string<Mapper> $mapperFQN
+     * @param class-string<Mapper> $mapper
      *
      * @return array{string, string}
      */
-    protected function resolveMapperRef(string $mapperFQN): array
+    protected function resolveMapperRef(string $mapper): array
     {
         /** @var string|string[]|null $namespaceSegments */
         $namespaceSegments = null;
@@ -148,7 +148,7 @@ class RefsResolver
 
         if ($this->mapperVariants instanceof RefRuleRegistry) {
             foreach ($this->mapperVariants->rules as $refRule) {
-                $resolvedValue = $refRule->resolve($mapperFQN);
+                $resolvedValue = $refRule->resolve($mapper);
 
                 if ($resolvedValue) {
                     $namespaceSegments = $resolvedValue->namespaceSegments;
@@ -158,22 +158,22 @@ class RefsResolver
         } else {
             foreach ($this->mapperVariants as $variant) {
                 if (is_callable($variant)) {
-                    $resolvedValue = $variant($mapperFQN);
+                    $resolvedValue = $variant($mapper);
 
                     if ($resolvedValue) {
                         [$namespaceSegments, $mapperName] = $resolvedValue;
                     }
                 } else {
                     if (is_callable($variant['rule'])) {
-                        $isMatch = $variant['rule']($mapperFQN);
+                        $isMatch = $variant['rule']($mapper);
 
                         $matches = null;
                     } else {
-                        $isMatch = preg_match($variant['rule'], $mapperFQN, $matches) > 0;
+                        $isMatch = preg_match($variant['rule'], $mapper, $matches) > 0;
                     }
 
                     if ($isMatch) {
-                        $resolvedValue = $variant['resolver']($matches, $mapperFQN);
+                        $resolvedValue = $variant['resolver']($matches, $mapper);
 
                         if ($resolvedValue) {
                             [$namespaceSegments, $mapperName] = $resolvedValue;
@@ -186,11 +186,11 @@ class RefsResolver
         }
 
         if (! $namespaceSegments) {
-            throw new LogicException("Can't resolve \"{$mapperFQN}\" namespace.");
+            throw new LogicException("Can't resolve \"{$mapper}\" namespace.");
         }
 
         if (! $mapperName) {
-            throw new LogicException("Can't resolve \"{$mapperFQN}\" mapper.");
+            throw new LogicException("Can't resolve \"{$mapper}\" mapper.");
         }
 
         $namespace = implode(

@@ -44,7 +44,7 @@ class ConstEnumCast extends ConstCast
         if ($enumRef) {
             return new AliasType("{$enumRef}.{$this->case->name}", ref: [
                 'type' => RefTypes::ENUM,
-                'fqn' => $this->case::class,
+                'class' => $this->case::class,
             ]);
         }
 

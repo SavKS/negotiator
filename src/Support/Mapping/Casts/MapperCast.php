@@ -90,50 +90,52 @@ class MapperCast extends OptionalCast
 
             $refReturnType = $reflection->getReturnType();
 
-            if (! ($refReturnType instanceof ReflectionNamedType)
-                || (
-                    ! is_subclass_of($refReturnType->getName(), Mapper::class)
-                    && in_array($refReturnType->getName(), ['static', 'self'], true)
-                )
-            ) {
-                throw new TypeGenerateException('The return type in the mapper function must be an mapper.');
+            if (! ($refReturnType instanceof ReflectionNamedType)) {
+                throw new TypeGenerateException('Specify the return type of the function.');
             }
 
-            $mapperFQN = $refReturnType->getName();
+            $maybeMapperClass = $refReturnType->getName();
 
-            if ($mapperFQN === 'static' || $mapperFQN === 'self') {
-                $mapperFQN = get_class(
-                    $reflection->getClosureThis()
-                );
+            if ($maybeMapperClass === 'self') {
+                $maybeMapperClass = $reflection->getClosureScopeClass()?->getName();
+
+                if (! $maybeMapperClass) {
+                    throw new TypeGenerateException('Specify the return type of the function.');
+                }
             }
 
-            if (! is_subclass_of($mapperFQN, Mapper::class)) {
+            if (is_subclass_of($maybeMapperClass, Mapper::class)) {
+                /** @var class-string<Mapper> $mapperClass */
+                $mapperClass = $maybeMapperClass;
+            } elseif ($refReturnType->getName() === 'static') {
+                throw new TypeGenerateException('“static” cannot be used as a return value of a function. Use either a mapper class or self.');
+            } else {
                 throw new TypeGenerateException('The return type in the mapper function must be an mapper.');
             }
         } elseif (is_string($this->mapper)) {
-            $mapperFQN = $this->mapper;
+            $mapperClass = $this->mapper;
 
-            if (! is_subclass_of($mapperFQN, Mapper::class)) {
+            if (! is_subclass_of($mapperClass, Mapper::class)) {
                 throw new TypeGenerateException('The return type in the mapper function must be an mapper.');
             }
         } else {
-            $mapperFQN = $this->mapper::class;
+            $mapperClass = $this->mapper::class;
         }
 
-        $mapperRef = TypeGenerationContext::useSelf()->resolveMapperRef($mapperFQN);
+        $mapperRef = TypeGenerationContext::useSelf()->resolveMapperRef($mapperClass);
 
         if (! $mapperRef) {
-            throw new TypeGenerateException("Unknown mapper — \"{$mapperFQN}\".");
+            throw new TypeGenerateException("Unknown mapper — \"{$mapperClass}\".");
         }
 
         return $this->generics ?
             new AliasType($mapperRef, $this->generics, [
                 'type' => RefTypes::MAPPER,
-                'fqn' => $mapperFQN,
+                'class' => $mapperClass,
             ]) :
             new AliasType($mapperRef, ref: [
                 'type' => RefTypes::MAPPER,
-                'fqn' => $mapperFQN,
+                'class' => $mapperClass,
             ]);
     }
 }

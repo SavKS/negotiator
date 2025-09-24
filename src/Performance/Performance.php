@@ -18,10 +18,10 @@ class Performance
     {
         $providerName = config('negotiator.debug.performance.providers.current');
 
-        $providerFQN = config("negotiator.debug.performance.providers.available.{$providerName}");
+        $providerClass = config("negotiator.debug.performance.providers.available.{$providerName}");
 
         $this->provider = config('negotiator.debug.enable') ?
-            new $providerFQN() :
+            new $providerClass() :
             null;
 
         $this->trackers = config('negotiator.debug.performance.trackers');

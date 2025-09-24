@@ -13,10 +13,10 @@ use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
 class ConstMapperCast extends OptionalCast
 {
     /**
-     * @param class-string<Mapper> $mapperFQN
+     * @param class-string<Mapper> $mapper
      */
     public function __construct(
-        protected readonly string $mapperFQN,
+        protected readonly string $mapper,
         protected readonly string|Closure|null $accessor = null
     ) {
     }
@@ -35,9 +35,9 @@ class ConstMapperCast extends OptionalCast
 
         if (
             ! ($value instanceof Mapper)
-            || $value::class !== $this->mapperFQN
+            || $value::class !== $this->mapper
         ) {
-            throw new UnexpectedValue("class-string<{$this->mapperFQN}>", $value);
+            throw new UnexpectedValue("class-string<{$this->mapper}>", $value);
         }
 
         return $value;
@@ -45,15 +45,15 @@ class ConstMapperCast extends OptionalCast
 
     protected function types(): AliasType
     {
-        $mapperRef = TypeGenerationContext::useSelf()->resolveMapperRef($this->mapperFQN);
+        $mapperRef = TypeGenerationContext::useSelf()->resolveMapperRef($this->mapper);
 
         if (! $mapperRef) {
-            throw new TypeGenerateException("Unknown mapper — \"{$this->mapperFQN}\".");
+            throw new TypeGenerateException("Unknown mapper — \"{$this->mapper}\".");
         }
 
         return new AliasType($mapperRef, ref: [
             'type' => RefTypes::MAPPER,
-            'fqn' => $this->mapperFQN,
+            'class' => $this->mapper,
         ]);
     }
 }

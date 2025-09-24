@@ -96,7 +96,7 @@ class EnumCast extends OptionalCast
         if ($enumRef) {
             return new AliasType($enumRef, ref: [
                 'type' => RefTypes::ENUM,
-                'fqn' => $this->enum,
+                'class' => $this->enum,
             ]);
         }
 

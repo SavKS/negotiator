@@ -176,7 +176,7 @@ class ObjectCast extends OptionalCast
                         $additionalRecords[] = new RecordType(
                             new AliasType("{$enumRef}.{$typedField->key->name}", ref: [
                                 'type' => RefTypes::ENUM,
-                                'fqn' => $typedField->key::class,
+                                'class' => $typedField->key::class,
                             ]),
                             $typedField->value->compileTypes()
                         );

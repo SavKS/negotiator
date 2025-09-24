@@ -56,9 +56,9 @@ class Generator
                             $mapperRef = new ReflectionClass($mapperOrSchema);
 
                             if (! $mapperRef->isFinal() && ! $mapperRef->isAnonymous()) {
-                                $mapperFQN = $mapperOrSchema;
+                                $mapper = $mapperOrSchema;
 
-                                throw new LogicException("Mapper \"{$mapperFQN}\" should be marked as \"final\".");
+                                throw new LogicException("Mapper \"{$mapper}\" should be marked as \"final\".");
                             }
 
                             $forcedType = $mapperOrSchema::as();

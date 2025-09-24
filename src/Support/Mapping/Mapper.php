@@ -64,7 +64,7 @@ abstract class Mapper implements JsonSerializable, Responsable
         try {
             if ($performance->trackedEnabled(PerformanceTrackers::MAPPERS)) {
                 $event = $performance->event("Mapper: {$className}", [
-                    'class_fqn' => static::class,
+                    'class' => static::class,
                 ]);
 
                 $event->begin();

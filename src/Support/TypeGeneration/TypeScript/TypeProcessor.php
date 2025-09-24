@@ -102,7 +102,7 @@ class TypeProcessor
     }
 
     /**
-     * @param list<Types\Type|Types\Types> $types
+     * @param array<Types\Type|Types\Types> $types
      */
     protected function detectOptional(array $types): bool
     {
@@ -125,17 +125,22 @@ class TypeProcessor
                 continue;
             }
 
-            /** @var class-string<Mapper> $mapperFQN */
-            $mapperFQN = $type->ref['fqn'];
+            /** @var class-string<Mapper> $mapper */
+            $mapper = $type->ref['class'];
 
-            if (
-                in_array(
-                    new Types\UndefinedType(),
-                    $mapperFQN::schema()->compileTypes()->types
-                )
-            ) {
-                return true;
+            $mapperTypes = $mapper::schema()->compileTypes();
+
+            if ($mapperTypes instanceof Types\Types) {
+                foreach ($mapperTypes->types as $mapperType) {
+                    if ($mapperType instanceof Types\UndefinedType) {
+                        return true;
+                    }
+                }
+
+                return false;
             }
+
+            return $mapperTypes instanceof Types\UndefinedType;
         }
 
         return false;

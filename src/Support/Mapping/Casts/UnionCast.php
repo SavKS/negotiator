@@ -8,6 +8,7 @@ use Illuminate\Support\Arr;
 use Savks\Negotiator\Exceptions\DTOException;
 use Savks\Negotiator\Exceptions\InternalException;
 use Savks\Negotiator\Exceptions\UnexpectedValue;
+use Savks\Negotiator\Support\TypeGeneration\Types\AliasType;
 use Savks\Negotiator\Support\TypeGeneration\Types\Type;
 use Savks\Negotiator\Support\TypeGeneration\Types\Types;
 use Throwable;
@@ -139,6 +140,10 @@ class UnionCast extends OptionalCast
         }
 
         $types = Arr::flatten($types);
+
+        if (! $types) {
+            return new AliasType('unknown');
+        }
 
         return count($types) > 1 ? new Types($types) : head($types);
     }

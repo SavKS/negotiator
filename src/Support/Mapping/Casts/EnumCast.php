@@ -20,6 +20,11 @@ class EnumCast extends OptionalCast
     protected bool $unpack = false;
 
     /**
+     * @var BackedEnum[]
+     */
+    protected array $omitCases = [];
+
+    /**
      * @param class-string<BackedEnum> $enum
      */
     public function __construct(
@@ -29,6 +34,9 @@ class EnumCast extends OptionalCast
     ) {
     }
 
+    /**
+     * @return $this
+     */
     public function unpack(): static
     {
         $this->unpack = true;
@@ -36,9 +44,24 @@ class EnumCast extends OptionalCast
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function tryCast(): static
     {
         $this->tryCast = true;
+
+        return $this;
+    }
+
+    /**
+     * @param BackedEnum|BackedEnum[] $enumCase
+     *
+     * @return $this
+     */
+    public function omit(BackedEnum|array $enumCase): static
+    {
+        $this->ommitCases = is_array($enumCase) ? $enumCase : [$enumCase];
 
         return $this;
     }
@@ -70,6 +93,28 @@ class EnumCast extends OptionalCast
             }
 
             throw new UnexpectedValue("BackedEnum<{$this->enum}>", $value);
+        }
+
+        if (
+            $this->omitCases
+            && in_array($value, $this->omitCases, true)
+        ) {
+            $expectedValues = implode(
+                '|',
+                array_reduce(
+                    $this->enum::cases(),
+                    function (array $acc, BackedEnum $case) {
+                        if (! in_array($case, $this->omitCases, true)) {
+                            $acc[] = $case->value;
+                        }
+
+                        return $acc;
+                    },
+                    []
+                )
+            ) ?: '__NONE__';
+
+            throw new UnexpectedValue("BackedEnum<{$expectedValues}>", $value);
         }
 
         return $value->value;

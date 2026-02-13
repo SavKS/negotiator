@@ -20,7 +20,7 @@ class Spread
     protected array $sourcesTrace = [];
 
     /**
-     * @param array<string, Cast|Spread> $schema
+     * @param array<string, Cast>|Spread[] $schema
      */
     public function __construct(
         protected readonly array $schema,
@@ -42,10 +42,6 @@ class Spread
             if ($fieldValue instanceof Spread) {
                 $fieldValue->applyTo($data, $value, $sourcesTrace);
             } else {
-                if (! $fieldValue instanceof Cast) {
-                    throw new UnexpectedValue(Cast::class, $fieldValue);
-                }
-
                 try {
                     $resolvedValue = $fieldValue->resolve($value, $sourcesTrace);
 

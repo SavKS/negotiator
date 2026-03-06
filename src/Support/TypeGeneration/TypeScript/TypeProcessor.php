@@ -33,13 +33,13 @@ class TypeProcessor
 
             $generics = array_map(
                 fn (Generic $generic) => $generic->stringify($typeGenerationContext->refsResolver),
-                $type->generics
+                $type->generics,
             );
 
             return sprintf(
                 '%s<%s>',
                 $type->alias,
-                implode(', ', $generics)
+                implode(', ', $generics),
             );
         }
 
@@ -50,9 +50,9 @@ class TypeProcessor
                     $type->asIntersection ? ' & ' : ' | ',
                     array_map(
                         fn (Types\Type|Types\Types $type) => $this->processType($type),
-                        $type->types
-                    )
-                )
+                        $type->types,
+                    ),
+                ),
             ),
 
             $type instanceof Types\ObjectType => $this->processObjectType($type),
@@ -70,14 +70,14 @@ class TypeProcessor
             $type instanceof Types\RecordType => sprintf(
                 'Record<%s, %s>',
                 $this->processType($type->keyType),
-                $this->processType($type->valueType)
+                $this->processType($type->valueType),
             ),
 
             $type instanceof Types\ArrayType => "Array<{$this->processType($type->types)}>",
 
             $type instanceof Types\TupleType => $this->processTupleType($type),
 
-            default => throw new RuntimeException('Unprocessed type "' . $type::class . '"')
+            default => throw new RuntimeException('Unprocessed type "' . $type::class . '"'),
         };
     }
 
@@ -90,7 +90,7 @@ class TypeProcessor
                 match (true) {
                     $type instanceof Types\Type => [$type],
                     $type instanceof Types\Types => $type->types,
-                }
+                },
             );
 
             $optionalSymbol = $isOptional ? '?' : '';
@@ -137,10 +137,12 @@ class TypeProcessor
                     }
                 }
 
-                return false;
+                continue;
             }
 
-            return $mapperTypes instanceof Types\UndefinedType;
+            if ($mapperTypes instanceof Types\UndefinedType) {
+                return true;
+            }
         }
 
         return false;
@@ -150,20 +152,20 @@ class TypeProcessor
     {
         $types = Arr::map(
             $type->types,
-            fn (Types\Types $types) => $this->processType($types)
+            fn (Types\Types $types) => $this->processType($types),
         );
 
         if (! $type->restType) {
             return sprintf(
                 '[%s]',
-                implode(',', $types)
+                implode(',', $types),
             );
         }
 
         return sprintf(
             '[%s, ...Array<%s>]',
             implode(',', $types),
-            $this->processType($type->restType)
+            $this->processType($type->restType),
         );
     }
 }

@@ -6,7 +6,8 @@ class RecordType extends Type
 {
     public function __construct(
         public readonly Type|Types $keyType = new StringType(),
-        public readonly Type|Types $valueType = new AnyType()
+        public readonly Type|Types $valueType = new AnyType(),
+        public readonly bool $partial = false
     ) {
     }
 }

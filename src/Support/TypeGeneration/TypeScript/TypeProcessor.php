@@ -66,15 +66,8 @@ class TypeProcessor
             $type instanceof Types\NullType => 'null',
             $type instanceof Types\VoidType => 'void',
             $type instanceof Types\UndefinedType => 'undefined',
-
-            $type instanceof Types\RecordType => sprintf(
-                'Record<%s, %s>',
-                $this->processType($type->keyType),
-                $this->processType($type->valueType),
-            ),
-
+            $type instanceof Types\RecordType => $this->processRecordType($type),
             $type instanceof Types\ArrayType => "Array<{$this->processType($type->types)}>",
-
             $type instanceof Types\TupleType => $this->processTupleType($type),
 
             default => throw new RuntimeException('Unprocessed type "' . $type::class . '"'),
@@ -167,5 +160,20 @@ class TypeProcessor
             implode(',', $types),
             $this->processType($type->restType),
         );
+    }
+
+    protected function processRecordType(Types\RecordType $type): string
+    {
+        $result = sprintf(
+            'Record<%s, %s>',
+            $this->processType($type->keyType),
+            $this->processType($type->valueType)
+        );
+
+        if ($type->partial) {
+            return "Partial<{$result}>";
+        }
+
+        return $result;
     }
 }

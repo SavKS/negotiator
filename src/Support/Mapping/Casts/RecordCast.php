@@ -30,15 +30,24 @@ class RecordCast extends OptionalCast
 
     protected bool $associative = false;
 
+    protected bool $partial = false;
+
     public function __construct(
         protected readonly Cast $cast,
-        protected readonly string|Closure|null $accessor = null
+        protected readonly string|Closure|null $accessor = null,
     ) {
     }
 
     public function associative(): static
     {
         $this->associative = true;
+
+        return $this;
+    }
+
+    public function partial(bool $value = true): static
+    {
+        $this->partial = $value;
 
         return $this;
     }
@@ -144,7 +153,7 @@ class RecordCast extends OptionalCast
                 $keyValue = (new IterationContext($index, $key))->wrap(
                     fn () => $this->keyBy['cast']->resolve(
                         $this->keyBy['byKey'] ? $key : $item,
-                        array_reverse($sourcesTrace)
+                        array_reverse($sourcesTrace),
                     )
                 );
             }
@@ -186,7 +195,8 @@ class RecordCast extends OptionalCast
 
         return new RecordType(
             $cast?->compileTypes() ?? new StringType(),
-            $this->cast->compileTypes()
+            $this->cast->compileTypes(),
+            $this->partial
         );
     }
 }

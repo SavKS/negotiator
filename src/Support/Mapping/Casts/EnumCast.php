@@ -61,7 +61,7 @@ class EnumCast extends OptionalCast
      */
     public function omit(BackedEnum|array $enumCase): static
     {
-        $this->ommitCases = is_array($enumCase) ? $enumCase : [$enumCase];
+        $this->omitCases = is_array($enumCase) ? $enumCase : [$enumCase];
 
         return $this;
     }
